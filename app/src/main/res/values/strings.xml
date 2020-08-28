@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ekotransservice_routemanager</string>
+    <string name="doneText">Выполнить</string>
+    <string name="cannotDoneText">Нельзя выполнить</string>
+</resources>
