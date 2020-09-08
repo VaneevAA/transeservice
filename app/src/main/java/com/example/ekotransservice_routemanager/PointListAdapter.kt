@@ -1,6 +1,6 @@
 package com.example.ekotransservice_routemanager
 
-import android.app.ActionBar
+
 import android.content.Context
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
@@ -61,20 +61,28 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
             else                      -> holder.itemView.setBackgroundResource(R.drawable.point_back)
         }
         holder.pointPosition = position
+
         //при нажатии определяется пока только точка
+
         holder.itemView.setOnClickListener {
-            var point : Point = pointList!![holder.pointPosition]
-            point.setDone(!point.getDone())
-            if(point.getDone()){
-                showButtons(holder)
-            }else{
+            if(it.isActivated){
                 hideButtons(holder)
+                it.isActivated = !it.isActivated
+                point.setDone(false)
+                it!!.animate().start()
+
+            }else {
+
+                it.isActivated = !it.isActivated
+                pointList!![holder.pointPosition].setDone(true)
+                showButtons(holder)
+                it!!.animate().start()
             }
 
-            it!!.animate().start()
-            //TODO: сделать открытие формы точки
 
         }
+
+
     }else{
         holder.pointItemView.text = "no points"
     }
