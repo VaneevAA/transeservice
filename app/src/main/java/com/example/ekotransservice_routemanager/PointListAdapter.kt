@@ -1,17 +1,22 @@
 package com.example.ekotransservice_routemanager
 
-import android.app.ActionBar
+
 import android.content.Context
+import android.os.Build
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnticipateOvershootInterpolator
+import android.widget.Button
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointStatuses
@@ -49,6 +54,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         notifyDataSetChanged()
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: PointViewHolder, position: Int) = if (pointList != null){
         var point : Point = pointList!![position]
         holder.pointItemView.text = point.getName()
@@ -61,20 +67,42 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
             else                      -> holder.itemView.setBackgroundResource(R.drawable.point_back)
         }
         holder.pointPosition = position
+
         //при нажатии определяется пока только точка
+
         holder.itemView.setOnClickListener {
-            var point : Point = pointList!![holder.pointPosition]
-            point.setDone(!point.getDone())
-            if(point.getDone()){
-                showButtons(holder)
-            }else{
+            if(it.isActivated){
                 hideButtons(holder)
+                it.isActivated = !it.isActivated
+                point.setDone(false)
+                it!!.animate().start()
+
+            }else {
+
+                it.isActivated = !it.isActivated
+                pointList!![holder.pointPosition].setDone(true)
+                showButtons(holder)
+                it!!.animate().start()
             }
 
-            it!!.animate().start()
-            //TODO: сделать открытие формы точки
 
         }
+        holder.itemView.findViewById<Button>(R.id.doneButton).setOnClickListener {
+            if (point.getDone()) {
+                var bundle = bundleOf("point" to point, "canDone" to true)
+                holder.itemView.findNavController()
+                    .navigate(R.id.action_route_list_to_point_action, bundle)
+            }
+        }
+
+        holder.itemView.findViewById<Button>(R.id.cannotDoneButton).setOnClickListener {
+            if(point.getDone()) {
+                var bundle = bundleOf("point" to point, "canDone" to false)
+                holder.itemView.findNavController()
+                    .navigate(R.id.action_route_list_to_point_action, bundle)
+            }
+        }
+
     }else{
         holder.pointItemView.text = "no points"
     }

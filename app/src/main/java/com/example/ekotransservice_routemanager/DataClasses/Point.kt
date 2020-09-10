@@ -1,12 +1,15 @@
 package com.example.ekotransservice_routemanager.DataClasses
 
 
+import android.os.Parcel
+import android.os.Parcelable
+import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 
-public class Point constructor(name : String,lon : Double,
+class Point  constructor(name : String,lon : Double,
                                lan : Double, done : Boolean,
-                               contCount : Int, contType : String){
+                               contCount : Int, contType : String) : Serializable{
     private val name : String = name;
     private val lon : Double = lon;
     private val lan : Double = lan;
@@ -16,6 +19,9 @@ public class Point constructor(name : String,lon : Double,
     private val pointActionsArray: ArrayList<PointActoins> = ArrayList()
     private val pointActionsCancelArray : ArrayList<PointActoins> = ArrayList()
     private val status : PointStatuses = PointStatuses.NOT_VISITED
+
+
+
     init {
         pointActionsArray.add(PointActoins.TAKE_PHOTO_AFTER)
         pointActionsArray.add(PointActoins.TAKE_PHOTO_BEFORE)
@@ -67,6 +73,8 @@ public class Point constructor(name : String,lon : Double,
     fun getCancelActions() : ArrayList<PointActoins>{
         return this.pointActionsCancelArray
     }
+
+
 }
 
 
