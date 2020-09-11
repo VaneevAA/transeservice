@@ -5,6 +5,7 @@
     android:id="@+id/frameLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient_list"
     tools:context=".route_list">
 
     <TextView
@@ -26,7 +27,8 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints"
-        tools:listitem="@layout/recycleview_item" />
+        tools:listitem="@layout/recycleview_item"
+        android:scrollbars="vertical"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

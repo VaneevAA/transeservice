@@ -1,6 +1,7 @@
 package com.example.ekotransservice_routemanager
 
 
+
 import android.content.Context
 import android.os.Build
 import android.transition.ChangeBounds
@@ -8,7 +9,10 @@ import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider.PADDED_BOUNDS
+import android.view.animation.Animation
 import android.view.animation.AnticipateOvershootInterpolator
+import android.view.animation.Transformation
 import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.RequiresApi
@@ -19,7 +23,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.Point
-import com.example.ekotransservice_routemanager.DataClasses.PointStatuses
 
 
 class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapter.PointViewHolder>() {
@@ -38,7 +41,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     var pointList : MutableList<Point>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointViewHolder {
-        var itemView : View = mLayout.inflate(R.layout.recycleview_item_closed,parent,false)
+        val itemView : View = mLayout.inflate(R.layout.recycleview_item,parent,false)
         return PointViewHolder(itemView)
     }
 
@@ -56,40 +59,30 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: PointViewHolder, position: Int) = if (pointList != null){
-        var point : Point = pointList!![position]
+        val point : Point = pointList!![position]
         holder.pointItemView.text = point.getName()
         holder.contCountType.text = point.getContType()
         holder.contCountView.text = point.getContCount().toString()
-        holder.buttonsView.layoutParams.height = 0
-        when (point.getStatus()){
+        holder.itemView.clipToOutline = true
+
+        holder.itemView.outlineProvider = PADDED_BOUNDS
+        /*when (point.getStatus()){
             PointStatuses.CANNOT_DONE -> holder.itemView.setBackgroundResource(R.drawable.point_back_cannot_done)
             PointStatuses.DONE        -> holder.itemView.setBackgroundResource(R.drawable.point_back_done)
             else                      -> holder.itemView.setBackgroundResource(R.drawable.point_back)
-        }
-        holder.pointPosition = position
+        }*/
 
+        holder.pointPosition = position
+        bind(holder)
         //при нажатии определяется пока только точка
 
         holder.itemView.setOnClickListener {
-            if(it.isActivated){
-                hideButtons(holder)
-                it.isActivated = !it.isActivated
-                point.setDone(false)
-                it!!.animate().start()
-
-            }else {
-
-                it.isActivated = !it.isActivated
-                pointList!![holder.pointPosition].setDone(true)
-                showButtons(holder)
-                it!!.animate().start()
-            }
-
-
+            point.setDone(!point.getDone())
+            bind(holder)
         }
         holder.itemView.findViewById<Button>(R.id.doneButton).setOnClickListener {
             if (point.getDone()) {
-                var bundle = bundleOf("point" to point, "canDone" to true)
+                val bundle = bundleOf("point" to point, "canDone" to true)
                 holder.itemView.findNavController()
                     .navigate(R.id.action_route_list_to_point_action, bundle)
             }
@@ -97,7 +90,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
 
         holder.itemView.findViewById<Button>(R.id.cannotDoneButton).setOnClickListener {
             if(point.getDone()) {
-                var bundle = bundleOf("point" to point, "canDone" to false)
+                val bundle = bundleOf("point" to point, "canDone" to false)
                 holder.itemView.findNavController()
                     .navigate(R.id.action_route_list_to_point_action, bundle)
             }
@@ -105,6 +98,53 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
 
     }else{
         holder.pointItemView.text = "no points"
+    }
+
+    private fun bind (holder: PointViewHolder) = if(pointList!![holder.pointPosition].getDone()) {
+        holder.buttonsView.measure(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
+        val actualHeight = holder.buttonsView.measuredHeight
+        holder.buttonsView.layoutParams.height = 1
+        holder.buttonsView.visibility = View.VISIBLE
+        class animateViewOpen ():Animation(){
+            override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                super.applyTransformation(interpolatedTime, t)
+                //
+
+                if(interpolatedTime == 1.0F) {
+                    holder.buttonsView.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }else if(interpolatedTime > 0.0F){
+                    holder.buttonsView.layoutParams.height = (actualHeight * interpolatedTime).toInt()
+                }
+
+                holder.buttonsView.requestLayout()
+
+            }
+
+            override fun willChangeBounds(): Boolean {
+                return true
+            }
+        }
+
+        val animationOpen = animateViewOpen()
+        animationOpen.duration = 100//(actualHeight / holder.buttonsView.context.resources.displayMetrics.density).toLong()
+        holder.itemView.startAnimation(animationOpen)
+    }else{
+
+        class animateViewClose ():Animation(){
+            override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                super.applyTransformation(interpolatedTime, t)
+
+                if(interpolatedTime == 1.0F) {
+                    holder.buttonsView.visibility = View.GONE
+                }
+                holder.buttonsView.layoutParams.height = -1 * ViewGroup.LayoutParams.WRAP_CONTENT
+                holder.buttonsView.requestLayout()
+
+            }
+        }
+        val animationClose = animateViewClose()
+        animationClose.duration = 100
+        holder.buttonsView.startAnimation(animationClose)
     }
 
     private fun showButtons (holder : PointViewHolder){
@@ -130,4 +170,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         TransitionManager.beginDelayedTransition(holder.itemView as ViewGroup?,transition)
         constraintSet.applyTo(holder.itemView as ConstraintLayout?)
     }
+
+
+
 }

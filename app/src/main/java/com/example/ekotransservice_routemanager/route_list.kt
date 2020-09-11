@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import kotlinx.android.synthetic.main.fragment_route_list.*
 import com.example.ekotransservice_routemanager.DataClasses.Point as Point
 
@@ -39,13 +40,14 @@ class route_list : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
 
-        var view : View = inflater.inflate(R.layout.fragment_route_list, container, false)
-        var recycleView : RecyclerView = view.findViewById(R.id.recyclerview)
+        val view : View = inflater.inflate(R.layout.fragment_route_list, container, false)
+        val recycleView : RecyclerView = view.findViewById(R.id.recyclerview)
+        (recycleView.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = true
         val adapter = PointListAdapter(view.context)
         recycleView.adapter = adapter
         recycleView.layoutManager = LinearLayoutManager(view.context)
         mViewList = ViewModelProvider(this.requireActivity(),ViewPointList.ViewPointsFactory(this.requireActivity().application)).get(ViewPointList::class.java)
-        var observer = Observer<MutableList<Point>> {
+        val observer = Observer<MutableList<Point>> {
                 (pointList) -> (recycleView.adapter as PointListAdapter).setList(mViewList!!.pointsList)
         }
         mViewList!!.getList().observe(this.requireActivity(), observer)

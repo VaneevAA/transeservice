@@ -21,7 +21,11 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
 
     }
 
-    fun getPoint() : Point? {
-        return pointAction.value
+    fun getPoint() : MutableLiveData<Point> {
+        return pointAction
+    }
+
+    fun setPoint(point:Point){
+        pointAction.value = point
     }
 }
