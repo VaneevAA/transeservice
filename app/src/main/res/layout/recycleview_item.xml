@@ -4,14 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/point_back"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingLeft="8dp"
+    android:elevation="5dp"
+    android:paddingRight="8dp"
+    >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/pointInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/point_back"
+        android:background="#FFFFFF"
         android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@+id/laynerButtons">
 
@@ -46,9 +50,8 @@
                 android:id="@+id/contCountTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="244dp"
-                android:paddingStart="@android:dimen/app_icon_size"
-                app:layout_constraintStart_toStartOf="@+id/contTypeTextView"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
                 tools:ignore="MissingConstraints"
                 tools:layout_editor_absoluteY="0dp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -57,37 +60,59 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/laynerButtons"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:orientation="horizontal"
-        android:paddingBottom="8dp"
+        android:layout_height="0dp"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        android:padding="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 
-        <Button
-            android:id="@+id/doneButton"
-            style="@style/Widget.AppCompat.Button"
+        <TextView
+            android:id="@+id/ifCanPointDoneText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:background="#8BC34A"
-            android:gravity="start"
-            android:text="@string/doneText"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:ignore="MissingConstraints" />
+            android:text="@string/ifPointCanDone"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="@+id/constraintLayout"
+            app:layout_constraintStart_toStartOf="@+id/constraintLayout"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/cannotDoneButton"
-            style="@style/Widget.AppCompat.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="32dp"
-            android:background="#F44336"
-            android:gravity="end"
-            android:text="@string/cannotDoneText"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:ignore="MissingConstraints,NotSibling" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ifCanPointDoneText">
+
+            <Button
+                android:id="@+id/doneButton"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:background="#8BC34A"
+                android:gravity="center"
+                android:text="@string/doneText"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:ignore="MissingConstraints" />
+
+            <Button
+                android:id="@+id/cannotDoneButton"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:background="#F44336"
+                android:gravity="center"
+                android:text="@string/cannotDoneText"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:ignore="MissingConstraints,NotSibling" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
