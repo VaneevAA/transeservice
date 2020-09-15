@@ -3,6 +3,13 @@
     <string name="doneText">ДА</string>
     <string name="cannotDoneText">НЕТ</string>
     <string name="ifPointCanDone">Можно ли выполнить?</string>
+    <string name="pointsAtAll">Точек</string>
+    <string name="atAll">Всего</string>
+    <string name="done">Выполнено</string>
+    <string name="photos">Фото</string>
+    <string name="vehicle">"Транспортное \n средство"</string>
+    <string name="closeRoute">Закрыть маршрут</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="addupdateroute">addUpdateRoute</string>
 </resources>

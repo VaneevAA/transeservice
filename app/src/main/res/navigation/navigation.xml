@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation"
-    app:startDestination="@id/route_list">
+    app:startDestination="@id/start_frame_screen">
 
     <fragment
         android:id="@+id/route_list"
@@ -31,5 +31,14 @@
             android:name="canDone"
             app:argType="boolean"
             android:defaultValue="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/start_frame_screen"
+        android:name="com.example.ekotransservice_routemanager.start_frame_screen"
+        android:label="start_frame_screen_fragment"
+        tools:layout="@layout/start_frame_screen_fragment" >
+        <action
+            android:id="@+id/action_start_frame_screen_to_route_list"
+            app:destination="@id/route_list" />
     </fragment>
 </navigation>
