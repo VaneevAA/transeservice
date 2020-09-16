@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <androidx.preference.PreferenceCategory android:title="@string/connectionPref">
+
+        <androidx.preference.EditTextPreference
+            android:key="URL_NAME"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/URLName_Description"
+            android:title="@string/serverAddress"
+            app:defaultValue="192.168.106.248" />
+        <androidx.preference.EditTextPreference
+            android:defaultValue="300"
+            android:key="URL_PORT"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/UrlPort_Description"
+            android:title="@string/PortText"
+            android:inputType="number"/>
+        <androidx.preference.EditTextPreference
+            android:defaultValue="Default value"
+            android:key="URL_AUTHPASS"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/UrlAuthPass_Description"
+            android:title="@string/passText"
+            android:inputType="textPassword"/>
+    </androidx.preference.PreferenceCategory>
+    <androidx.preference.PreferenceCategory android:title="@string/commonPref">
+        <androidx.preference.EditTextPreference
+            android:defaultValue="Default value"
+            android:key="ROUTE"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/routePref_Description"
+            android:title="@string/routePref" />
+    </androidx.preference.PreferenceCategory>
+</androidx.preference.PreferenceScreen>
