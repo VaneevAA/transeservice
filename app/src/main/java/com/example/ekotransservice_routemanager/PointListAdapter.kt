@@ -60,7 +60,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: PointViewHolder, position: Int) = if (pointList != null){
         val point : Point = pointList!![position]
-        holder.pointItemView.text = point.getName()
+        holder.pointItemView.text = point.getAddressName()
         holder.contCountType.text = point.getContType()
         holder.contCountView.text = point.getContCount().toString()
         holder.itemView.clipToOutline = true
