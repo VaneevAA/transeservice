@@ -9,6 +9,7 @@
     <string name="photos">Фото</string>
     <string name="vehicle">"Транспортное \n средство"</string>
     <string name="closeRoute">Закрыть маршрут</string>
+    <string name="openClosePicture">Открыть/Закрыть</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="addupdateroute">addUpdateRoute</string>
