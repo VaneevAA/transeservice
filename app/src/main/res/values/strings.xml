@@ -23,4 +23,6 @@
     <string name="serverAddress">Имя/адрес сервера</string>
     <string name="PortText">Порт</string>
     <string name="passText">Пароль</string>
+    <string name="regionTitle">Регион</string>
+    <string name="vehicleNumberTitle">Номер ТС</string>
 </resources>
