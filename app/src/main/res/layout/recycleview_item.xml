@@ -5,17 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="8dp"
-    android:paddingLeft="8dp"
+    android:background="@drawable/point_back"
     android:elevation="5dp"
-    android:paddingRight="8dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:padding="5dp"
     >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/pointInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
         android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@+id/laynerButtons">
 
@@ -61,7 +62,6 @@
         android:id="@+id/laynerButtons"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#FFFFFF"
         android:orientation="vertical"
         android:padding="5dp"
         app:layout_constraintBottom_toBottomOf="parent"

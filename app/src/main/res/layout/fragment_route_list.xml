@@ -28,7 +28,10 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints"
         tools:listitem="@layout/recycleview_item"
-        android:scrollbars="vertical"/>
+        android:scrollbars="vertical"
+        android:paddingVertical="5dp"
+
+        android:clipToPadding="false"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

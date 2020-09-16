@@ -65,13 +65,6 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.contCountView.text = point.getContCount().toString()
         holder.itemView.clipToOutline = true
 
-        holder.itemView.outlineProvider = PADDED_BOUNDS
-        /*when (point.getStatus()){
-            PointStatuses.CANNOT_DONE -> holder.itemView.setBackgroundResource(R.drawable.point_back_cannot_done)
-            PointStatuses.DONE        -> holder.itemView.setBackgroundResource(R.drawable.point_back_done)
-            else                      -> holder.itemView.setBackgroundResource(R.drawable.point_back)
-        }*/
-
         holder.pointPosition = position
         bind(holder)
         //при нажатии определяется пока только точка
