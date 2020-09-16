@@ -14,19 +14,18 @@ import androidx.core.view.children
 class AnimateView (var view : View, var context: Context){
 
     fun hideHeight (){
-        val set = ConstraintSet()
-        set.clone(view as ConstraintLayout)
-        set.connect(view.id,ConstraintSet.TOP,ConstraintSet.PARENT_ID,ConstraintSet.TOP)
-        for (child in (view as ConstraintLayout).children){
-            set.constrainHeight(child.id,0)
-            set.setVisibility(child.id,View.GONE)
-        }
+        if(view is ConstraintLayout) {
+            val set = ConstraintSet()
+            set.clone(view as ConstraintLayout)
+            set.connect(view.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+            setHeightAndVisibility(set,view as ConstraintLayout,0,View.GONE)
 
-        //
-        val autoTransition = AutoTransition()
-        autoTransition.duration = 300;
-        TransitionManager.beginDelayedTransition(view as ConstraintLayout,autoTransition)
-        set.applyTo(view as ConstraintLayout)
+            //
+            val autoTransition = AutoTransition()
+            autoTransition.duration = 300;
+            TransitionManager.beginDelayedTransition(view as ConstraintLayout, autoTransition)
+            set.applyTo(view as ConstraintLayout)
+        }
         /*val hide = AnimationUtils.loadAnimation(context,R.anim.hide_height)
         view.startAnimation(hide)
         hide.setAnimationListener(object  : Animation.AnimationListener{
@@ -46,32 +45,43 @@ class AnimateView (var view : View, var context: Context){
     }
 
     fun showHeight(){
-        /*val show = AnimationUtils.loadAnimation(context,R.anim.hide_height)
-        view.startAnimation(show)
-        view.visibility = ViewGroup.VISIBLE*/
 
-        val set = ConstraintSet()
-        set.clone(view as ConstraintLayout)
+        if(view is ConstraintLayout) {
+            val set = ConstraintSet()
+            set.clone(view as ConstraintLayout)
 
-        view.visibility = ViewGroup.VISIBLE
-        for (child in (view as ConstraintLayout).children){
-            set.constrainHeight(child.id,ConstraintSet.WRAP_CONTENT)
-            set.setVisibility(child.id,View.VISIBLE)
-        }
-        val autoTransition = AutoTransition()
-        autoTransition.duration = 300;
-        TransitionManager.beginDelayedTransition(view as ConstraintLayout,autoTransition)
-        set.applyTo(view as ConstraintLayout)
+            view.visibility = ViewGroup.VISIBLE
+            setHeightAndVisibility(set,view as ConstraintLayout,ConstraintSet.WRAP_CONTENT,View.VISIBLE)
 
+            val autoTransition = AutoTransition()
+            autoTransition.duration = 300;
+            TransitionManager.beginDelayedTransition(view as ConstraintLayout, autoTransition)
+            set.applyTo(view as ConstraintLayout)
+        }/*else{
+            val show = AnimationUtils.loadAnimation(context,R.anim.hide_height)
+            view.startAnimation(show)
+            view.visibility = ViewGroup.VISIBLE
+        }*/
     }
 
     fun rotate (){
         val rotate = AnimationUtils.loadAnimation(this.context,R.anim.routate_pict)
-        view.startAnimation(rotate) 
+        view.startAnimation(rotate)
     }
 
     fun rotateBack (){
         val rotate = AnimationUtils.loadAnimation(this.context,R.anim.rotate_pict_back)
         view.startAnimation(rotate)
+    }
+
+    fun setHeightAndVisibility(set:ConstraintSet,changeView: ConstraintLayout,height:Int,visibility:Int){
+        for (child in changeView.children){
+            if(child is ConstraintLayout ){
+                setHeightAndVisibility(set,child,height,visibility)
+            }else{
+                set.constrainHeight(child.id,height)
+                set.setVisibility(child.id,visibility)
+            }
+        }
     }
 }
