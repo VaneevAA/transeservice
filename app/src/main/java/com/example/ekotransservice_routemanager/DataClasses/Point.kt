@@ -1,25 +1,58 @@
 package com.example.ekotransservice_routemanager.DataClasses
 
 
-import android.os.Parcel
-import android.os.Parcelable
+import android.content.ContentValues.TAG
+import android.nfc.Tag
+import android.util.Log
+import androidx.annotation.NonNull
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.javaField
 
-class Point  constructor(name : String,lon : Double,
-                               lan : Double, done : Boolean,
-                               contCount : Int, contType : String) : Serializable{
-    private val name : String = name;
+@Entity(tableName = "pointList_table")
+class Point : Serializable{
+    @PrimaryKey
+    @NonNull
+    private var lineUID: String         = ""
+
+    private var docUID: String          = ""
+    private var dateStart: Date?        = null
+    private var dateEnd: Date?          = null
+    private var driverName:String       = ""
+
+    private var addressUID : String     = ""
+    private var addressName: String     = ""
+    private var addressLon: Double      = 0.0
+    private var addressLat: Double      = 0.0
+
+    private var containerUID : String   = ""
+    private var containerName: String   = ""
+    private var containerSize: Double   = 0.0
+
+    private var agentUID : String   = ""
+    private var agentName: String   = ""
+
+    private var countPlan: Int      = 0
+    private var countFact: Int      = 0
+
+
+    /* private val name : String = name;
     private val lon : Double = lon;
-    private val lan : Double = lan;
-    private var done : Boolean = false;
-    private val contCount : Int = contCount;
-    private val contType : String = contType; //TODO: поменять на какой-то ограниченный тип
-    private val pointActionsArray: ArrayList<PointActoins> = ArrayList()
-    private val pointActionsCancelArray : ArrayList<PointActoins> = ArrayList()
-    private val status : PointStatuses = PointStatuses.NOT_VISITED
+    private val lan : Double = lan;*/
+    private var done : Boolean = false
+  /*  private val contCount : Int = contCount;
+    private val contType : String = contType; //TODO: поменять на какой-то ограниченный тип*/
 
+    private var pointActionsArray: ArrayList<PointActoins> = ArrayList()
+    private var pointActionsCancelArray : ArrayList<PointActoins> = ArrayList()
+    private var status : PointStatuses = PointStatuses.NOT_VISITED
 
 
     init {
@@ -30,50 +63,110 @@ class Point  constructor(name : String,lon : Double,
         pointActionsCancelArray.add(PointActoins.TAKE_PHOTO_BEFORE)
     }
 
-    override fun toString(): String {
-        return "$name, $contCount контейнеров типа $contType"
+    constructor(){
+
+    }
+    // Конструктор на основании объекта JSON
+    constructor(properties: JSONObject) {
+        fillFromJSONObject(properties)
     }
 
-    public fun getName () : String{
-        return this.name
+    // Конструктор на основании строки JSON
+    @Throws(JSONException::class)
+    constructor(jsonString: String) {
+        val jsonObject = JSONObject(jsonString)
+        fillFromJSONObject(jsonObject)
     }
 
-    public fun getLon () : Double{
-        return this.lon
-    }
-
-    public fun getLan () : Double{
-        return this.lan;
-    }
-
-    public fun getDone (): Boolean{
-        return this.done
-    }
-
-    public fun setDone (done : Boolean){
+    constructor(
+        name: String, lon: Double,
+        lat: Double, done: Boolean,
+        contCount: Int, contType: String
+    ){
+        this.addressName = name
+        this.containerName = contType
+        this.addressLat = lat
+        this.addressLon = lon
         this.done = done
+        this.countPlan = contCount
     }
+
+    // Заполняет объект данными переданными JSON
+    private fun fillFromJSONObject(properties: JSONObject) {
+       /*val fields = Point::class.memberProperties
+        for ( f in fields){
+            f.name
+        }*/
+        try {
+            this.addressName = properties.getString("addressName").trim { it <= ' ' }
+            this.addressUID = properties.getString("addressUID").trim { it <= ' ' }
+            this.docUID = properties.getString("docUID").trim { it <= ' ' }
+            this.lineUID = properties.getString("lineUID").trim { it <= ' ' }
+            this.containerName = properties.getString("containerName").trim { it <= ' ' }
+            this.containerUID = properties.getString("containerUID").trim { it <= ' ' }
+            this.containerSize = properties.getDouble("containerSize")
+            this.countPlan = properties.getInt("countPlan")
+
+        } catch (e: Exception) {
+            //TODO error parsing JSON
+        }
+    }
+
+    override fun toString(): String {
+        return "$addressName, $countPlan контейнеров типа $containerName"
+    }
+
+    fun getAddressName() : String { return this.addressName }
+    fun getAddressLon() : Double { return this.addressLon }
+    fun getAddressLat() : Double { return this.addressLat; }
+    fun getAddressUID() : String { return this.addressUID }
+    fun getLineUID() : String { return this.lineUID}
+    fun getDocUID() : String { return this.docUID}
+    fun getDateStart() : Date? { return this.dateStart}
+    fun getDateEnd() : Date? { return this.dateEnd}
+    fun getDriverName() : String { return this.driverName}
+    fun getContainerUID() : String { return this.containerUID}
+    fun getContainerName() : String { return this.containerName}
+    fun getContainerSize() :Double { return this.containerSize}
+    fun getAgentUID() : String { return this.agentUID}
+    fun getAgentName() : String { return this.agentName}
+    fun getDone (): Boolean { return this.done }
+    fun getCountPlan (): Int { return this.countPlan }
+    fun getCountFact (): Int { return this.countFact }
+    fun getStatus():PointStatuses{ return this.status }
+    fun getPointActionsArray(): ArrayList<PointActoins>{ return this.pointActionsArray }
+    fun getPointActionsCancelArray() : ArrayList<PointActoins>{ return this.pointActionsCancelArray }
+
+    fun setAddressName(addressName: String) { this.addressName = addressName}
+    fun setAddressLon(addressLon: Double) { this.addressLon = addressLon}
+    fun setAddressLat(addressLat: Double) { this.addressLat = addressLat}
+    fun setAddressUID(addressUID: String) { this.addressUID = addressUID}
+    fun setLineUID(lineUID: String) { this.lineUID = lineUID}
+    fun setDocUID(docUID: String) { this.docUID = docUID}
+    fun setDateStart(dateStart: Date?) { this.dateStart = dateStart}
+    fun setDateEnd(dateEnd: Date?) { this.dateEnd = dateEnd}
+    fun setDriverName(driverName: String) { this.driverName = driverName}
+    fun setContainerUID(containerUID: String) { this.containerUID = containerUID}
+    fun setContainerName(containerName: String) { this.containerName = containerName}
+    fun setContainerSize(containerSize: Double) { this.containerSize = containerSize}
+    fun setAgentUID(agentUID: String) { this.agentUID = agentUID}
+    fun setAgentName(agentName: String) { this.agentName = agentName}
+
+    fun setCountPlan(countPlan: Int) { this.countPlan = countPlan}
+    fun setCountFact(countFact: Int) { this.countFact = countFact}
+
+    fun setPointActionsArray(pointActionsArray: ArrayList<PointActoins>) { this.pointActionsArray = this.pointActionsArray}
+    fun setPointActionsCancelArray(pointActionsCancelArray: ArrayList<PointActoins>) { this.pointActionsCancelArray = pointActionsCancelArray}
+    fun setStatus(status: PointStatuses) { this.status = status}
+    fun setDone(done: Boolean){ this.done = done }
 
     public fun getContCount (): Int{
-        return this.contCount
+        return this.countPlan
     }
 
     public fun getContType (): String{
-        return this.contType
+        return this.containerName
     }
-
-    fun getStatus():PointStatuses{
-        return this.status
-    }
-
-    fun getActions():ArrayList<PointActoins>{
-        return this.pointActionsArray
-    }
-
-    fun getCancelActions() : ArrayList<PointActoins>{
-        return this.pointActionsCancelArray
-    }
-
 
 }
 
