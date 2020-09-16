@@ -67,7 +67,7 @@ class AnimateView (var view : View, var context: Context){
 
     fun rotate (){
         val rotate = AnimationUtils.loadAnimation(this.context,R.anim.routate_pict)
-        view.startAnimation(rotate)
+        view.startAnimation(rotate) 
     }
 
     fun rotateBack (){
