@@ -94,7 +94,9 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     }
 
     private fun bind (holder: PointViewHolder) = if(pointList!![holder.pointPosition].getDone()) {
-        holder.buttonsView.measure(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
+        val animateView = AnimateView(holder.buttonsView,holder.itemView.context)
+        animateView.showHeight()
+        /*holder.buttonsView.measure(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
         val actualHeight = holder.buttonsView.measuredHeight
         holder.buttonsView.layoutParams.height = 1
         holder.buttonsView.visibility = View.VISIBLE
@@ -120,10 +122,11 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
 
         val animationOpen = animateViewOpen()
         animationOpen.duration = 100//(actualHeight / holder.buttonsView.context.resources.displayMetrics.density).toLong()
-        holder.itemView.startAnimation(animationOpen)
+        holder.itemView.startAnimation(animationOpen)*/
     }else{
-
-        class animateViewClose ():Animation(){
+        val animateView = AnimateView(holder.buttonsView,holder.itemView.context)
+        animateView.hideHeight()
+        /*class animateViewClose ():Animation(){
             override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
                 super.applyTransformation(interpolatedTime, t)
 
@@ -137,7 +140,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         }
         val animationClose = animateViewClose()
         animationClose.duration = 100
-        holder.buttonsView.startAnimation(animationClose)
+        holder.buttonsView.startAnimation(animationClose)*/
     }
 
     private fun showButtons (holder : PointViewHolder){
