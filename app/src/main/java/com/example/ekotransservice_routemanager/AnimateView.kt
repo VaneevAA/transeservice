@@ -74,14 +74,14 @@ class AnimateView (var view : View, var context: Context){
         view.startAnimation(rotate)
     }
 
-    fun setHeightAndVisibility(set:ConstraintSet,changeView: ConstraintLayout,height:Int,visibility:Int){
+    private fun setHeightAndVisibility(set:ConstraintSet, changeView: ConstraintLayout, height:Int, visibility:Int){
         for (child in changeView.children){
             if(child is ConstraintLayout ){
                 setHeightAndVisibility(set,child,height,visibility)
-            }else{
-                set.constrainHeight(child.id,height)
-                set.setVisibility(child.id,visibility)
             }
+            set.constrainHeight(child.id,height)
+            set.setVisibility(child.id,visibility)
+
         }
     }
 }
