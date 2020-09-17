@@ -30,13 +30,13 @@ class ViewPointList(application: Application):AndroidViewModel(application) {
     private suspend fun loadData() {
         pointsList.value?.add(Point("test point 1",65.77777,58.88888,false,1,"контейнер 1.1м3"))
         pointsList.value?.add(Point("test point 2",65.77777,58.88888,false,2,"пакет 0.1м3"))
-        val trackList = viewModelScope.async {routeRepository.getPointList(true)}
+        /*val trackList = viewModelScope.async {routeRepository.getPointList(true)}
         val result = trackList.await()
         if (result != null){
             for (point: Point in result){
                 pointsList.value?.add(point)
             }
-        }
+        }*/
             //pointsList = routeRepository.getPointList(true)
     }
 

@@ -35,7 +35,8 @@ class start_frame_screen : Fragment() {
             showHideCloseRoute(mainView)
         }
 
-        showHideCloseRoute(mainView)
+        val animateView = this.context?.let { it1 -> AnimateView(mainView.findViewById<View>(R.id.closeLayout), it1,false) }
+        animateView!!.hideHeight()
         return mainView
     }
 
@@ -48,10 +49,10 @@ class start_frame_screen : Fragment() {
     fun showHideCloseRoute(mainView : View){
         val toCloseView = mainView.findViewById<View>(R.id.closeLayout)
         if(!closedRoute){
-            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1) }
+            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1,true) }
             animateView!!.hideHeight()
         }else{
-            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1) }
+            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1,true) }
             animateView!!.showHeight()
         }
 
@@ -59,10 +60,10 @@ class start_frame_screen : Fragment() {
         val imageRoutate = mainView.findViewById<View>(R.id.imageOpenCloseRoute)
 
         if(!closedRoute){
-            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1) }
+            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1,true) }
             animateView!!.rotate()
         }else{
-            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1) }
+            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1,true) }
             animateView!!.rotateBack()
         }
 

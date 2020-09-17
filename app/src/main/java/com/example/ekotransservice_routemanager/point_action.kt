@@ -6,10 +6,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.children
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.DataClasses.PointActoins
 import java.io.Serializable
 
 // TODO: Rename parameter arguments, choose names that match
@@ -40,6 +44,41 @@ class point_action : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        viewPointModel = activity?.application?.let { ViewPointAction(it,point!!) }
+        val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
+
+        val addressText = mainFragment.findViewById<TextView>(R.id.pointAdress)
+        addressText.text = viewPointModel!!.getPoint().value!!.getAddressName()
+
+        val agentText = mainFragment.findViewById<TextView>(R.id.agentName)
+        agentText.text = viewPointModel!!.getPoint().value!!.getAgentName()
+
+        val contNameText = mainFragment.findViewById<TextView>(R.id.containerName)
+        contNameText.text = viewPointModel!!.getPoint().value!!.getContainerName()
+
+        val contCountText = mainFragment.findViewById<TextView>(R.id.containerCount)
+        contCountText.text = viewPointModel!!.getPoint().value!!.getContCount().toString()
+
+        var listOfActions: ArrayList<PointActoins> = if(canDone){
+            viewPointModel!!.getPoint().value!!.getPointActionsArray()
+        }else{
+            viewPointModel!!.getPoint().value!!.getPointActionsCancelArray()
+        }
+
+        for(child in (mainFragment.findViewById<View>(R.id.buttonsToDo) as ConstraintLayout).children){
+            child.visibility = View.GONE
+        }
+
+        for(action in listOfActions){
+            when (action){
+                PointActoins.TAKE_PHOTO_BEFORE
+                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoBefore).visibility = View.VISIBLE
+                PointActoins.TAKE_PHOTO_AFTER
+                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoAfter).visibility = View.VISIBLE
+                PointActoins.SET_VOLUME
+                -> mainFragment.findViewById<View>(R.id.layoutSetCountFact).visibility = View.VISIBLE
+            }
+        }
         // Inflate the layout for this fragment
        /* val viewPointModel: ViewPointAction = ViewModelProvider(this.requireActivity(),
             ViewPointAction.ViewPointsFactory(this.requireActivity().application,point!!))
@@ -48,7 +87,7 @@ class point_action : Fragment() {
                 var point : Point = it!!.value!!
         }
         viewPointModel.getPoint().observe(this.requireActivity(),observer)*/
-        return inflater.inflate(R.layout.fragment_point_action, container, false)
+        return mainFragment
     }
 
     companion object {
