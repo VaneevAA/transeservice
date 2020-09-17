@@ -44,8 +44,39 @@ class point_action : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        viewPointModel = activity?.application?.let { ViewPointAction(it,point!!) }
+
         val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
+        fillFragment(mainFragment)
+
+        // Inflate the layout for this fragment
+
+        viewPointModel!!.getPoint().observe(this.viewLifecycleOwner, Observer {
+            viewPointModel!!.setPoint(it!!)
+            fillFragment(mainFragment)
+
+        })
+        return mainFragment
+    }
+
+    private fun showButtons(mainFragment:View, listOfActions:ArrayList<PointActoins>){
+        for(child in (mainFragment.findViewById<View>(R.id.buttonsToDo) as ConstraintLayout).children){
+            child.visibility = View.GONE
+        }
+
+        for(action in listOfActions){
+            when (action){
+                PointActoins.TAKE_PHOTO_BEFORE
+                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoBefore).visibility = View.VISIBLE
+                PointActoins.TAKE_PHOTO_AFTER
+                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoAfter).visibility = View.VISIBLE
+                PointActoins.SET_VOLUME
+                -> mainFragment.findViewById<View>(R.id.layoutSetCountFact).visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun fillFragment(mainFragment: View){
+        viewPointModel = activity?.application?.let { ViewPointAction(it,point!!) }
 
         val addressText = mainFragment.findViewById<TextView>(R.id.pointAdress)
         addressText.text = viewPointModel!!.getPoint().value!!.getAddressName()
@@ -65,31 +96,8 @@ class point_action : Fragment() {
             viewPointModel!!.getPoint().value!!.getPointActionsCancelArray()
         }
 
-        for(child in (mainFragment.findViewById<View>(R.id.buttonsToDo) as ConstraintLayout).children){
-            child.visibility = View.GONE
-        }
-
-        for(action in listOfActions){
-            when (action){
-                PointActoins.TAKE_PHOTO_BEFORE
-                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoBefore).visibility = View.VISIBLE
-                PointActoins.TAKE_PHOTO_AFTER
-                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoAfter).visibility = View.VISIBLE
-                PointActoins.SET_VOLUME
-                -> mainFragment.findViewById<View>(R.id.layoutSetCountFact).visibility = View.VISIBLE
-            }
-        }
-        // Inflate the layout for this fragment
-       /* val viewPointModel: ViewPointAction = ViewModelProvider(this.requireActivity(),
-            ViewPointAction.ViewPointsFactory(this.requireActivity().application,point!!))
-            .get(ViewPointAction::class.java)
-        var observer = Observer<MutableLiveData<Point>> {
-                var point : Point = it!!.value!!
-        }
-        viewPointModel.getPoint().observe(this.requireActivity(),observer)*/
-        return mainFragment
+        showButtons(mainFragment, listOfActions)
     }
-
     companion object {
         /**
          * Use this factory method to create a new instance of
