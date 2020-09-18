@@ -1,5 +1,10 @@
 package com.example.ekotransservice_routemanager
 
+import android.animation.Animator
+import android.animation.StateListAnimator
+import android.animation.ValueAnimator
+import android.graphics.drawable.Drawable
+import android.opengl.Visibility
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -35,7 +40,8 @@ class start_frame_screen : Fragment() {
             showVehiclePrefernces(mainView)
         }
 
-        showHideCloseRoute(mainView)
+        val animateView = this.context?.let { it1 -> AnimateView(mainView.findViewById<View>(R.id.closeLayout), it1,false) }
+        animateView!!.hideHeight()
         return mainView
     }
 
@@ -48,10 +54,10 @@ class start_frame_screen : Fragment() {
     fun showHideCloseRoute(mainView : View){
         val toCloseView = mainView.findViewById<View>(R.id.closeLayout)
         if(!closedRoute){
-            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1) }
+            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1,true) }
             animateView!!.hideHeight()
         }else{
-            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1) }
+            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1,true) }
             animateView!!.showHeight()
         }
 
@@ -59,10 +65,10 @@ class start_frame_screen : Fragment() {
         val imageRoutate = mainView.findViewById<View>(R.id.imageOpenCloseRoute)
 
         if(!closedRoute){
-            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1) }
+            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1,true) }
             animateView!!.rotate()
         }else{
-            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1) }
+            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1,true) }
             animateView!!.rotateBack()
         }
 

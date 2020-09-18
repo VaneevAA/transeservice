@@ -58,7 +58,8 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.itemView.clipToOutline = true
 
         holder.pointPosition = position
-        bind(holder)
+        val animateView = AnimateView(holder.buttonsView,holder.itemView.context,false)
+        animateView.hideHeight()
         //при нажатии определяется пока только точка
 
         holder.itemView.setOnClickListener {
@@ -86,10 +87,10 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     }
 
     private fun bind (holder: PointViewHolder) = if(pointList!![holder.pointPosition].getDone()) {
-        val animateView = AnimateView(holder.buttonsView,holder.itemView.context)
+        val animateView = AnimateView(holder.buttonsView,holder.itemView.context,true)
         animateView.showHeight()
     }else{
-        val animateView = AnimateView(holder.buttonsView,holder.itemView.context)
+        val animateView = AnimateView(holder.buttonsView,holder.itemView.context,true)
         animateView.hideHeight()
     }
 

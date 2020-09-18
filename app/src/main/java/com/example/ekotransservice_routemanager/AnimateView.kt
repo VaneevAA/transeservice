@@ -11,7 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
 
-class AnimateView (var view : View, var context: Context){
+class AnimateView (var view : View, var context : Context, val animate : Boolean){
 
     fun hideHeight (){
         if(view is ConstraintLayout) {
@@ -20,10 +20,11 @@ class AnimateView (var view : View, var context: Context){
             set.connect(view.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
             setHeightAndVisibility(set,view as ConstraintLayout,0,View.GONE)
 
-            //
-            val autoTransition = AutoTransition()
-            autoTransition.duration = 300;
-            TransitionManager.beginDelayedTransition(view as ConstraintLayout, autoTransition)
+            if(animate) {
+                val autoTransition = AutoTransition()
+                autoTransition.duration = 300;
+                TransitionManager.beginDelayedTransition(view as ConstraintLayout, autoTransition)
+            }
             set.applyTo(view as ConstraintLayout)
         }
         /*val hide = AnimationUtils.loadAnimation(context,R.anim.hide_height)
@@ -52,10 +53,11 @@ class AnimateView (var view : View, var context: Context){
 
             view.visibility = ViewGroup.VISIBLE
             setHeightAndVisibility(set,view as ConstraintLayout,ConstraintSet.WRAP_CONTENT,View.VISIBLE)
-
-            val autoTransition = AutoTransition()
-            autoTransition.duration = 300;
-            TransitionManager.beginDelayedTransition(view as ConstraintLayout, autoTransition)
+            if(animate) {
+                val autoTransition = AutoTransition()
+                autoTransition.duration = 300;
+                TransitionManager.beginDelayedTransition(view as ConstraintLayout, autoTransition)
+            }
             set.applyTo(view as ConstraintLayout)
         }/*else{
             val show = AnimationUtils.loadAnimation(context,R.anim.hide_height)
