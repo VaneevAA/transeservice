@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation"
-    app:startDestination="@id/route_list">
+    app:startDestination="@id/start_frame_screen">
 
     <fragment
         android:id="@+id/route_list"
@@ -40,5 +40,21 @@
         <action
             android:id="@+id/action_start_frame_screen_to_route_list"
             app:destination="@id/route_list" />
+        <action
+            android:id="@+id/action_start_frame_screen_to_settingFragment"
+            app:destination="@id/settingFragment" />
+        <action
+            android:id="@+id/action_start_frame_screen_to_vehicle_screen"
+            app:destination="@id/vehicle_screen" />
     </fragment>
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.example.ekotransservice_routemanager.SettingsFragment"
+        android:label="SettingFragment" >
+    </fragment>
+    <fragment
+        android:id="@+id/vehicle_screen"
+        android:name="com.example.ekotransservice_routemanager.vehicle_screen"
+        android:label="vehicle_screen" />
+
 </navigation>

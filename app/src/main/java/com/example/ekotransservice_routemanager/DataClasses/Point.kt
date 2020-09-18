@@ -116,6 +116,8 @@ class Point : Serializable{
         return "$addressName, $countPlan контейнеров типа $containerName"
     }
 
+    //region Получение свойств класса - обязательно для классов Room Entity, переименовывать нельзя, критично для Room
+
     fun getAddressName() : String { return this.addressName }
     fun getAddressLon() : Double { return this.addressLon }
     fun getAddressLat() : Double { return this.addressLat; }
@@ -137,6 +139,9 @@ class Point : Serializable{
     fun getPointActionsArray(): ArrayList<PointActoins>{ return this.pointActionsArray }
     fun getPointActionsCancelArray() : ArrayList<PointActoins>{ return this.pointActionsCancelArray }
 
+    //endregion
+
+    //region Установка свойств класса - обязательно для классов Room Entity, переименовывать нельзя, критично для Room
     fun setAddressName(addressName: String) { this.addressName = addressName}
     fun setAddressLon(addressLon: Double) { this.addressLon = addressLon}
     fun setAddressLat(addressLat: Double) { this.addressLat = addressLat}
@@ -159,6 +164,7 @@ class Point : Serializable{
     fun setPointActionsCancelArray(pointActionsCancelArray: ArrayList<PointActoins>) { this.pointActionsCancelArray = pointActionsCancelArray}
     fun setStatus(status: PointStatuses) { this.status = status}
     fun setDone(done: Boolean){ this.done = done }
+    //endregion
 
     public fun getContCount (): Int{
         return this.countPlan
