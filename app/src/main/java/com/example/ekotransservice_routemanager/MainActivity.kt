@@ -1,8 +1,10 @@
 package com.example.ekotransservice_routemanager
 
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import android.util.Log
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
@@ -12,13 +14,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
 
 
-class MainActivity : AppCompatActivity() {
 
+class MainActivity : AppCompatActivity() {
+    var mSwipeRefreshLayout : SwipeRefreshLayout? = null
     private var mViewList : ViewPointList? = null
 
    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        mSwipeRefreshLayout = findViewById<View>(R.id.thinking) as SwipeRefreshLayout
 
        val bottomNavigation: BottomNavigationView = bottom_menu
        val navHostFragment = supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
@@ -52,6 +56,7 @@ class MainActivity : AppCompatActivity() {
        })
 
 
+
         /*
         val recycleView : RecyclerView = this.findViewById(R.id.recyclerview)
         val adapter = PointListAdapter(this)
@@ -66,6 +71,7 @@ class MainActivity : AppCompatActivity() {
 
 
    }
+
 
 }
 

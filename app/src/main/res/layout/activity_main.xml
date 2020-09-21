@@ -6,14 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     android:orientation="vertical">
-
+  <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/thinking">
     <fragment
         android:id="@+id/my_nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="550dp"
         app:defaultNavHost="true"
-        app:navGraph="@navigation/navigation" />
+
+        app:navGraph="@navigation/navigation"/>
+    
+
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_menu"
@@ -25,5 +31,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/bottom_menu_navigation" />
 
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>
