@@ -1,13 +1,17 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import android.app.Application
+import android.app.Notification
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.Region
+import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import com.example.ekotransservice_routemanager.ErrorMessage
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -30,11 +34,14 @@ class RouteRepository constructor(application: Application) {
     private var db: RouteRoomDatabase? = null
     private var mRoutesDao: RouteDaoInterface? = null
     private var vehicle: Vehicle? = null
+    private var errorArrayList: ArrayList<ErrorMessage> = ArrayList()
 
    init {
        // инициальзация базы данных Room
        db = RouteRoomDatabase.getDatabase(application.applicationContext)
        mRoutesDao = db!!.routesDao()
+
+       // Получение текущих настроек
        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application.applicationContext)
        val urlName = sharedPreferences.getString("URL_NAME","") as String
        val urlPort = sharedPreferences.getString("URL_PORT","") as String
@@ -42,6 +49,7 @@ class RouteRepository constructor(application: Application) {
        val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
        vehicle = Vehicle(vehicleString)
 
+       // установка параметров подключения
        serverConnector.setConnectionParams(urlName,urlPort)
        serverConnector.setAuthPass(urlPass)
     }
@@ -52,36 +60,38 @@ class RouteRepository constructor(application: Application) {
         return tracklist.await()
     }
 
-    suspend fun getRegionList(): ArrayList<Region>? {
-        try {
-            val serverData = GlobalScope.async { serverConnector.getRegions() }
-            return serverData.await()
-        } catch (e:Exception) {
-            Log.d("ERROR","erorr $e")
-            return null
-        }
-
+    suspend fun getRegionList(): ArrayList<Region> {
+        val serverData = GlobalScope.async { serverConnector.getRegions() }
+        val downloadResult = serverData.await()
+        errorArrayList.union(downloadResult.log)
+        return downloadResult.data as ArrayList<Region>
     }
 
-    suspend fun getVehiclesList(region: Region): ArrayList<Vehicle>? {
-        try {
-            val serverData = GlobalScope.async { serverConnector.getVehicles(region.getUid()) }
-            return serverData.await()
-        } catch (e:Exception) {
-            Log.d("ERROR","erorr $e")
-            return null
-        }
+    suspend fun getVehiclesList(region: Region): ArrayList<Vehicle> {
+        val serverData = GlobalScope.async { serverConnector.getVehicles(region.getUid()) }
+        val downloadResult = serverData.await()
+        errorArrayList.union(downloadResult.log)
+        return downloadResult.data as ArrayList<Vehicle>
+    }
 
+    suspend fun getCurrentRoute(): Route?{
+        val resultList = mRoutesDao!!.getCurrentRoute()
+        if (resultList.size==0) {
+            return null
+        }else{
+            return resultList[0]
+        }
     }
 
     // Загрузка данных путевого листа с сервера и сохранение их в локальную базу Room
     private fun loadTaskFromServer(): Boolean {
         if (vehicle!=null) {
-            var postParam: JSONObject = JSONObject()
+            val postParam = JSONObject()
             postParam.put("dateTask", "2020-09-03 00:10:10")
             postParam.put("vehicle", vehicle!!.getName())
-            val trackList = serverConnector.getTrackList(postParam)
-            val result = saveTrackListIntoRoom(trackList)
+            val serverData = serverConnector.getTrackList(postParam)
+            errorArrayList.union(serverData.log)
+            val result = saveTrackListIntoRoom(serverData.data as ArrayList<Point>?)
             return result
         } else {
             return false
@@ -95,6 +105,7 @@ class RouteRepository constructor(application: Application) {
                 mRoutesDao!!.insertPointListWithReplace(trackList)
                 return true
             } catch (e: java.lang.Exception){
+                errorArrayList.add(ErrorMessage("Ошибка работы с локальной базой данных", "Ошибка записи данных",e))
                 return false
             }
         }
@@ -108,6 +119,7 @@ class RouteRepository constructor(application: Application) {
                 val data = mRoutesDao!!.getCurrentList()
                 return data
             } catch (e: Exception) {
+                errorArrayList.add(ErrorMessage("Ошибка работы с локальной базой данных", "Ошибка чтения данных",e))
                 return null
             }
         }else {
