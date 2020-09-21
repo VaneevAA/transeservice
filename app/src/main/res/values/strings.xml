@@ -30,6 +30,4 @@
     <string name="serverAddress">Имя/адрес сервера</string>
     <string name="PortText">Порт</string>
     <string name="passText">Пароль</string>
-    <string name="appwidget_text">EXAMPLE</string>
-    <string name="add_widget">Add widget</string>
 </resources>

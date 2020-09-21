@@ -80,6 +80,7 @@ dependencies {
 
     //Настройки
     implementation 'androidx.preference:preference:1.1.1'
+
 }
 repositories {
     jcenter()

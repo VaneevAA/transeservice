@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.DataClasses.Route
 
 @Dao
 interface RouteDaoInterface {
@@ -19,4 +20,7 @@ interface RouteDaoInterface {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPointListWithReplace(pointList: ArrayList<Point>)
+
+    @Query("SELECT * from currentRoute_table ") //ORDER BY addressName ASC")
+    fun getCurrentRoute(): MutableList<Route>
 }

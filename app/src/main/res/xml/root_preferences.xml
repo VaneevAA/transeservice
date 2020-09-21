@@ -10,23 +10,24 @@
             android:singleLine="true"
             android:summary="@string/URLName_Description"
             android:title="@string/serverAddress"
-            app:defaultValue="192.168.106.248" />
+            app:defaultValue="192.168.106.248"
+            app:useSimpleSummaryProvider="true" />
         <androidx.preference.EditTextPreference
             android:defaultValue="300"
+            android:inputType="number"
             android:key="URL_PORT"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="@string/UrlPort_Description"
             android:title="@string/PortText"
-            android:inputType="number"/>
+            app:useSimpleSummaryProvider="true"/>
         <androidx.preference.EditTextPreference
             android:defaultValue="Default value"
+            android:inputType="textPassword"
             android:key="URL_AUTHPASS"
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:summary="@string/UrlAuthPass_Description"
-            android:title="@string/passText"
-            android:inputType="textPassword"/>
+            android:title="@string/passText" />
     </androidx.preference.PreferenceCategory>
     <androidx.preference.PreferenceCategory android:title="@string/commonPref">
         <androidx.preference.EditTextPreference
@@ -35,6 +36,26 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:summary="@string/routePref_Description"
-            android:title="@string/routePref" />
+            android:title="@string/routePref"
+            app:useSimpleSummaryProvider="true"
+            app:isPreferenceVisible="false"/>
+        <androidx.preference.EditTextPreference
+            android:defaultValue="Default value"
+            android:key="REGION"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/regionTitle"
+            android:title="@string/regionTitle"
+            app:useSimpleSummaryProvider="true"
+            app:isPreferenceVisible="false"/>
+        <androidx.preference.EditTextPreference
+            android:defaultValue="Default value"
+            android:key="VEHICLE"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/vehicleNumberTitle"
+            android:title="@string/vehicleNumberTitle"
+            app:useSimpleSummaryProvider="true"
+            app:isPreferenceVisible="false"/>
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>

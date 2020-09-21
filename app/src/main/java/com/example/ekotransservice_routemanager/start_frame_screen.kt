@@ -11,10 +11,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.view.animation.RotateAnimation
-import androidx.core.animation.addListener
+import androidx.navigation.findNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
+import kotlinx.android.synthetic.main.start_frame_screen_fragment.view.*
 
 class start_frame_screen : Fragment() {
     var closedRoute : Boolean = false
@@ -30,9 +30,14 @@ class start_frame_screen : Fragment() {
     ): View? {
         val mainView = inflater.inflate(R.layout.start_frame_screen_fragment, container, false)
         val closeView : View = mainView.findViewById<View>(R.id.layoutToCloseRoute)
+        val vehicleView: View = mainView.findViewById(R.id.vehicleLayout)
 
         closeView.setOnClickListener {
             showHideCloseRoute(mainView)
+        }
+
+        vehicleView.setOnClickListener{
+            showVehiclePrefernces(mainView)
         }
 
         val animateView = this.context?.let { it1 -> AnimateView(mainView.findViewById<View>(R.id.closeLayout), it1,false) }
@@ -68,6 +73,10 @@ class start_frame_screen : Fragment() {
         }
 
         closedRoute = !closedRoute
+    }
+
+    private fun showVehiclePrefernces(mainView: View) {
+       mainView.findNavController().navigate(R.id.vehicle_screen)
     }
 
 }
