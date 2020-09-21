@@ -1,21 +1,26 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
+import android.util.Log
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.DataClasses.Region
+import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.*
+import java.lang.invoke.MethodType
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 import java.security.Key
 import java.util.*
+import kotlin.collections.ArrayList
 
-class RouteServerConnection constructor(urlName: String, urlPort: String, authPass: String){
-    private var urlName:String = urlName
-    private var urlPort:String = urlPort
-    private var authPass:String = encodeToken(authPass)!!
+class RouteServerConnection {
+    private var urlName:String = ""
+    private var urlPort:String = ""
+    private var authPass:String = ""
 
     fun setAuthPass(authPass: String) {
         this.authPass = encodeToken(authPass)!!
@@ -41,21 +46,19 @@ class RouteServerConnection constructor(urlName: String, urlPort: String, authPa
         this.urlPort = urlPort
     }
 
-    private fun getData(methodName: String): JSONArray? {
+    private fun getData(methodName: String, requestMethod:String,  postParam: JSONObject?): JSONArray? {
 
         val url = URL("http://$urlName:$urlPort/$methodName")
         val connector: HttpURLConnection = url.openConnection() as HttpURLConnection
         connector.setRequestProperty("Content-Type", "application/json")
         connector.setRequestProperty("Authorization", "Bearer $authPass")
-        connector.requestMethod = "POST"
+        connector.requestMethod = requestMethod
         connector.connectTimeout = 30000
-        // TODO Передача параметров
-        var postParam: JSONObject = JSONObject()
-        postParam.put("dateTask", "2020-09-03 00:10:10")
-        postParam.put("vehicle", "Р204ЕЕ72")
-        val wr = OutputStreamWriter(connector.getOutputStream())
-        wr.write(postParam.toString())
-        wr.flush()
+        if (requestMethod == "POST" && postParam!=null ){
+            val wr = OutputStreamWriter(connector.getOutputStream())
+            wr.write(postParam.toString())
+            wr.flush()
+        }
 
         return try {
             val code = connector.responseCode
@@ -81,7 +84,11 @@ class RouteServerConnection constructor(urlName: String, urlPort: String, authPa
             //TODO Требуется обработка Проблемя с сетью
             connector.disconnect()
             null
-        } finally {
+        } catch (e: java.lang.Exception) {
+            Log.d("connection error", "error: $e")
+           null
+        }
+        finally {
             connector.disconnect()
         }
     }
@@ -98,9 +105,12 @@ class RouteServerConnection constructor(urlName: String, urlPort: String, authPa
         return response.toString()
     }
 
-    fun getTrackList(): ArrayList<Point>? {
+    fun getTrackList(postParam: JSONObject?): ArrayList<Point>? {
         val methodName = "rpc/getTaskList"
-        val data = getData(methodName)
+        /*var postParam: JSONObject = JSONObject()
+        postParam.put("dateTask", "2020-09-03 00:10:10")
+        postParam.put("vehicle", "Р204ЕЕ72")*/
+        val data = getData(methodName,"POST",postParam)
         val pointArrayList: ArrayList<Point> = ArrayList<Point>()
         if (data!=null) {
             for (i in 0 until data.length()) {
@@ -112,6 +122,38 @@ class RouteServerConnection constructor(urlName: String, urlPort: String, authPa
             }
         }
         return pointArrayList
+    }
+
+    fun getRegions() : ArrayList<Region>? {
+        val methodName = "regions"
+        val data = getData(methodName,"GET", null)
+        val regionArrayList: ArrayList<Region> = ArrayList<Region>()
+        if (data!=null) {
+            for (i in 0 until data.length()) {
+                try {
+                    regionArrayList.add(Region(data.getJSONObject(i)))
+                } catch (e: java.lang.Exception) {
+                    return null
+                }
+            }
+        }
+        return regionArrayList
+    }
+
+    fun getVehicles(regionUID:String) : ArrayList<Vehicle>? {
+        val methodName = "vehicle?regionUID=eq.$regionUID"
+        val data = getData(methodName,"GET", null)
+        val dataArrayList: ArrayList<Vehicle> = ArrayList<Vehicle>()
+        if (data!=null) {
+            for (i in 0 until data.length()) {
+                try {
+                    dataArrayList.add(Vehicle(data.getJSONObject(i)))
+                } catch (e: java.lang.Exception) {
+                    return null
+                }
+            }
+        }
+        return dataArrayList
     }
 
 }
