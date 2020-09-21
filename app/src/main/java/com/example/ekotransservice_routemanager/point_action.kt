@@ -1,6 +1,8 @@
 package com.example.ekotransservice_routemanager
 
 import android.Manifest
+import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,6 +19,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -57,6 +60,7 @@ class point_action : Fragment() {
         }
     }
 
+    @SuppressLint("ObjectAnimatorBinding")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -87,6 +91,12 @@ class point_action : Fragment() {
             }else{
                 Toast.makeText(requireContext(),"Фото уже есть",Toast.LENGTH_LONG)
             }
+        }
+
+        mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
+            /*val progressBar = ((requireActivity() as MainActivity).getProgressBar())
+            val animator = ObjectAnimator.ofInt(progressBar as ProgressBar,"Await",1)
+            animator.start()*/
         }
 
 
