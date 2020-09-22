@@ -1,13 +1,11 @@
 package com.example.ekotransservice_routemanager
 
 
-import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import android.util.Log
-import androidx.navigation.Navigation
-import androidx.navigation.findNavController
+import android.view.View
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_main.*
