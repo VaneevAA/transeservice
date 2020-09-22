@@ -6,19 +6,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
-import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.Region
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
-import kotlinx.android.synthetic.main.fragment_vehicle_screen.*
 import java.lang.Exception
 
 class vehicle_screen : Fragment() {
@@ -55,7 +47,8 @@ class vehicle_screen : Fragment() {
         RegionName.setOnItemClickListener() { parent, _, position, id ->
             val selectedItem = parent.adapter.getItem(position) as Region?
             RegionName.setText(selectedItem?.toString())
-            savePrefernce("VEHICLE",selectedItem!!.toJSONString())
+            savePrefernce("REGION",selectedItem!!.toJSONString())
+            mViewVehicle!!.currentRegion = selectedItem
             if (selectedItem!=null){
                 val adapter = VehicleListAdapter(view.context,R.layout.regionlist_item, ArrayList<Vehicle>(),selectedItem)
                 val VehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
@@ -68,6 +61,7 @@ class vehicle_screen : Fragment() {
             val selectedItem = parent.adapter.getItem(position) as Vehicle?
             VehicleName.setText(selectedItem?.toString())
             savePrefernce("VEHICLE",selectedItem?.toJSONString())
+            mViewVehicle!!.currentVehicle = selectedItem
         }
         if (currentRegion!=null) {
             RegionName.setText(currentRegion.toString())
