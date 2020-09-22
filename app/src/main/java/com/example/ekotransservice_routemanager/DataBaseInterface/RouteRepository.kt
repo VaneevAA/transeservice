@@ -60,6 +60,8 @@ class RouteRepository constructor(application: Application) {
        serverConnector.setAuthPass(urlPass)
     }
 
+    // Загрузка списка точек
+    // reload - требуется загрузка с  Postgres
     suspend fun getPointList(reload: Boolean): MutableList<Point>? {
         if (reload) {
             val currentRoute = GlobalScope.async { getCurrentRoute() }
