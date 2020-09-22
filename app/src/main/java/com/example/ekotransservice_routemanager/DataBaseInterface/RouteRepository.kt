@@ -16,12 +16,18 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.json.JSONObject
+import java.lang.NumberFormatException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.Executors
 import javax.net.ssl.HttpsURLConnection
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.reflect.jvm.internal.pcollections.HashPMap
 
 class RouteRepository constructor(application: Application) {
 
@@ -54,10 +60,18 @@ class RouteRepository constructor(application: Application) {
        serverConnector.setAuthPass(urlPass)
     }
 
+    // Загрузка списка точек
+    // reload - требуется загрузка с  Postgres
     suspend fun getPointList(reload: Boolean): MutableList<Point>? {
-        val dataLoaded = GlobalScope.async { loadTaskFromServer() }
-        val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await()) }
-        return tracklist.await()
+        if (reload) {
+            val currentRoute = GlobalScope.async { getCurrentRoute() }
+            val dataLoaded = GlobalScope.async { loadTaskFromServer(currentRoute.await()) }
+            val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await()) }
+            return tracklist.await()
+        } else {
+            val tracklist = GlobalScope.async { loadTrackListFromRoom(true) }
+            return tracklist.await()
+        }
     }
 
     suspend fun getRegionList(): ArrayList<Region> {
@@ -84,14 +98,19 @@ class RouteRepository constructor(application: Application) {
     }
 
     // Загрузка данных путевого листа с сервера и сохранение их в локальную базу Room
-    private fun loadTaskFromServer(): Boolean {
-        if (vehicle!=null) {
+    private fun loadTaskFromServer(currentRoute: Route?): Boolean {
+        val vehicleNumber: String? = if (currentRoute != null ) {currentRoute.getVehicleNumber() } else {this.vehicle!!.getName()}
+        val dateTask: Date = if (currentRoute != null ) { currentRoute.getRouteDate() } else { SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2020-09-03 00:00:00") }
+        if (vehicleNumber != null) {
             val postParam = JSONObject()
-            postParam.put("dateTask", "2020-09-03 00:10:10")
-            postParam.put("vehicle", vehicle!!.getName())
+            postParam.put("dateTask",  SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dateTask)) //"2020-09-03 00:00:00")//dateTask.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+            postParam.put("vehicle", vehicleNumber)
             val serverData = serverConnector.getTrackList(postParam)
             errorArrayList.union(serverData.log)
             val result = saveTrackListIntoRoom(serverData.data as ArrayList<Point>?)
+            if (result && serverData.data.size!=0) {
+                saveRouteIntoRoom(serverData.data,vehicle!!,dateTask)
+            }
             return result
         } else {
             return false
@@ -111,6 +130,23 @@ class RouteRepository constructor(application: Application) {
         }
         return false
     }
+
+    private fun saveRouteIntoRoom(data: ArrayList<Point>, vehicle: Vehicle, dateTask: Date ):Boolean {
+            try {
+                val route = Route()
+                route.setCountPoint(data.size)
+                route.setVehicle(vehicle)
+                route.setRouteDate(dateTask)
+                route.setDocUid(data[0].getDocUID())
+                mRoutesDao!!.insertRouteWithReplace(route)
+                return true
+            } catch (e: java.lang.Exception){
+                errorArrayList.add(ErrorMessage("Ошибка работы с локальной базой данных", "Ошибка записи данных",e))
+                return false
+            }
+        return false
+    }
+
 
     // Получение списка точек из локальной базы
     private fun loadTrackListFromRoom(dataLoaded: Boolean): MutableList<Point>? {

@@ -55,5 +55,10 @@ class Vehicle {
     }
 
     fun getName(): String {return this.number}
+    fun getNumber(): String {return this.number}
+    fun getUid(): String {return this.uid}
+
+    fun setNumber(number: String) {this.number = number}
+    fun setUid(uid: String) {this.uid = uid}
 
 }

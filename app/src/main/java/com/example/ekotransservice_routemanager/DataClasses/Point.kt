@@ -37,6 +37,7 @@ class Point : Serializable{
     private var countFact: Int      = 0
 
 
+
     /* private val name : String = name;
     private val lon : Double = lon;
     private val lan : Double = lan;*/

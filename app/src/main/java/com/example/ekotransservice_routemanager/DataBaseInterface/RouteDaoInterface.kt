@@ -21,4 +21,7 @@ interface RouteDaoInterface {
 
     @Query("SELECT * from currentRoute_table ") //ORDER BY addressName ASC")
     fun getCurrentRoute(): MutableList<Route>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertRouteWithReplace(route: Route)
 }
