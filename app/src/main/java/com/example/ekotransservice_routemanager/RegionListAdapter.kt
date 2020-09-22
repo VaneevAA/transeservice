@@ -9,27 +9,27 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Filter
 import android.widget.TextView
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Region
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import java.util.*
+import kotlin.collections.ArrayList
 
-class RegionListAdapter(context: Context, val itemLayout: Int, var dataList: ArrayList<Region>?) : ArrayAdapter<Region>(
+class RegionListAdapter(context: Context, private val itemLayout: Int, var dataList: ArrayList<Region>?) : ArrayAdapter<Region>(
     context,
     itemLayout
 )
 {
-    val routeRepository: RouteRepository = RouteRepository(context.applicationContext as Application)
+    private val routeRepository: RouteRepository = RouteRepository(context.applicationContext as Application)
 
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun publishResults(
                 charSequence: CharSequence?,
-                filterResults: Filter.FilterResults
+                filterResults: FilterResults
             ) {
                 dataList = if (filterResults.values != null) {
                     filterResults.values as ArrayList<Region>
@@ -44,20 +44,20 @@ class RegionListAdapter(context: Context, val itemLayout: Int, var dataList: Arr
                 notifyDataSetChanged()
             }
 
-            override fun performFiltering(charSequence: CharSequence?): Filter.FilterResults {
-                val queryString = charSequence?.toString()?.toLowerCase()
+            override fun performFiltering(charSequence: CharSequence?): FilterResults {
+                val queryString = charSequence?.toString()?.toLowerCase(Locale.ROOT)
 
                 if (dataList!!.size == 0) {
                     GlobalScope.launch { loadRegion() }
                 }
 
-                val filterResults = Filter.FilterResults()
+                val filterResults = FilterResults()
                 filterResults.values = if (queryString==null || queryString.isEmpty())
                     dataList
                 else
                     try {
                         dataList!!.filter {
-                                it.toString().toLowerCase().contains(queryString)
+                                it.toString().toLowerCase(Locale.ROOT).contains(queryString)
                         }
                     }catch (e: Exception) {
                         Log.d("error", "er $e")
@@ -70,9 +70,8 @@ class RegionListAdapter(context: Context, val itemLayout: Int, var dataList: Arr
     private suspend fun loadRegion() {
         val serverList = GlobalScope.async {routeRepository.getRegionList()}
         val result = serverList.await()
-        if (result != null){
-            dataList = result
-        }
+        dataList = result
+        //TODO обработка ошибок
     }
 
     override fun getCount(): Int {
@@ -83,20 +82,20 @@ class RegionListAdapter(context: Context, val itemLayout: Int, var dataList: Arr
     }
 
     override fun getItem(position: Int): Region? {
-        return dataList!!.get(position)
+        return dataList!![position]
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
 
-        var itemView: View = LayoutInflater.from(context).inflate(itemLayout, parent, false)
-        val textView: TextView = itemView.findViewById(com.example.ekotransservice_routemanager.R.id.textViewRegionItem);
-        textView.setText(getItem(position).toString())
+        val itemView: View = LayoutInflater.from(context).inflate(itemLayout, parent, false)
+        val textView: TextView = itemView.findViewById(R.id.textViewRegionItem)
+        textView.text = getItem(position).toString()
         return itemView
     }
 
-    fun setList(dataList: ArrayList<Region>){
-        /*this.dataList = dataList.value
-        notifyDataSetChanged()*/
-    }
+    /*fun setList(dataList: ArrayList<Region>){
+        this.dataList = dataList.value
+        notifyDataSetChanged()
+    }*/
 
 }

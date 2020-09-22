@@ -4,16 +4,15 @@ import android.app.Application
 import androidx.lifecycle.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Point
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 
 class ViewPointList(application: Application):AndroidViewModel(application) {
     var pointsList = MutableLiveData<MutableList<Point>>()
-    val routeRepository: RouteRepository = RouteRepository(application)
+    private val routeRepository: RouteRepository = RouteRepository(application)
     init {
-        pointsList.value = ArrayList<Point>()
+        pointsList.value = ArrayList()
         viewModelScope.launch { loadData() }
     }
 

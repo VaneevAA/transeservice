@@ -16,6 +16,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import java.util.*
+import kotlin.collections.ArrayList
 
 class VehicleListAdapter (context: Context, val itemLayout: Int, var dataList: ArrayList<Vehicle>?, val region: Region) : ArrayAdapter<Vehicle>(
     context,
@@ -28,7 +30,7 @@ class VehicleListAdapter (context: Context, val itemLayout: Int, var dataList: A
         return object : Filter() {
             override fun publishResults(
                 charSequence: CharSequence?,
-                filterResults: Filter.FilterResults
+                filterResults: FilterResults
             ) {
                 dataList = if (filterResults.values != null) {
                     filterResults.values as ArrayList<Vehicle>
@@ -43,20 +45,20 @@ class VehicleListAdapter (context: Context, val itemLayout: Int, var dataList: A
                 notifyDataSetChanged()
             }
 
-            override fun performFiltering(charSequence: CharSequence?): Filter.FilterResults {
-                val queryString = charSequence?.toString()?.toLowerCase()
+            override fun performFiltering(charSequence: CharSequence?): FilterResults {
+                val queryString = charSequence?.toString()?.toLowerCase(Locale.ROOT)
 
                 if (dataList!!.size == 0) {
                     GlobalScope.launch { loadVehicles() }
                 }
 
-                val filterResults = Filter.FilterResults()
+                val filterResults = FilterResults()
                 filterResults.values = if (queryString==null || queryString.isEmpty())
                     dataList
                 else
                     try {
                         dataList!!.filter {
-                            it.toString().toLowerCase().contains(queryString)
+                            it.toString().toLowerCase(Locale.ROOT).contains(queryString)
                         }
                     }catch (e: Exception) {
                         Log.d("error", "er $e")
@@ -69,9 +71,8 @@ class VehicleListAdapter (context: Context, val itemLayout: Int, var dataList: A
     private suspend fun loadVehicles() {
         val serverList = GlobalScope.async {routeRepository.getVehiclesList(region)}
         val result = serverList.await()
-        if (result != null){
-            dataList = result
-        }
+        dataList = result
+        //TODO обработка ошибок
     }
 
     override fun getCount(): Int {
@@ -82,20 +83,20 @@ class VehicleListAdapter (context: Context, val itemLayout: Int, var dataList: A
     }
 
     override fun getItem(position: Int): Vehicle? {
-        return dataList!!.get(position)
+        return dataList!![position]
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
 
-        var itemView: View = LayoutInflater.from(context).inflate(itemLayout, parent, false)
-        val textView: TextView = itemView.findViewById(com.example.ekotransservice_routemanager.R.id.textViewRegionItem);
-        textView.setText(getItem(position).toString())
+        val itemView: View = LayoutInflater.from(context).inflate(itemLayout, parent, false)
+        val textView: TextView = itemView.findViewById(R.id.textViewRegionItem)
+        textView.text = getItem(position).toString()
         return itemView
     }
 
-    fun setList(dataList: ArrayList<Vehicle>){
-        /*this.dataList = dataList.value
-        notifyDataSetChanged()*/
-    }
+    /*fun setList(dataList: ArrayList<Vehicle>){
+        this.dataList = dataList.value
+        notifyDataSetChanged()
+    }*/
 
 }

@@ -1,20 +1,14 @@
 package com.example.ekotransservice_routemanager.DataClasses
 
 
-import android.content.ContentValues.TAG
-import android.nfc.Tag
-import android.util.Log
 import androidx.annotation.NonNull
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.javaField
 
 @Entity(tableName = "pointList_table")
 class Point : Serializable{
@@ -160,17 +154,17 @@ class Point : Serializable{
     fun setCountPlan(countPlan: Int) { this.countPlan = countPlan}
     fun setCountFact(countFact: Int) { this.countFact = countFact}
 
-    fun setPointActionsArray(pointActionsArray: ArrayList<PointActoins>) { this.pointActionsArray = this.pointActionsArray}
+    fun setPointActionsArray(pointActionsArray: ArrayList<PointActoins>) { this.pointActionsArray = pointActionsArray}
     fun setPointActionsCancelArray(pointActionsCancelArray: ArrayList<PointActoins>) { this.pointActionsCancelArray = pointActionsCancelArray}
     fun setStatus(status: PointStatuses) { this.status = status}
     fun setDone(done: Boolean){ this.done = done }
     //endregion
 
-    public fun getContCount (): Int{
+    fun getContCount (): Int{
         return this.countPlan
     }
 
-    public fun getContType (): String{
+    fun getContType (): String{
         return this.containerName
     }
 
