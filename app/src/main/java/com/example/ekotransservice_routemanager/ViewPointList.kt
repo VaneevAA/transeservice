@@ -10,10 +10,15 @@ import java.lang.IllegalArgumentException
 
 class ViewPointList(application: Application):AndroidViewModel(application) {
     var pointsList = MutableLiveData<MutableList<Point>>()
+    val result : LiveData<MutableList<Point>> = liveData {
+        emit(loadDataFromDB())
+    }
     private val routeRepository: RouteRepository = RouteRepository(application)
     init {
-        pointsList.value = ArrayList()
+        pointsList.value = mutableListOf()
         viewModelScope.launch { loadData() }
+
+
     }
 
     class ViewPointsFactory(private val application: Application):ViewModelProvider.Factory{
@@ -28,8 +33,8 @@ class ViewPointList(application: Application):AndroidViewModel(application) {
 
     private suspend fun loadData() {
 
-        pointsList.value?.add(Point("test point 1",65.77777,58.88888,false,1,"контейнер 1.1м3"))
-        pointsList.value?.add(Point("test point 2",65.77777,58.88888,false,2,"пакет 0.1м3"))
+        //pointsList.value?.add(Point("test point 1",65.77777,58.88888,false,1,"контейнер 1.1м3"))
+        //pointsList.value?.add(Point("test point 2",65.77777,58.88888,false,2,"пакет 0.1м3"))
         val trackList = viewModelScope.async {routeRepository.getPointList(true)}
         val result = trackList.await()
         if (result != null){
@@ -40,7 +45,13 @@ class ViewPointList(application: Application):AndroidViewModel(application) {
             //pointsList = routeRepository.getPointList(true)
     }
 
-    fun getList () : MutableLiveData<MutableList<Point>> {
-        return pointsList
+    private suspend fun loadDataFromDB() : MutableList<Point>{
+
+        val trackList = viewModelScope.async {routeRepository.getPointList(true)}
+        return trackList.await() ?: pointsList.value!!
+    }
+
+    fun getList () : LiveData<MutableList<Point>> {
+        return result
     }
 }

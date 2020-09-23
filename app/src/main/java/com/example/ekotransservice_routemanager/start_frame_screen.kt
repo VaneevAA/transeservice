@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
@@ -30,6 +31,7 @@ class start_frame_screen : Fragment() {
         val mainView = inflater.inflate(R.layout.start_frame_screen_fragment, container, false)
         val closeView : View = mainView.findViewById(R.id.layoutToCloseRoute)
         val vehicleView: View = mainView.findViewById(R.id.vehicleLayout)
+
         val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.setOnRefreshListener {
             getCurrentRoute()
@@ -37,6 +39,8 @@ class start_frame_screen : Fragment() {
 
         }
 
+        getCurrentRoute()
+        showHideRoute(true,mainView)
 
 
         closeView.setOnClickListener {
@@ -96,33 +100,34 @@ class start_frame_screen : Fragment() {
 
         val routeRepository = RouteRepository(requireActivity().application)
 
-        runBlocking {
-            GlobalScope.launch {
 
-                delay(2000)
-                (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
-                /*currentRoute =
-                withContext(Dispatchers.Default) { routeRepository.getCurrentRoute() }*/
+        GlobalScope.launch {
+           //delay(2000)
+           (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
+                currentRoute =
+                withContext(Dispatchers.Default) { routeRepository.getCurrentRoute() }
 
-
-            }
         }
+
 
 
     }
 
     private fun showHideRoute (animate : Boolean, mainView : View){
         val routeGroup  = mainView.findViewById<View>(R.id.routeGroup)
+        val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
+        val atAllCount : TextView = mainView.findViewById(R.id.atAllCount)
+        val doneCount : TextView = mainView.findViewById(R.id.doneCount)
         if(currentRoute == null){
             val animation = AnimateView(routeGroup,requireContext(),animate)
             animation.hideHeight()
-            imageButton.imageAlpha = R.drawable.ic_baseline_add_24
+            imageButton.setImageResource(R.drawable.ic_baseline_add_24)
             atAllCount!!.text = "0"
             doneCount!!.text = "0"
         }else{
             val animation = AnimateView(routeGroup,requireContext(),animate)
             animation.showHeight()
-            imageButton.imageAlpha = R.drawable.ic_baseline_replay_24
+            imageButton.setImageResource( R.drawable.ic_baseline_replay_24)
             atAllCount!!.text = currentRoute!!.getCountPoint().toString()
             doneCount!!.text = currentRoute!!.getCountPointDone().toString()
         }

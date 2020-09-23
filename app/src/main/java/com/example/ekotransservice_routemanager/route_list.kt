@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.liveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -52,9 +53,9 @@ class route_list : Fragment() {
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = true
         mViewList = ViewModelProvider(this.requireActivity(),ViewPointList.ViewPointsFactory(this.requireActivity().application)).get(ViewPointList::class.java)
         val observer = Observer<MutableList<Point>> {
-                (pointList) -> (recycleView.adapter as PointListAdapter).setList(mViewList!!.pointsList)
+                (pointList) -> (recycleView.adapter as PointListAdapter).setList(mViewList!!.getList())
         }
-        mViewList!!.getList().observe(this.requireActivity(), observer)
+        mViewList!!.getList().observe(requireActivity(), observer)
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
         return view
     }
