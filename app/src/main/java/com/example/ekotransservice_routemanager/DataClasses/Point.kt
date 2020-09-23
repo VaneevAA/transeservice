@@ -3,6 +3,7 @@ package com.example.ekotransservice_routemanager.DataClasses
 
 import androidx.annotation.NonNull
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import org.json.JSONException
 import org.json.JSONObject
@@ -45,8 +46,11 @@ class Point : Serializable{
   /*  private val contCount : Int = contCount;
     private val contType : String = contType; //TODO: поменять на какой-то ограниченный тип*/
 
+    @Ignore
     private var pointActionsArray: ArrayList<PointActoins> = ArrayList()
+    @Ignore
     private var pointActionsCancelArray : ArrayList<PointActoins> = ArrayList()
+    @Ignore
     private var status : PointStatuses = PointStatuses.NOT_VISITED
 
 
