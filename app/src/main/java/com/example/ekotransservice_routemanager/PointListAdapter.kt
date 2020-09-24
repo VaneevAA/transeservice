@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
@@ -44,7 +45,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         return 0
     }
 
-    fun setList(pointList: MutableLiveData<MutableList<Point>>){
+    fun setList(pointList: LiveData<MutableList<Point>>){
         this.pointList = pointList.value
         notifyDataSetChanged()
     }

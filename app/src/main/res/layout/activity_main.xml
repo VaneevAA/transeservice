@@ -6,15 +6,36 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     android:orientation="vertical">
-
-    <fragment
-        android:id="@+id/my_nav_host_fragment"
-        android:name="androidx.navigation.fragment.NavHostFragment"
+  <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:id="@+id/thinking"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintStart_toStartOf="parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="550dp"
-        app:defaultNavHost="true"
-        app:navGraph="@navigation/navigation" />
+        android:layout_height="match_parent"
+        android:id="@+id/mainLayout">
 
+      <fragment
+          android:id="@+id/my_nav_host_fragment"
+          android:name="androidx.navigation.fragment.NavHostFragment"
+          android:layout_width="match_parent"
+          android:layout_height="0dp"
+          app:defaultNavHost="true"
+          app:layout_constraintBottom_toTopOf="@id/guidelineMain"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          app:navGraph="@navigation/navigation" />
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.9" />
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_menu"
         android:layout_width="match_parent"
@@ -22,8 +43,11 @@
         android:background="@color/colorPrimaryDark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/guidelineMain"
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/bottom_menu_navigation" />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
+  </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>
