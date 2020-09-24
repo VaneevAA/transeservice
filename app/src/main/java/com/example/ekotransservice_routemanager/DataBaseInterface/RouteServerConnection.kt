@@ -18,7 +18,7 @@ import kotlin.collections.ArrayList
 
 class RouteServerConnection {
     private var urlName:String = ""
-    private var urlPort:String = ""
+    private var urlPort:Int =80
     private var authPass:String = ""
 
     fun setAuthPass(authPass: String) {
@@ -43,13 +43,15 @@ class RouteServerConnection {
         return token
     }
 
-    fun setConnectionParams(urlName: String, urlPort: String) {
+    fun setConnectionParams(urlName: String, urlPort: Int) {
         this.urlName = urlName
         this.urlPort = urlPort
     }
 
     private fun getData(methodName: String, requestMethod:String,  postParam: JSONObject?, errorArrayList: ArrayList<ErrorMessage> ): JSONArray? {
-        val url = URL("http://$urlName:$urlPort/$methodName")
+        //val url = URL("http://$urlName:$urlPort/$methodName")
+        //val url = URL("http",urlName, urlPort,"mobileapp/$methodName")
+        val url = URL("http",urlName, urlPort,"$methodName")
         var connector: HttpURLConnection? = null
         try {
             connector = url.openConnection() as HttpURLConnection
