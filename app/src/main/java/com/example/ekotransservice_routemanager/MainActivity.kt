@@ -54,7 +54,6 @@ class MainActivity : AppCompatActivity() {
        })
 
 
-
         /*
         val recycleView : RecyclerView = this.findViewById(R.id.recyclerview)
         val adapter = PointListAdapter(this)
