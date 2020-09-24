@@ -8,10 +8,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 
-class ViewPointList(application: Application):AndroidViewModel(application) {
+class ViewPointList(application: Application, activity: MainActivity):AndroidViewModel(application) {
     var pointsList = MutableLiveData<MutableList<Point>>()
-    val result : LiveData<MutableList<Point>> = liveData {
+    private val result : LiveData<MutableList<Point>> = liveData {
+        activity.mSwipeRefreshLayout!!.isRefreshing = true
         emit(loadDataFromDB())
+        activity.mSwipeRefreshLayout!!.isRefreshing = false
     }
     private val routeRepository: RouteRepository = RouteRepository(application)
     init {
@@ -21,10 +23,10 @@ class ViewPointList(application: Application):AndroidViewModel(application) {
 
     }
 
-    class ViewPointsFactory(private val application: Application):ViewModelProvider.Factory{
+    class ViewPointsFactory(private val application: Application, private  val activity: MainActivity):ViewModelProvider.Factory{
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if(modelClass.isAssignableFrom(ViewPointList::class.java)){
-                return ViewPointList(application) as T
+                return ViewPointList(application,activity) as T
             }
             throw IllegalArgumentException("Unknown class")
         }

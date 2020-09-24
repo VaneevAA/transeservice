@@ -51,7 +51,9 @@ class route_list : Fragment() {
         recycleView.layoutManager = LinearLayoutManager(view.context)
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.touchscreenBlocksFocus = true
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = true
-        mViewList = ViewModelProvider(this.requireActivity(),ViewPointList.ViewPointsFactory(this.requireActivity().application)).get(ViewPointList::class.java)
+        mViewList = ViewModelProvider(this.requireActivity(),
+            ViewPointList.ViewPointsFactory(this.requireActivity().application,requireActivity() as MainActivity))
+            .get(ViewPointList::class.java)
         val observer = Observer<MutableList<Point>> {
                 (pointList) -> (recycleView.adapter as PointListAdapter).setList(mViewList!!.getList())
         }
