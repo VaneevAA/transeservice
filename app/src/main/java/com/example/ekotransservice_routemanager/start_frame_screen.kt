@@ -31,8 +31,8 @@ class start_frame_screen : Fragment() {
         val mainView = inflater.inflate(R.layout.start_frame_screen_fragment, container, false)
         val closeView : View = mainView.findViewById(R.id.layoutToCloseRoute)
         val vehicleView: View = mainView.findViewById(R.id.vehicleLayout)
-
         val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
+
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.setOnRefreshListener {
             getCurrentRoute()
             showHideRoute(true,mainView)
@@ -55,6 +55,7 @@ class start_frame_screen : Fragment() {
             (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = true
             getCurrentRoute()
             showHideRoute(true,mainView)
+            //TODO: create route
 
         }
         val animateView = this.context?.let { it1 -> AnimateView(mainView.findViewById<View>(R.id.closeLayout), it1,false) }
@@ -102,11 +103,10 @@ class start_frame_screen : Fragment() {
 
 
         GlobalScope.launch {
-           //delay(2000)
-           (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
-                currentRoute =
-                withContext(Dispatchers.Default) { routeRepository.getCurrentRoute() }
 
+            currentRoute =
+                withContext(Dispatchers.Default) { routeRepository.getCurrentRoute() }
+            (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
         }
 
 
