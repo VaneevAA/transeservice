@@ -128,8 +128,13 @@ class RouteServerConnection {
     fun getRegions() : DownloadResult {
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val methodName = "regions"
-        val data = getData(methodName,"GET", null,errorArrayList)
         val regionArrayList: ArrayList<Region> = ArrayList<Region>()
+        var data: JSONArray? =null
+        try {
+            data = getData(methodName,"GET", null,errorArrayList)
+        }catch (e: java.lang.Exception){
+            errorArrayList.add(ErrorMessage("Ошибка загрузки данных", "Ошибка получения данных с сервера", e))
+        }
         if (data!=null) {
             for (i in 0 until data.length()) {
                 try {
