@@ -41,7 +41,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        requireContext().getTheme().applyStyle(R.style.PreferenceScreen, true);
+        //requireContext().getTheme().applyStyle(R.style.PreferenceScreen, true);
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 

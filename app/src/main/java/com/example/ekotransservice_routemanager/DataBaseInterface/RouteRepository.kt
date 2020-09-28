@@ -50,13 +50,13 @@ class RouteRepository constructor(application: Application) {
        // Получение текущих настроек
        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application.applicationContext)
        val urlName = sharedPreferences.getString("URL_NAME","") as String
-       val urlPort = sharedPreferences.getString("URL_PORT","") as String
+       val urlPort = sharedPreferences.getString("URL_PORT","80") as String
        val urlPass = sharedPreferences.getString("URL_AUTHPASS","") as String
        val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
        vehicle = Vehicle(vehicleString)
 
        // установка параметров подключения
-       serverConnector.setConnectionParams(urlName,urlPort)
+       serverConnector.setConnectionParams(urlName,urlPort.toInt())
        serverConnector.setAuthPass(urlPass)
     }
 
