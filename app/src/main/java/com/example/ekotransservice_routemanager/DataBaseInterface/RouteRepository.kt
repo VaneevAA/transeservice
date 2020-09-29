@@ -89,11 +89,12 @@ class RouteRepository constructor(application: Application) {
     }
 
     suspend fun getCurrentRoute(): Route?{
-        val resultList = mRoutesDao!!.getCurrentRoute()
-        if (resultList.size==0) {
+        val resultList = GlobalScope.async {  mRoutesDao!!.getCurrentRoute()}
+        val currentRoute = resultList.await()
+        if (currentRoute.size==0) {
             return null
         }else{
-            return resultList[0]
+            return currentRoute[0]
         }
     }
 
