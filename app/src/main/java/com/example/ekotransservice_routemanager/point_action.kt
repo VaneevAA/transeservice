@@ -85,11 +85,11 @@ class point_action : Fragment() {
         }
         mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
             if(fileBefore != null && point!!.getContCount() != 0){
-                Toast.makeText(requireContext(),"Предыдущие действия не выполнены",Toast.LENGTH_LONG)
+                Toast.makeText(requireContext(),"Предыдущие действия не выполнены",Toast.LENGTH_LONG).show()
             }else if(fileAfter == null){
                 takePicture(true)
             }else{
-                Toast.makeText(requireContext(),"Фото уже есть",Toast.LENGTH_LONG)
+                Toast.makeText(requireContext(),"Фото уже есть",Toast.LENGTH_LONG).show()
             }
         }
 
@@ -229,7 +229,7 @@ class point_action : Fragment() {
             }
 
         }catch (e : Exception){
-            Toast.makeText(requireContext(),"Неудалось записать файл",Toast.LENGTH_LONG)
+            Toast.makeText(requireContext(),"Неудалось записать файл",Toast.LENGTH_LONG).show()
             //TODO create exception behavior
         }
 
@@ -313,7 +313,7 @@ class point_action : Fragment() {
 
             exifInterface.saveAttributes()
         }catch (e : java.lang.Exception){
-            Toast.makeText(requireContext(),"Присвоить координаты не получилось",Toast.LENGTH_SHORT)
+            Toast.makeText(requireContext(),"Присвоить координаты не получилось",Toast.LENGTH_SHORT).show()
             //TODO create exception behavior
             return false
         }

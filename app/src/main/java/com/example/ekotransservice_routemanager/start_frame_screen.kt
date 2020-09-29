@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager
 
+import android.database.Observable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,12 +8,15 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.*
+import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Route
+import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
 import kotlinx.coroutines.*
+import java.text.SimpleDateFormat
 import java.util.*
 
 class start_frame_screen : Fragment() {
@@ -22,7 +26,7 @@ class start_frame_screen : Fragment() {
         fun newInstance() = start_frame_screen()
     }
 
-    private lateinit var viewModel: StartFrameScreenViewModel
+    private lateinit var viewScreen: StartFrameScreenViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,16 +36,25 @@ class start_frame_screen : Fragment() {
         val closeView : View = mainView.findViewById(R.id.layoutToCloseRoute)
         val vehicleView: View = mainView.findViewById(R.id.vehicleLayout)
         val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
+        viewScreen = ViewModelProvider(this.requireActivity(),
+            StartFrameScreenViewModel.StartFrameScreenModelFactory(requireActivity() as MainActivity))
+            .get(StartFrameScreenViewModel::class.java)
+        showHideRouteLiveData(viewScreen.routeLiveData.value,false,mainView)
+        vehicleUpdate(viewScreen.vehicle.value,mainView)
+
+        viewScreen.routeLiveData.observe(requireActivity(), Observer {
+            routeUpdate(it,mainView)
+        })
+
+        viewScreen.vehicle.observe(requireActivity(), Observer {
+            vehicleUpdate(it,mainView)
+        })
 
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.setOnRefreshListener {
-            getCurrentRoute()
-            showHideRoute(true,mainView)
+
+            viewScreen.onRefresh()
 
         }
-
-        getCurrentRoute()
-        showHideRoute(true,mainView)
-
 
         closeView.setOnClickListener {
             showHideCloseRoute(mainView)
@@ -52,9 +65,7 @@ class start_frame_screen : Fragment() {
         }
 
         imageButton.setOnClickListener {
-            (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = true
-            getCurrentRoute()
-            showHideRoute(true,mainView)
+            viewScreen.onRefresh()
             //TODO: create route
 
         }
@@ -65,7 +76,7 @@ class start_frame_screen : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(StartFrameScreenViewModel::class.java)
+        //viewModel = ViewModelProviders.of(this).get(StartFrameScreenViewModel::class.java)
         // TODO: Use the ViewModel
     }
 
@@ -113,26 +124,66 @@ class start_frame_screen : Fragment() {
 
     }
 
-    private fun showHideRoute (animate : Boolean, mainView : View){
+    /*private fun showHideRoute (animate : Boolean, mainView : View){
         val routeGroup  = mainView.findViewById<View>(R.id.routeGroup)
         val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
         val atAllCount : TextView = mainView.findViewById(R.id.atAllCount)
         val doneCount : TextView = mainView.findViewById(R.id.doneCount)
+
         if(currentRoute == null){
             val animation = AnimateView(routeGroup,requireContext(),animate)
             animation.hideHeight()
             imageButton.setImageResource(R.drawable.ic_baseline_add_24)
             atAllCount!!.text = "0"
             doneCount!!.text = "0"
+
         }else{
             val animation = AnimateView(routeGroup,requireContext(),animate)
             animation.showHeight()
             imageButton.setImageResource( R.drawable.ic_baseline_replay_24)
             atAllCount!!.text = currentRoute!!.getCountPoint().toString()
             doneCount!!.text = currentRoute!!.getCountPointDone().toString()
+
+        }
+    }*/
+
+    private fun showHideRouteLiveData (route: Route?, animate : Boolean, mainView : View){
+        val routeGroup  = mainView.findViewById<View>(R.id.routeGroup)
+        val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
+        val atAllCount : TextView = mainView.findViewById(R.id.atAllCount)
+        val doneCount : TextView = mainView.findViewById(R.id.doneCount)
+        val dateView = mainView.findViewById<TextView>(R.id.dateOfRoute)
+        if(route == null){
+            val animation = AnimateView(routeGroup,requireContext(),animate)
+            animation.hideHeight()
+            imageButton.setImageResource(R.drawable.ic_baseline_add_24)
+            atAllCount!!.text = "0"
+            doneCount!!.text = "0"
+            dateView.text = SimpleDateFormat("dd.MM.yyyy").format(Date())
+        }else{
+            val animation = AnimateView(routeGroup,requireContext(),animate)
+            animation.showHeight()
+            imageButton.setImageResource( R.drawable.ic_baseline_replay_24)
+            atAllCount!!.text = route!!.getCountPoint().toString()
+            doneCount!!.text = route!!.getCountPointDone().toString()
+            dateView.text = SimpleDateFormat("dd.MM.yyyy").format(route.getRouteDate())
         }
     }
 
+    private fun routeUpdate(route : Route?,mainView: View){
+        showHideRouteLiveData(route,true,mainView)
+
+    }
+
+    private fun vehicleUpdate (vehicle : Vehicle?,mainView: View){
+        val vehicleView = mainView.findViewById<TextView>(R.id.vehicleNumber)
+        if(vehicle == null){
+            vehicleView.text = ""
+        }else{
+            vehicleView.text = vehicle!!.getNumber()
+        }
+
+    }
 }
 
 
