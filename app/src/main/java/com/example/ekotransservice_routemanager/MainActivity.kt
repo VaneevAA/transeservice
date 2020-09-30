@@ -3,9 +3,12 @@ package com.example.ekotransservice_routemanager
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import android.util.Log
 import android.view.View
+import android.widget.Toast
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_main.*
@@ -16,7 +19,8 @@ import java.lang.Exception
 class MainActivity : AppCompatActivity() {
     var mSwipeRefreshLayout : SwipeRefreshLayout? = null
     private var mViewList : ViewPointList? = null
-
+    private var doubleBackClick = false
+    lateinit var navController : NavController
    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -24,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
        val bottomNavigation: BottomNavigationView = bottom_menu
        val navHostFragment = supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
-       val navController = navHostFragment.navController
+       navController = navHostFragment.navController
 
        bottomNavigation.setOnNavigationItemSelectedListener(BottomNavigationView.OnNavigationItemSelectedListener { menuItem ->
            when (menuItem.itemId) {
@@ -52,6 +56,30 @@ class MainActivity : AppCompatActivity() {
            }
            false
        })
+        navController.addOnDestinationChangedListener{_,destanation, _ ->
+
+            when(destanation.id){
+                R.id.route_list ->{
+                    bottomNavigation.menu.findItem(R.id.list).isChecked = true
+
+                    return@addOnDestinationChangedListener
+                }
+                R.id.start_frame_screen -> {
+                    bottomNavigation.menu.findItem(R.id.home).isChecked = true
+
+                    return@addOnDestinationChangedListener
+
+                }
+                R.id.settingFragment -> {
+                    bottomNavigation.menu.findItem(R.id.settings).isChecked = true
+
+                    return@addOnDestinationChangedListener
+
+                }
+            }
+
+        }
+
 
 
         /*
@@ -66,8 +94,25 @@ class MainActivity : AppCompatActivity() {
         mViewList!!.getList().observe(this, observer)
         */
 
-
    }
+
+    override fun onBackPressed() {
+
+        if(navController.popBackStack()){
+
+            return
+        }
+
+        if(doubleBackClick){
+            super.onBackPressed()
+            return
+        }
+
+        doubleBackClick = true
+        Toast.makeText(this,"Два раза нажмите для выхода",Toast.LENGTH_SHORT).show()
+
+        Handler().postDelayed({ doubleBackClick = false }, 2000)
+    }
 
 
 }
