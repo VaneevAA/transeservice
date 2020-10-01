@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
@@ -73,10 +74,15 @@ class start_frame_screen : Fragment() {
         imageButton.setOnClickListener {
             viewScreen.onRefresh()
         }
+
+        mainView.findViewById<View>(R.id.routeInfo).setOnClickListener {
+            findNavController().navigate(R.id.route_list)
+        }
+
         //всё сворачиваем для старта
         showHideRouteLiveData(viewScreen.routeLiveData.value,false,mainView)
         showHideCloseRoute(mainView)
-        
+
         return mainView
     }
 
