@@ -76,7 +76,10 @@ class start_frame_screen : Fragment() {
         }
 
         mainView.findViewById<View>(R.id.routeInfo).setOnClickListener {
-            findNavController().navigate(R.id.route_list)
+            if(viewScreen.routeLiveData.value != null){
+                findNavController().navigate(R.id.route_list)
+            }
+
         }
 
         //всё сворачиваем для старта
