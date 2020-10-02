@@ -7,11 +7,9 @@ import android.os.Bundle
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.preference.PreferenceManager
 
 class FactDialog(parentFragment : Fragment) : DialogFragment() {
 
-    var mListener = parentFragment as PreferenceManager.OnDisplayPreferenceDialogListener
     var fact : Double = 0.0
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
