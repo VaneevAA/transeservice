@@ -39,13 +39,25 @@
         tools:layout="@layout/start_frame_screen_fragment" >
         <action
             android:id="@+id/action_start_frame_screen_to_route_list"
-            app:destination="@id/route_list" />
+            app:destination="@id/route_list"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
         <action
             android:id="@+id/action_start_frame_screen_to_settingFragment"
-            app:destination="@id/settingFragment" />
+            app:destination="@id/settingFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
         <action
             android:id="@+id/action_start_frame_screen_to_vehicle_screen"
-            app:destination="@id/vehicle_screen" />
+            app:destination="@id/vehicle_screen"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
