@@ -91,6 +91,8 @@ dependencies {
     //Настройки
     implementation 'androidx.preference:preference:1.1.1'
 
+    //Google service
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 }
 repositories {
     jcenter()

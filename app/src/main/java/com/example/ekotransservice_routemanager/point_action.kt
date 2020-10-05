@@ -3,13 +3,20 @@ package com.example.ekotransservice_routemanager
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Context.LOCATION_SERVICE
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Criteria
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.location.LocationManager.NETWORK_PROVIDER
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -25,10 +32,18 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.FileProvider
 import androidx.core.view.children
+import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.Observer
+import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointActoins
+import com.example.ekotransservice_routemanager.DataClasses.PointFile
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.tasks.RuntimeExecutionException
 import kotlinx.android.synthetic.main.fragment_point_action.*
 import java.io.File
 import java.io.Serializable
@@ -51,12 +66,45 @@ class point_action : Fragment() {
     private var point: Point? = null
     private var canDone: Boolean = true
     private var viewPointModel : ViewPointAction? = null
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             point  = it.getSerializable("point") as Point
             canDone = it.getBoolean("canDone")
+
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+            // Create persistent LocationManager reference
+            mLocationManager = requireContext().getSystemService(LOCATION_SERVICE) as LocationManager?
+
+            val REQUEST_CHECK_STATE = 12300 // any suitable ID
+            val builder = LocationSettingsRequest.Builder()
+                .addLocationRequest(reqSetting)
+
+            val client = LocationServices.getSettingsClient(requireActivity())
+            client.checkLocationSettings(builder.build()).addOnCompleteListener { task ->
+                try {
+                    val state: LocationSettingsStates = task.result.locationSettingsStates
+                    /*Log.e("LOG", "LocationSettings: \n" +
+                            " GPS present: ${state.isGpsPresent} \n" +
+                            " GPS usable: ${state.isGpsUsable} \n" +
+                            " Location present: " +
+                            "${state.isLocationPresent} \n" +
+                            " Location usable: " +
+                            "${state.isLocationUsable} \n" +
+                            " Network Location present: " +
+                            "${state.isNetworkLocationPresent} \n" +
+                            " Network Location usable: " +
+                            "${state.isNetworkLocationUsable} \n"
+                    )*/
+                } catch (e: RuntimeExecutionException) {
+                    if (e.cause is ResolvableApiException)
+                        (e.cause as ResolvableApiException).startResolutionForResult(requireActivity(),
+                            REQUEST_CHECK_STATE)
+                }
+            }
         }
     }
 
@@ -76,18 +124,24 @@ class point_action : Fragment() {
             fillFragment(mainFragment)
 
         })
+
+
         mainFragment.findViewById<Button>(R.id.takePhotoBefore)!!.setOnClickListener {
-            if(fileBefore == null){
-                takePicture(true)
-            }else{
-                Toast.makeText(requireContext(),"Фото уже есть",Toast.LENGTH_LONG)
-            }
+            //if(fileBefore == null){
+                currentFileOrder = PhotoOrder.PHOTO_BEFORE
+                takePicture()
+                fileBefore = currentFile
+            //}else{
+            //    Toast.makeText(requireContext(),"Фото уже есть",Toast.LENGTH_LONG)
+            //}
         }
         mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
             if(fileBefore != null && point!!.getContCount() != 0){
                 Toast.makeText(requireContext(),"Предыдущие действия не выполнены",Toast.LENGTH_LONG).show()
             }else if(fileAfter == null){
-                takePicture(true)
+                currentFileOrder = PhotoOrder.PHOTO_AFTER
+                takePicture()
+                fileAfter = currentFile
             }else{
                 Toast.makeText(requireContext(),"Фото уже есть",Toast.LENGTH_LONG).show()
             }
@@ -98,7 +152,6 @@ class point_action : Fragment() {
             val animator = ObjectAnimator.ofInt(progressBar as ProgressBar,"Await",1)
             animator.start()*/
         }
-
 
         return mainFragment
     }
@@ -163,71 +216,97 @@ class point_action : Fragment() {
                 }
             }
     }
+
     var fileBefore : File? = null
     var fileAfter : File? = null
-    var mLocation : Location? = null
     var mLocationManager : LocationManager? = null
-    private val mLocationListener = object : LocationListener {
-        override fun onLocationChanged(location: Location?) {
-            if(location!!.latitude != 0.0 && location!!.longitude != 0.0){
-                mLocation = location
-                mLocationManager!!.removeUpdates(this)
+    var currentFile: File? = null
+    var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
 
-
-            }
-        }
-
-        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-
-        }
-
-        override fun onProviderEnabled(provider: String?) {
-
-        }
-
-        override fun onProviderDisabled(provider: String?) {
-
-        }
-
+    val reqSetting = LocationRequest.create().apply {
+        fastestInterval = 10000
+        interval = 10000
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        smallestDisplacement = 1.0f
     }
 
-    private fun takePicture(before : Boolean){
+    val locationUpdates = object : LocationCallback() {
+        override fun onLocationResult(lr: LocationResult) {
+            try {
+                val exifInterface = androidx.exifinterface.media.ExifInterface(currentFile!!.absoluteFile)
+                val location = lr.locations.last()
+                exifInterface.setGpsInfo(location)
+                exifInterface.saveAttributes()
+                /*exifInterface.setAttribute(
+                    androidx.exifinterface.media.ExifInterface.TAG_GPS_LATITUDE,
+                    Location.convert(location.latitude, Location.FORMAT_SECONDS)
+                )
+                exifInterface.setAttribute(
+                    androidx.exifinterface.media.ExifInterface.TAG_GPS_LONGITUDE,
+                    Location.convert(location!!.longitude, Location.FORMAT_SECONDS)
+                )
+                exifInterface.setAttribute(
+                    androidx.exifinterface.media.ExifInterface.TAG_GPS_LATITUDE_REF,
+                    if (location.latitude > 0.0) {
+                        "N"
+                    } else {
+                        "S"
+                    }
+                )
+                exifInterface.setAttribute(
+                    androidx.exifinterface.media.ExifInterface.TAG_GPS_LONGITUDE_REF,
+                    if (location.longitude > 0.0) {
+                        "E"
+                    } else {
+                        "W"
+                    }
+                )
+                exifInterface.latLong
+                exifInterface.saveAttributes()*/
+
+
+            } catch (e: java.lang.Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    "Присвоить координаты не получилось",
+                    Toast.LENGTH_SHORT
+                ).show()
+                //TODO обработка ошибки получения координат
+            }
+        }
+    }
+
+    private fun takePicture(){
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(requireActivity(),arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION), 101);
+            // TODO: Обработка результата запроса разрешения
+        }
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also {
             takePictureIntent -> takePictureIntent.resolveActivity(requireActivity().packageManager)?.also {
-            val pictureFile = createFile(before)
+            val pictureFile = createFile()
             pictureFile?.also {
-                val pictureUri = it.toURI()
-                    //FileProvider.getUriForFile(this.requireContext(),
-                    //"com.example.android.fileprovider",
-                    //it)
+                // val pictureUri = it.toURI()
+                val pictureUri: Uri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.example.ekotransservice_routemanager.fileprovider",
+                    it
+                )
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
-                startActivityForResult(takePictureIntent,if (before){
-                    1
-                }else{
-                    2
-                })
+                startActivityForResult(takePictureIntent,1)
             }
         }
         }
     }
 
-    private fun createFile(before : Boolean) : File?{
+    private fun createFile() : File?{
         val timeCreated = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
         val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val postfix = if(before){
-            "before"
-        }else{
-            "after"
-        }
         try {
-            return if(before){
-                fileBefore = File.createTempFile("${point!!.getLineUID()}_($timeCreated)_$postfix",".jpg",storage)
-                fileBefore
-            }else{
-                fileAfter = File.createTempFile("${point!!.getLineUID()}_($timeCreated)_$postfix",".jpg",storage)
-                fileAfter
-            }
-
+            currentFile = File.createTempFile("${point!!.getLineUID()}_($timeCreated)_${currentFileOrder.string}",".jpg",storage)
+            //    .apply { currentFilePath = absolutePath }
+            return currentFile
         }catch (e : Exception){
             Toast.makeText(requireContext(),"Неудалось записать файл",Toast.LENGTH_LONG).show()
             //TODO create exception behavior
@@ -239,85 +318,56 @@ class point_action : Fragment() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == 1){
-            val criteria = Criteria()
-            val provider = mLocationManager!!.getBestProvider(criteria,true)
-
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                if(requestCode == 1){
-                    fileBefore = null
-                }else{
-                    fileAfter = null
-                }
-                return
-            }
-            mLocationManager = this.requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            mLocationManager!!.requestLocationUpdates(provider,1000,0.0f,mLocationListener)
-
-            if(mLocation != null && mLocation!!.longitude != 0.0 && mLocation!!.latitude != 0.0){
-                if(requestCode == 1){
-                    if(!setGeoTag(fileBefore!!)){
-                        fileBefore = null
-                    }else{
-                       this.doneTakePhotoBefore.visibility = View.VISIBLE
-                    }
-                }else{
-                    if(!setGeoTag(fileAfter!!)){
-                        fileAfter = null
-                    }else{
-                        this.doneTakePhotoAfter.visibility = View.VISIBLE
-                    }
-                }
+        if (resultCode == Activity.RESULT_OK) {
+            if(!setGeoTag(currentFile!!)){
+                currentFile = null
+            }else{
+                this.doneTakePhotoBefore.visibility = View.VISIBLE
             }
         }
-
 
     }
 
-
-
-    private fun setGeoTag(file : File) : Boolean{
-        try {
-            val exifInterface = androidx.exifinterface.media.ExifInterface(file.absoluteFile)
-
-            exifInterface.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_GPS_LATITUDE,
-                Location.convert(mLocation!!.latitude,Location.FORMAT_SECONDS))
-            exifInterface.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_GPS_LONGITUDE,
-                Location.convert(mLocation!!.longitude,Location.FORMAT_SECONDS))
-            exifInterface.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_GPS_LATITUDE_REF,
-                if(mLocation!!.latitude > 0.0){
-                    "N"
-                }else{
-                    "S"
-                })
-            exifInterface.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_GPS_LONGITUDE_REF,
-                if(mLocation!!.longitude > 0.0){
-                    "E"
-                }else{
-                    "W"
-                })
-
-            exifInterface.saveAttributes()
-        }catch (e : java.lang.Exception){
-            Toast.makeText(requireContext(),"Присвоить координаты не получилось",Toast.LENGTH_SHORT).show()
-            //TODO create exception behavior
-            return false
-        }
+    @SuppressLint("MissingPermission")
+    private fun setGeoTag(file : File) : Boolean {
+        fusedLocationClient?.requestLocationUpdates(reqSetting,
+            locationUpdates,
+            null /* Looper */)
         return true
+    }
+
+   /* fun showEnableLocationSetting() {
+        activity?.let {
+            val locationRequest = LocationRequest.create()
+            locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+            val builder = LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest)
+
+            val task = LocationServices.getSettingsClient(it)
+                .checkLocationSettings(builder.build())
+
+            task.addOnSuccessListener { response ->
+                val states = response.locationSettingsStates
+                if (states.isLocationPresent) {
+                    //Do something
+                }
+            }
+            task.addOnFailureListener { e ->
+                if (e is ResolvableApiException) {
+                    try {
+                        // Handle result in onActivityResult()
+                        e.startResolutionForResult(it,
+                            MainActivity.LOCATION_SETTING_REQUEST)
+                    } catch (sendEx: IntentSender.SendIntentException) { }
+                }
+            }
+        }
+    }*/
+
+    override fun onPause() {
+        super.onPause()
+        fusedLocationClient?.removeLocationUpdates(locationUpdates)
     }
 }
 

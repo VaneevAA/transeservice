@@ -8,9 +8,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.DataClasses.Route
 
-@Database(entities = [Point::class,Route::class], version = 1, exportSchema = false)
+@Database(entities = [Point::class,Route::class, PointFile::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class RouteRoomDatabase : RoomDatabase() {
 

@@ -56,4 +56,6 @@ class ViewPointList(application: Application, activity: MainActivity):AndroidVie
     fun getList () : LiveData<MutableList<Point>> {
         return result
     }
+
+
 }

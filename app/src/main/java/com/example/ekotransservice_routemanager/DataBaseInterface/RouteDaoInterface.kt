@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.DataClasses.Route
 
 @Dao
@@ -24,4 +25,7 @@ interface RouteDaoInterface {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertRouteWithReplace(route: Route)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertPointFile(pointFile: PointFile)
 }

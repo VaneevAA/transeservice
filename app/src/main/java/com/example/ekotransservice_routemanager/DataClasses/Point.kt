@@ -4,6 +4,7 @@ package com.example.ekotransservice_routemanager.DataClasses
 import androidx.annotation.NonNull
 import androidx.room.Entity
 import androidx.room.Ignore
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import org.json.JSONException
 import org.json.JSONObject
@@ -11,7 +12,7 @@ import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 
-@Entity(tableName = "pointList_table")
+@Entity(tableName = "pointList_table", indices = arrayOf(Index("lineUID","lineUID")))
 class Point : Serializable{
     @PrimaryKey
     @NonNull
