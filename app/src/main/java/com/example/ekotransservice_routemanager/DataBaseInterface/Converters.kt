@@ -1,6 +1,7 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import androidx.room.TypeConverter
+import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.PointActoins
 import com.example.ekotransservice_routemanager.DataClasses.PointStatuses
 import java.time.Instant
@@ -43,6 +44,26 @@ class Converters {
         @JvmStatic
         fun stringToPointStatus(value: String): PointStatuses {
             return PointStatuses.NOT_VISITED
+        }
+
+        @TypeConverter
+        @JvmStatic
+        fun fromPhotoOrder(photoOrder: PhotoOrder): Int {
+            return when (photoOrder) {
+                PhotoOrder.PHOTO_BEFORE -> 0
+                PhotoOrder.PHOTO_AFTER -> 1
+                else -> -1
+            }
+        }
+
+        @TypeConverter
+        @JvmStatic
+        fun toPhotoOrder(data: Int): PhotoOrder {
+            return when (data) {
+                0 -> PhotoOrder.PHOTO_BEFORE
+                1 -> PhotoOrder.PHOTO_AFTER
+                else -> PhotoOrder.DONT_SET
+            }
         }
     }
 }

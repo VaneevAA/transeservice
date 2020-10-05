@@ -7,15 +7,14 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
-import com.example.ekotransservice_routemanager.DataClasses.Point
-import com.example.ekotransservice_routemanager.DataClasses.Region
-import com.example.ekotransservice_routemanager.DataClasses.Route
-import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import com.example.ekotransservice_routemanager.DataClasses.*
 import com.example.ekotransservice_routemanager.ErrorMessage
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.io.File
 import java.lang.NumberFormatException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -165,4 +164,11 @@ class RouteRepository constructor(application: Application) {
 
     }
 
+    fun savePhotoInRoomDatabase(file: File, point: Point, fileOrder: PhotoOrder) {
+        val exifInterface = androidx.exifinterface.media.ExifInterface(file.absoluteFile)
+        val latLon = exifInterface.latLong
+        val pointFile: PointFile = PointFile(point!!.getLineUID(), Date(file.lastModified()), fileOrder,
+            latLon!!.get(0), latLon!!.get(1))
+        GlobalScope.launch { mRoutesDao!!.insertPointFile(pointFile) }
+    }
 }
