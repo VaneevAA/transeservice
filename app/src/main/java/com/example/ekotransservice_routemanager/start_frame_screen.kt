@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
@@ -21,7 +22,7 @@ import java.util.*
 
 class start_frame_screen : Fragment() {
     var closedRoute : Boolean = false
-    var currentRoute : Route? = null
+
     companion object {
         fun newInstance() = start_frame_screen()
     }
@@ -32,6 +33,7 @@ class start_frame_screen : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        //Объявление основных значений
         val mainView = inflater.inflate(R.layout.start_frame_screen_fragment, container, false)
         val closeView : View = mainView.findViewById(R.id.layoutToCloseRoute)
         val vehicleView: View = mainView.findViewById(R.id.vehicleLayout)
@@ -39,48 +41,60 @@ class start_frame_screen : Fragment() {
         viewScreen = ViewModelProvider(this.requireActivity(),
             StartFrameScreenViewModel.StartFrameScreenModelFactory(requireActivity() as MainActivity))
             .get(StartFrameScreenViewModel::class.java)
-        showHideRouteLiveData(viewScreen.routeLiveData.value,false,mainView)
-        vehicleUpdate(viewScreen.vehicle.value,mainView)
 
+        //Получение машины
+        vehicleUpdate(viewScreen.vehicle.value,mainView)
+        //Отслеживание изменения маршрута
         viewScreen.routeLiveData.observe(requireActivity(), Observer {
             routeUpdate(it,mainView)
         })
-
+        //Отслеживание изменения машины
         viewScreen.vehicle.observe(requireActivity(), Observer {
             vehicleUpdate(it,mainView)
         })
 
+        //Событие обновления
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.setOnRefreshListener {
 
             viewScreen.onRefresh()
 
         }
 
+        //Сворачивание/разворачивание маршрута
         closeView.setOnClickListener {
             showHideCloseRoute(mainView)
         }
 
+        //Установка машины
         vehicleView.setOnClickListener{
             showVehiclePrefernces(mainView)
         }
 
+        //Кнопка обновления маршрута
         imageButton.setOnClickListener {
             viewScreen.onRefresh()
-            //TODO: create route
+        }
+
+        mainView.findViewById<View>(R.id.routeInfo).setOnClickListener {
+            if(viewScreen.routeLiveData.value != null){
+                findNavController().navigate(R.id.route_list)
+            }
 
         }
-        val animateView = this.context?.let { it1 -> AnimateView(mainView.findViewById<View>(R.id.closeLayout), it1,false) }
-        animateView!!.hideHeight()
+
+        //всё сворачиваем для старта
+        showHideRouteLiveData(viewScreen.routeLiveData.value,false,mainView)
+        showHideCloseRoute(mainView)
+
         return mainView
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        //viewModel = ViewModelProviders.of(this).get(StartFrameScreenViewModel::class.java)
-        // TODO: Use the ViewModel
+
     }
 
-    fun showHideCloseRoute(mainView : View){
+    private fun showHideCloseRoute(mainView : View){
         val toCloseView = mainView.findViewById<View>(R.id.closeLayout)
         if(!closedRoute){
             val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1,true) }
@@ -108,7 +122,7 @@ class start_frame_screen : Fragment() {
        mainView.findNavController().navigate(R.id.vehicle_screen)
     }
 
-    private fun getCurrentRoute(){
+    /*private fun getCurrentRoute(){
 
         val routeRepository = RouteRepository(requireActivity().application)
 
@@ -122,7 +136,7 @@ class start_frame_screen : Fragment() {
 
 
 
-    }
+    }*/
 
     /*private fun showHideRoute (animate : Boolean, mainView : View){
         val routeGroup  = mainView.findViewById<View>(R.id.routeGroup)
