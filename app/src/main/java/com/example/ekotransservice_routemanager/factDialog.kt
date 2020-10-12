@@ -32,7 +32,7 @@ class FactDialog(parentFragment : Fragment, point : Point) : DialogFragment() {
         }
 
         builder.setNegativeButton("Отмена") { dialogInterface: DialogInterface, i: Int ->
-            //TODO no fact set
+            //TODO not fact set
             dialogInterface.cancel()
         }
 
