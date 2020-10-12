@@ -8,6 +8,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.constraintlayout.widget.Guideline
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -25,12 +26,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         mSwipeRefreshLayout = findViewById<View>(R.id.thinking) as SwipeRefreshLayout
+        val bottomMenu = findViewById<BottomNavigationView>(R.id.bottom_menu)
 
-       val bottomNavigation: BottomNavigationView = bottom_menu
        val navHostFragment = supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
+       val guideLine = findViewById<Guideline>(R.id.guidelineMain)
        navController = navHostFragment.navController
 
-       bottomNavigation.setOnNavigationItemSelectedListener(BottomNavigationView.OnNavigationItemSelectedListener { menuItem ->
+       bottomMenu.setOnNavigationItemSelectedListener(BottomNavigationView.OnNavigationItemSelectedListener { menuItem ->
            when (menuItem.itemId) {
                R.id.home -> {
                    navController.navigate(R.id.start_frame_screen)
@@ -57,24 +59,32 @@ class MainActivity : AppCompatActivity() {
            false
        })
         navController.addOnDestinationChangedListener{_,destanation, _ ->
-
+            findViewById<View>(R.id.bottom_menu).visibility = View.VISIBLE
             when(destanation.id){
                 R.id.route_list ->{
-                    bottomNavigation.menu.findItem(R.id.list).isChecked = true
-
+                    bottomMenu.menu.findItem(R.id.list).isChecked = true
+                    val animateView = AnimateView(guideLine,this,true)
+                    animateView.showHeight()
                     return@addOnDestinationChangedListener
                 }
                 R.id.start_frame_screen -> {
-                    bottomNavigation.menu.findItem(R.id.home).isChecked = true
-
+                    bottomMenu.menu.findItem(R.id.home).isChecked = true
+                    val animateView = AnimateView(guideLine,this,true)
+                    animateView.showHeight()
                     return@addOnDestinationChangedListener
 
                 }
                 R.id.settingFragment -> {
-                    bottomNavigation.menu.findItem(R.id.settings).isChecked = true
-
+                    bottomMenu.menu.findItem(R.id.settings).isChecked = true
+                    val animateView = AnimateView(guideLine,this,true)
+                    animateView.showHeight()
                     return@addOnDestinationChangedListener
 
+                }
+                else -> {
+                    val animateView = AnimateView(guideLine,this,true)
+                    animateView.hideHeight()
+                    //bottomMenu.visibility = View.GONE
                 }
             }
 
