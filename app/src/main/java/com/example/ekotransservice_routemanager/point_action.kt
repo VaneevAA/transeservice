@@ -20,15 +20,14 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Looper
 import android.provider.MediaStore
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
@@ -36,7 +35,11 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
 import androidx.core.view.children
 import androidx.exifinterface.media.ExifInterface
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointActoins
@@ -45,6 +48,7 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.RuntimeExecutionException
 import kotlinx.android.synthetic.main.fragment_point_action.*
+import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
@@ -62,11 +66,62 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class point_action : Fragment() {
-    // TODO: Rename and change types of parameters
+
     private var point: Point? = null
     private var canDone: Boolean = true
     private var viewPointModel : ViewPointAction? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    companion object {
+        /**
+         * Use this factory method to create a new instance of
+         * this fragment using the provided parameters.
+         *
+         * @param param1 Parameter 1.
+         * @param param2 Parameter 2.
+         * @return A new instance of fragment point_action.
+         */
+        // TODO: Rename and change types and number of parameters
+        @JvmStatic
+        fun newInstance(point: Point, canDone: Boolean) =
+            point_action().apply {
+                arguments = Bundle().apply {
+                    putSerializable("point", point as Serializable)
+                    putBoolean("canDone", canDone)
+                }
+            }
+    }
+
+    var fileBefore : File? = null
+    var fileAfter : File? = null
+    var currentFile: File? = null
+    var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
+    var currentFilePath: String =""
+    private var location: Location? = null
+
+    // Настройки обновления местоположения
+    val locationRequest  = LocationRequest.create().apply {
+        fastestInterval = 10000
+        interval = 10000
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        smallestDisplacement = 1.0f
+    }
+
+    //
+    val locationUpdatesCallback = object : LocationCallback() {
+        override fun onLocationResult(lr: LocationResult) {
+            try {
+                location = lr.locations.last()
+            } catch (e: java.lang.Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    "Присвоить координаты не получилось",
+                    Toast.LENGTH_SHORT
+                ).show()
+                //TODO обработка ошибки получения координат
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,37 +129,18 @@ class point_action : Fragment() {
             point  = it.getSerializable("point") as Point
             canDone = it.getBoolean("canDone")
 
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION), 101);
+                // TODO: Обработка результата запроса разрешения
+            }
 
-            // Create persistent LocationManager reference
-            mLocationManager = requireContext().getSystemService(LOCATION_SERVICE) as LocationManager?
-
+            // Location
             val REQUEST_CHECK_STATE = 12300 // any suitable ID
             val builder = LocationSettingsRequest.Builder()
-                .addLocationRequest(reqSetting)
-
-            val client = LocationServices.getSettingsClient(requireActivity())
-            client.checkLocationSettings(builder.build()).addOnCompleteListener { task ->
-                try {
-                    val state: LocationSettingsStates = task.result.locationSettingsStates
-                    /*Log.e("LOG", "LocationSettings: \n" +
-                            " GPS present: ${state.isGpsPresent} \n" +
-                            " GPS usable: ${state.isGpsUsable} \n" +
-                            " Location present: " +
-                            "${state.isLocationPresent} \n" +
-                            " Location usable: " +
-                            "${state.isLocationUsable} \n" +
-                            " Network Location present: " +
-                            "${state.isNetworkLocationPresent} \n" +
-                            " Network Location usable: " +
-                            "${state.isNetworkLocationUsable} \n"
-                    )*/
-                } catch (e: RuntimeExecutionException) {
-                    if (e.cause is ResolvableApiException)
-                        (e.cause as ResolvableApiException).startResolutionForResult(requireActivity(),
-                            REQUEST_CHECK_STATE)
-                }
-            }
+                .addLocationRequest(locationRequest)
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         }
     }
 
@@ -115,25 +151,65 @@ class point_action : Fragment() {
     ): View? {
 
         val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
-        fillFragment(mainFragment)
+        //fillFragment(mainFragment)
 
         // Inflate the layout for this fragment
 
-        viewPointModel!!.getPoint().observe(this.viewLifecycleOwner, Observer {
+        viewPointModel = ViewModelProvider(this.requireActivity(),
+            ViewPointAction.ViewPointsFactory(this.requireActivity().application,point!!))
+            .get(point!!.getLineUID(),ViewPointAction::class.java)
+
+        /*viewPointModel!!.getPoint().observe(this.viewLifecycleOwner, Observer {
             viewPointModel!!.setPoint(it!!)
             fillFragment(mainFragment)
 
-        })
+        })*/
 
+        val observerPoint = Observer<Point> {
+            pointValue -> (
+                fillFragment(mainFragment)
+                )
+        }
+
+        viewPointModel!!.pointAction.observe(requireActivity(),observerPoint)
+
+        val observerBefore = Observer<Boolean> {
+                fileBeforeIsDone -> (
+                if (fileBeforeIsDone != null && fileBeforeIsDone) {
+                    mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility = View.VISIBLE
+                } else {
+                    mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility  = View.INVISIBLE
+                }
+                )
+        }
+
+        viewPointModel!!.fileBeforeIsDone.observe(requireActivity(), observerBefore)
+
+        val observerAfter = Observer<Boolean> {
+                fileAfterIsDone -> (
+                if (fileAfterIsDone != null && fileAfterIsDone) {
+                    mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility = View.VISIBLE
+                } else {
+                    mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility  = View.INVISIBLE
+                }
+                )
+        }
+
+        viewPointModel!!.fileAfterIsDone.observe(requireActivity(), observerAfter)
+
+        //viewPointModel!!.setFilesIsDone(point!!)
+
+        fillFragment(mainFragment)
 
         mainFragment.findViewById<Button>(R.id.takePhotoBefore)!!.setOnClickListener {
-            //if(fileBefore == null){
-                currentFileOrder = PhotoOrder.PHOTO_BEFORE
-                takePicture()
-                fileBefore = currentFile
-            //}else{
-            //    Toast.makeText(requireContext(),"Фото уже есть",Toast.LENGTH_LONG)
-            //}
+             try {
+                 currentFileOrder = PhotoOrder.PHOTO_BEFORE
+                 takePicture()
+                 fileBefore = currentFile
+             } catch (e:java.lang.Exception) {
+                 Log.e("Ошибка фото", "Ошибка фото $e")
+                 Toast.makeText(requireContext(),"Ошибка $e",Toast.LENGTH_LONG).show()
+             }
         }
         mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
             if(fileBefore != null && point!!.getContCount() != 0){
@@ -193,50 +269,97 @@ class point_action : Fragment() {
         }else{
             viewPointModel!!.getPoint().value!!.getPointActionsCancelArray()
         }
-        //TODO is there already files
+
+        if (viewPointModel!!.fileAfterIsDone.value != null && viewPointModel!!.fileAfterIsDone.value!!) {
+            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility = View.VISIBLE
+        } else {
+            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility  = View.INVISIBLE
+        }
+
+        if (viewPointModel!!.fileBeforeIsDone.value != null && viewPointModel!!.fileBeforeIsDone.value!!) {
+            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility = View.VISIBLE
+        } else {
+            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility  = View.INVISIBLE
+        }
+
         showButtons(mainFragment, listOfActions)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment point_action.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(point: Point, canDone: Boolean) =
-            point_action().apply {
-                arguments = Bundle().apply {
-                    putSerializable("point", point as Serializable)
-                    putBoolean("canDone", canDone)
-                }
+    private fun takePicture(){
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also {
+            takePictureIntent -> takePictureIntent.resolveActivity(requireActivity().packageManager)?.also {
+            val pictureFile = createFile()
+            pictureFile?.also {
+                // val pictureUri = it.toURI()
+                val pictureUri: Uri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.example.ekotransservice_routemanager.fileprovider",
+                    it
+                )
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
+                startActivityForResult(takePictureIntent,1)
             }
+        }
+        }
     }
 
-    var fileBefore : File? = null
-    var fileAfter : File? = null
-    var mLocationManager : LocationManager? = null
-    var currentFile: File? = null
-    var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
+    private fun createFile() : File?{
+        val timeCreated = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
+        val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        try {
+            currentFile = File.createTempFile("${point!!.getLineUID()}_($timeCreated)_${currentFileOrder.string}",".jpg",storage)
+                .apply { currentFilePath = absolutePath }
+            return currentFile
+        }catch (e : Exception){
+            Toast.makeText(requireContext(),"Неудалось записать файл",Toast.LENGTH_LONG).show()
+            //TODO create exception behavior
+        }
 
-    val reqSetting = LocationRequest.create().apply {
-        fastestInterval = 10000
-        interval = 10000
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        smallestDisplacement = 1.0f
+        return null
     }
 
-    val locationUpdates = object : LocationCallback() {
-        override fun onLocationResult(lr: LocationResult) {
-            try {
+    @RequiresApi(Build.VERSION_CODES.Q)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        try {
+        if (resultCode == Activity.RESULT_OK) {
+            setGeoTag(currentFile!!)
+            if (currentFile != null) {
+                viewPointModel!!.saveFile(currentFile!!,point!!,currentFileOrder)
+                /*val isDone = viewPointModel!!.fileBeforeIsDone.value
+                if (isDone != null) {
+                    this.doneTakePhotoBefore.visibility = View.VISIBLE
+                } else {
+                    this.doneTakePhotoBefore.visibility = View.INVISIBLE
+                }*/
+            }
+            // Фотографию надо делать всегда не зависимо от возможности присвоения геометки
+            /*if(!setGeoTag(currentFile!!)){
+                currentFile = null
+            }else{
+                this.doneTakePhotoBefore.visibility = View.VISIBLE
+            }*/
+        }} catch (e:java.lang.Exception) {
+            Log.e("Ошибка фото", "Ошибка фото $e")
+            Toast.makeText(requireContext(),"Ошибка $e",Toast.LENGTH_LONG).show()
+        }
+
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setGeoTag(file : File) : Boolean {
+        /*fusedLocationClient.lastLocation
+            .addOnSuccessListener { location : Location? ->
                 val exifInterface = androidx.exifinterface.media.ExifInterface(currentFile!!.absoluteFile)
-                val location = lr.locations.last()
                 exifInterface.setGpsInfo(location)
                 exifInterface.saveAttributes()
+            }*/
+        try {
+            return if (location != null && location!!.latitude != 0.0  && location!!.longitude != 0.0 ) {
+                val exifInterface = androidx.exifinterface.media.ExifInterface(currentFile!!.absoluteFile)
+                exifInterface.setGpsInfo(location)
+                exifInterface.saveAttributes()
+                true
                 /*exifInterface.setAttribute(
                     androidx.exifinterface.media.ExifInterface.TAG_GPS_LATITUDE,
                     Location.convert(location.latitude, Location.FORMAT_SECONDS)
@@ -263,77 +386,14 @@ class point_action : Fragment() {
                 )
                 exifInterface.latLong
                 exifInterface.saveAttributes()*/
-
-
-            } catch (e: java.lang.Exception) {
-                Toast.makeText(
-                    requireContext(),
-                    "Присвоить координаты не получилось",
-                    Toast.LENGTH_SHORT
-                ).show()
-                //TODO обработка ошибки получения координат
-            }
-        }
-    }
-
-    private fun takePicture(){
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(requireActivity(),arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION), 101);
-            // TODO: Обработка результата запроса разрешения
-        }
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also {
-            takePictureIntent -> takePictureIntent.resolveActivity(requireActivity().packageManager)?.also {
-            val pictureFile = createFile()
-            pictureFile?.also {
-                // val pictureUri = it.toURI()
-                val pictureUri: Uri = FileProvider.getUriForFile(
-                    requireContext(),
-                    "com.example.ekotransservice_routemanager.fileprovider",
-                    it
-                )
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
-                startActivityForResult(takePictureIntent,1)
-            }
-        }
-        }
-    }
-
-    private fun createFile() : File?{
-        val timeCreated = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
-        val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        try {
-            currentFile = File.createTempFile("${point!!.getLineUID()}_($timeCreated)_${currentFileOrder.string}",".jpg",storage)
-            //    .apply { currentFilePath = absolutePath }
-            return currentFile
-        }catch (e : Exception){
-            Toast.makeText(requireContext(),"Неудалось записать файл",Toast.LENGTH_LONG).show()
-            //TODO create exception behavior
-        }
-
-        return null
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            if(!setGeoTag(currentFile!!)){
-                currentFile = null
             }else{
-                this.doneTakePhotoBefore.visibility = View.VISIBLE
+                false
             }
+        }catch (e:java.lang.Exception){
+            Toast.makeText(requireContext(),"Ошибка $e",Toast.LENGTH_LONG).show()
+            return false
         }
 
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun setGeoTag(file : File) : Boolean {
-        fusedLocationClient?.requestLocationUpdates(reqSetting,
-            locationUpdates,
-            null /* Looper */)
-        return true
     }
 
    /* fun showEnableLocationSetting() {
@@ -365,9 +425,49 @@ class point_action : Fragment() {
         }
     }*/
 
+    override fun onResume() {
+        super.onResume()
+        startLocationUpdates()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+            locationUpdatesCallback,
+            Looper.getMainLooper())
+    }
+
     override fun onPause() {
         super.onPause()
-        fusedLocationClient?.removeLocationUpdates(locationUpdates)
+        fusedLocationClient?.removeLocationUpdates(locationUpdatesCallback)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            101 -> {
+                if ((grantResults.isNotEmpty() &&
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // Permission is granted. Continue the action or workflow
+                    // in your app.
+                } else {
+                    Toast.makeText(requireContext(),"Требуется предоставить права на определение местоположения, работа с фотографиями не возможна",Toast.LENGTH_LONG).show()
+                    if (findNavController().popBackStack()) {
+
+                    }else{
+                        findNavController().navigate(R.id.start_frame_screen)
+                    }
+
+                }
+                return
+            }
+            else -> {
+
+            }
+        }
     }
 }
 
