@@ -224,6 +224,11 @@ class point_action : Fragment() {
         }
 
         mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
+           // if(fileBefore != null){
+                val dialog = FactDialog(requireParentFragment(),viewPointModel!!.getPoint(),this,mainFragment)
+                dialog.show(requireActivity().supportFragmentManager,"factDialog")
+            //}
+
             /*val progressBar = ((requireActivity() as MainActivity).getProgressBar())
             val animator = ObjectAnimator.ofInt(progressBar as ProgressBar,"Await",1)
             animator.start()*/
@@ -249,6 +254,10 @@ class point_action : Fragment() {
         }
     }
 
+    fun endOfDialog(mainFragment: View){
+        fillFragment(mainFragment)
+    }
+
     private fun fillFragment(mainFragment: View){
         viewPointModel = activity?.application?.let { ViewPointAction(it,point!!) }
 
@@ -263,6 +272,9 @@ class point_action : Fragment() {
 
         val contCountText = mainFragment.findViewById<TextView>(R.id.containerCount)
         contCountText.text = viewPointModel!!.getPoint().value!!.getContCount().toString()
+
+        val textSetCountFact = mainFragment.findViewById<TextView>(R.id.textSetCountFact)
+        textSetCountFact.text = viewPointModel!!.getPoint().value!!.getCountFact().toString()
 
         var listOfActions: ArrayList<PointActoins> = if(canDone){
             viewPointModel!!.getPoint().value!!.getPointActionsArray()
