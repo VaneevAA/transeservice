@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager
 
+import android.animation.LayoutTransition
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.content.Context
@@ -53,24 +54,14 @@ class AnimateView (var view : View, var context : Context, val animate : Boolean
             animator.start()
 
         }else if (view is Guideline){
-            /*val tY = view.translationY
-            val goneY = ((view.top - (view.parent as ViewGroup).height) / 3).toFloat()
-            view.translationY = goneY
-            val animator = ObjectAnimator.ofPropertyValuesHolder(
-                view.parent,
-                PropertyValuesHolder.ofFloat(Property.of(((view.parent as ViewGroup).layoutParams as ConstraintLayout.LayoutParams).javaClass,(view.layoutParams as ConstraintLayout.LayoutParams).guidePercent.javaClass,"guidePercent") ,0.9F,1F)
-
-            ).apply {
-                doOnEnd { view.visibility = View.GONE }
-            }
-            if(!animate){
-                animator.duration = 0
-            }
-            animator.start()*/
+            val layoutTransition = (view.parent as ConstraintLayout).layoutTransition
+            layoutTransition.setDuration(300) // Change duration
+            layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
             val params = (view as Guideline).layoutParams as ConstraintLayout.LayoutParams
             params.guidePercent = 1F
             view.layoutParams = params
             view.visibility = View.GONE
+            view.requestLayout()
 
         }
         /*val hide = AnimationUtils.loadAnimation(context,R.anim.hide_height)
@@ -122,22 +113,14 @@ class AnimateView (var view : View, var context : Context, val animate : Boolean
             }
             animator.start()
         }else if (view is Guideline){
-
-            /*val animator = ObjectAnimator.ofPropertyValuesHolder(
-                view,
-                PropertyValuesHolder.ofFloat(Property.of(ConstraintLayout.LayoutParams::class.java,Float.javaClass,"guidePercent").name,1F,0.9F),
-
-            ).apply {
-                doOnStart { view.visibility = View.VISIBLE }
-            }
-            if(!animate){
-                animator.duration = 0
-            }
-            animator.start()*/
+            val layoutTransition = (view.parent as ConstraintLayout).layoutTransition
+            layoutTransition.setDuration(300) // Change duration
+            layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
             val params = (view as Guideline).layoutParams as ConstraintLayout.LayoutParams
             params.guidePercent = 0.9F
             view.layoutParams = params
             view.visibility = View.VISIBLE
+            view.requestLayout()
         }
         /*else{
             val show = AnimationUtils.loadAnimation(context,R.anim.hide_height)
