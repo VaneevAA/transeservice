@@ -164,11 +164,32 @@ class RouteRepository constructor(application: Application) {
 
     }
 
-    fun savePhotoInRoomDatabase(file: File, point: Point, fileOrder: PhotoOrder) {
-        val exifInterface = androidx.exifinterface.media.ExifInterface(file.absoluteFile)
-        val latLon = exifInterface.latLong
-        val pointFile: PointFile = PointFile(point!!.getLineUID(), Date(file.lastModified()), fileOrder,
-            latLon!!.get(0), latLon!!.get(1))
-        GlobalScope.launch { mRoutesDao!!.insertPointFile(pointFile) }
+    suspend fun saveFileIntoDBAsync(pointFile: PointFile): Boolean {
+        val result =  GlobalScope.async { saveFileIntoDB(pointFile) }
+        return result.await()
     }
+
+    private fun saveFileIntoDB(pointFile: PointFile): Boolean {
+        try {
+            mRoutesDao!!.insertPointFile(pointFile)
+            return true
+        } catch (e: java.lang.Exception) {
+            return false
+        }
+    }
+
+    suspend fun getFilesFromDBAsync(point: Point, photoOrder: PhotoOrder): MutableList<PointFile>? {
+        val result = GlobalScope.async { getFilesFromDB(point, photoOrder) }
+        return result.await()
+    }
+
+    private fun getFilesFromDB(point: Point, photoOrder: PhotoOrder): MutableList<PointFile>? {
+        try {
+           val data = mRoutesDao!!.getPointFiles(point.getLineUID())
+            return data
+        } catch (e: java.lang.Exception) {
+            return null
+        }
+    }
+
 }

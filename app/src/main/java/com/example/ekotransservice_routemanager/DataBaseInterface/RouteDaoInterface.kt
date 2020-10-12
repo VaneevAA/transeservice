@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.DataClasses.Route
@@ -28,4 +29,10 @@ interface RouteDaoInterface {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertPointFile(pointFile: PointFile)
+
+    /*@Query("SELECT * from pointFiles_table where lineUID = :lineUID AND photoOrder =:photoOrder") //ORDER BY addressName ASC")
+    fun getPointFiles(lineUID: String, photoOrder: PhotoOrder): MutableList<PointFile>*/
+
+    @Query("SELECT * from pointFiles_table where lineUID = :lineUID") //ORDER BY addressName ASC")
+    fun getPointFiles(lineUID: String): MutableList<PointFile>
 }
