@@ -224,10 +224,12 @@ class point_action : Fragment() {
         }
 
         mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
-           // if(fileBefore != null){
+            if(fileBefore != null){
                 val dialog = FactDialog(requireParentFragment(),viewPointModel!!.getPoint(),this,mainFragment)
                 dialog.show(requireActivity().supportFragmentManager,"factDialog")
-            //}
+            }else{
+                Toast.makeText(requireContext(),"Нет фото до",Toast.LENGTH_LONG).show()
+            }
 
             /*val progressBar = ((requireActivity() as MainActivity).getProgressBar())
             val animator = ObjectAnimator.ofInt(progressBar as ProgressBar,"Await",1)
