@@ -23,8 +23,8 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
     val currentPoint: MutableLiveData<Point> = MutableLiveData(point)
     var currentFile: PointFile? = null
 
-    var fileBeforeIsDone: MutableLiveData<Boolean> = MutableLiveData()
-    var fileAfterIsDone: MutableLiveData<Boolean> = MutableLiveData()
+    val fileBeforeIsDone: MutableLiveData<Boolean> = MutableLiveData()
+    val fileAfterIsDone: MutableLiveData<Boolean> = MutableLiveData()
 
     init {
         viewModelScope.launch {

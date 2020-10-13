@@ -269,7 +269,6 @@ class point_action : Fragment() {
     }
 
     private fun fillFragment(mainFragment: View){
-        viewPointModel = activity?.application?.let { ViewPointAction(it,point!!) }
 
         val addressText = mainFragment.findViewById<TextView>(R.id.pointAdress)
         addressText.text = viewPointModel!!.getPoint().value!!.getAddressName()
