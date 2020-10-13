@@ -9,10 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataClasses.*
 import com.example.ekotransservice_routemanager.ErrorMessage
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.File
 import java.lang.NumberFormatException
@@ -164,9 +161,10 @@ class RouteRepository constructor(application: Application) {
 
     }
 
-    suspend fun saveFileIntoDBAsync(pointFile: PointFile): Boolean {
+    suspend fun saveFileIntoDBAsync(pointFile: PointFile): Boolean = withContext(Dispatchers.IO){
         val result =  GlobalScope.async { saveFileIntoDB(pointFile) }
-        return result.await()
+        result.await()
+        //return result.await()
     }
 
     private fun saveFileIntoDB(pointFile: PointFile): Boolean {
@@ -185,7 +183,7 @@ class RouteRepository constructor(application: Application) {
 
     private fun getFilesFromDB(point: Point, photoOrder: PhotoOrder): MutableList<PointFile>? {
         try {
-           val data = mRoutesDao!!.getPointFiles(point.getLineUID())
+           val data = mRoutesDao!!.getPointFiles(point.getLineUID(),photoOrder)
             return data
         } catch (e: java.lang.Exception) {
             return null
