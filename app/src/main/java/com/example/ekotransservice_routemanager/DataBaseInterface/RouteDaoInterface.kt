@@ -30,9 +30,9 @@ interface RouteDaoInterface {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertPointFile(pointFile: PointFile)
 
-    /*@Query("SELECT * from pointFiles_table where lineUID = :lineUID AND photoOrder =:photoOrder") //ORDER BY addressName ASC")
-    fun getPointFiles(lineUID: String, photoOrder: PhotoOrder): MutableList<PointFile>*/
+    @Query("SELECT * from pointFiles_table where lineUID = :lineUID AND photoOrder =:photoOrder") //ORDER BY addressName ASC")
+    fun getPointFiles(lineUID: String, photoOrder: PhotoOrder): MutableList<PointFile>
 
-    @Query("SELECT * from pointFiles_table where lineUID = :lineUID") //ORDER BY addressName ASC")
-    fun getPointFiles(lineUID: String): MutableList<PointFile>
+    /*@Query("SELECT * from pointFiles_table where lineUID = :lineUID") //ORDER BY addressName ASC")
+    fun getPointFiles(lineUID: String): MutableList<PointFile>*/
 }
