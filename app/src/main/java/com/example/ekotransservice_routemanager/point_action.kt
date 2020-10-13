@@ -49,6 +49,9 @@ import com.google.android.gms.location.*
 import com.google.android.gms.tasks.RuntimeExecutionException
 import kotlinx.android.synthetic.main.fragment_point_action.*
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
@@ -157,7 +160,7 @@ class point_action : Fragment() {
 
         viewPointModel = ViewModelProvider(this.requireActivity(),
             ViewPointAction.ViewPointsFactory(this.requireActivity().application,point!!))
-            .get(point!!.getLineUID(),ViewPointAction::class.java)
+            .get(ViewPointAction::class.java)
 
         /*viewPointModel!!.getPoint().observe(this.viewLifecycleOwner, Observer {
             viewPointModel!!.setPoint(it!!)
@@ -165,13 +168,14 @@ class point_action : Fragment() {
 
         })*/
 
+
         val observerPoint = Observer<Point> {
             pointValue -> (
                 fillFragment(mainFragment)
                 )
         }
 
-        viewPointModel!!.pointAction.observe(requireActivity(),observerPoint)
+        viewPointModel!!.currentPoint.observe(requireActivity(),observerPoint)
 
         val observerBefore = Observer<Boolean> {
                 fileBeforeIsDone -> (
@@ -184,6 +188,7 @@ class point_action : Fragment() {
         }
 
         viewPointModel!!.fileBeforeIsDone.observe(requireActivity(), observerBefore)
+        /*viewPointModel!!.saveCurrentFile().observe(requireActivity(),observerBefore)*/
 
         val observerAfter = Observer<Boolean> {
                 fileAfterIsDone -> (
@@ -198,6 +203,8 @@ class point_action : Fragment() {
         viewPointModel!!.fileAfterIsDone.observe(requireActivity(), observerAfter)
 
         //viewPointModel!!.setFilesIsDone(point!!)
+
+        //viewPointModel!!.setPoint(point!!)
 
         fillFragment(mainFragment)
 
@@ -340,7 +347,8 @@ class point_action : Fragment() {
         if (resultCode == Activity.RESULT_OK) {
             setGeoTag(currentFile!!)
             if (currentFile != null) {
-                viewPointModel!!.saveFile(currentFile!!,point!!,currentFileOrder)
+               viewPointModel!!.saveFile(currentFile!!,point!!,currentFileOrder)
+                Toast.makeText(requireContext(),"Картинка загружена",Toast.LENGTH_LONG)
                 /*val isDone = viewPointModel!!.fileBeforeIsDone.value
                 if (isDone != null) {
                     this.doneTakePhotoBefore.visibility = View.VISIBLE
