@@ -10,7 +10,10 @@ import android.widget.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
+import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class FactDialog(parentFragment : Fragment,val point : MutableLiveData<Point>, val mainFragment : point_action,val mainParentView : View) : DialogFragment() {
 
@@ -43,6 +46,9 @@ class FactDialog(parentFragment : Fragment,val point : MutableLiveData<Point>, v
         mainView?.findViewById<ImageButton>(R.id.OK)?.setOnClickListener {
             fact = mainView?.findViewById<EditText>(R.id.factCount)?.text.toString().toInt()
             point.value!!.setCountFact(fact)
+            point.value!!.setDone(true)
+
+            GlobalScope.launch {mainFragment.getViewModel().getRepository().updatePointAsync(point.value!!)}
 
             mainFragment.endOfDialog(mainParentView)
 

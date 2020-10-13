@@ -126,6 +126,10 @@ class point_action : Fragment() {
         }
     }
 
+    fun getViewModel():ViewPointAction {
+        return viewPointModel!!
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -154,19 +158,10 @@ class point_action : Fragment() {
     ): View? {
 
         val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
-        //fillFragment(mainFragment)
-
-        // Inflate the layout for this fragment
 
         viewPointModel = ViewModelProvider(this.requireActivity(),
             ViewPointAction.ViewPointsFactory(this.requireActivity().application,point!!))
             .get(ViewPointAction::class.java)
-
-        /*viewPointModel!!.getPoint().observe(this.viewLifecycleOwner, Observer {
-            viewPointModel!!.setPoint(it!!)
-            fillFragment(mainFragment)
-
-        })*/
 
 
         val observerPoint = Observer<Point> {
@@ -188,7 +183,6 @@ class point_action : Fragment() {
         }
 
         viewPointModel!!.fileBeforeIsDone.observe(requireActivity(), observerBefore)
-        /*viewPointModel!!.saveCurrentFile().observe(requireActivity(),observerBefore)*/
 
         val observerAfter = Observer<Boolean> {
                 fileAfterIsDone -> (
@@ -202,37 +196,24 @@ class point_action : Fragment() {
 
         viewPointModel!!.fileAfterIsDone.observe(requireActivity(), observerAfter)
 
-        //viewPointModel!!.setFilesIsDone(point!!)
-
-        //viewPointModel!!.setPoint(point!!)
+        viewPointModel!!.setViewData(point!!)
 
         fillFragment(mainFragment)
 
         mainFragment.findViewById<Button>(R.id.takePhotoBefore)!!.setOnClickListener {
-             try {
-                 currentFileOrder = PhotoOrder.PHOTO_BEFORE
-                 takePicture()
-                 fileBefore = currentFile
-             } catch (e:java.lang.Exception) {
-                 Log.e("Ошибка фото", "Ошибка фото $e")
-                 Toast.makeText(requireContext(),"Ошибка $e",Toast.LENGTH_LONG).show()
-             }
+            takePicture(PhotoOrder.PHOTO_BEFORE)
         }
         mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
-            if(fileBefore != null && point!!.getContCount() != 0){
+            if (viewPointModel!!.fileBeforeIsDone.value!!) {
+                takePicture(PhotoOrder.PHOTO_AFTER)
+            }else {
                 Toast.makeText(requireContext(),"Предыдущие действия не выполнены",Toast.LENGTH_LONG).show()
-            }else if(fileAfter == null){
-                currentFileOrder = PhotoOrder.PHOTO_AFTER
-                takePicture()
-                fileAfter = currentFile
-            }else{
-                Toast.makeText(requireContext(),"Фото уже есть",Toast.LENGTH_LONG).show()
             }
         }
 
         mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
             //if(fileBefore != null){
-                val dialog = FactDialog(requireParentFragment(),viewPointModel!!.getPoint(),this,mainFragment)
+                val dialog = FactDialog(requireParentFragment(),viewPointModel!!.currentPoint,this,mainFragment)
                 dialog.show(requireActivity().supportFragmentManager,"factDialog")
 
             //}else{
@@ -291,7 +272,7 @@ class point_action : Fragment() {
             viewPointModel!!.getPoint().value!!.getPointActionsCancelArray()
         }
 
-        if (viewPointModel!!.fileAfterIsDone.value != null && viewPointModel!!.fileAfterIsDone.value!!) {
+        /*if (viewPointModel!!.fileAfterIsDone.value != null && viewPointModel!!.fileAfterIsDone.value!!) {
             mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility = View.VISIBLE
         } else {
             mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility  = View.INVISIBLE
@@ -301,17 +282,17 @@ class point_action : Fragment() {
             mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility = View.VISIBLE
         } else {
             mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility  = View.INVISIBLE
-        }
+        }*/
 
         showButtons(mainFragment, listOfActions)
     }
 
-    private fun takePicture(){
+    private fun takePicture(fileOrder: PhotoOrder){
+        currentFileOrder = fileOrder
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also {
             takePictureIntent -> takePictureIntent.resolveActivity(requireActivity().packageManager)?.also {
             val pictureFile = createFile()
             pictureFile?.also {
-                // val pictureUri = it.toURI()
                 val pictureUri: Uri = FileProvider.getUriForFile(
                     requireContext(),
                     "com.example.ekotransservice_routemanager.fileprovider",
@@ -345,22 +326,14 @@ class point_action : Fragment() {
         try {
         if (resultCode == Activity.RESULT_OK) {
             setGeoTag(currentFile!!)
+            when (currentFileOrder) {
+                PhotoOrder.PHOTO_BEFORE -> fileBefore = currentFile
+                PhotoOrder.PHOTO_AFTER -> fileAfter = currentFile
+            }
             if (currentFile != null) {
                viewPointModel!!.saveFile(currentFile!!,point!!,currentFileOrder)
-                Toast.makeText(requireContext(),"Картинка загружена",Toast.LENGTH_LONG)
-                /*val isDone = viewPointModel!!.fileBeforeIsDone.value
-                if (isDone != null) {
-                    this.doneTakePhotoBefore.visibility = View.VISIBLE
-                } else {
-                    this.doneTakePhotoBefore.visibility = View.INVISIBLE
-                }*/
             }
             // Фотографию надо делать всегда не зависимо от возможности присвоения геометки
-            /*if(!setGeoTag(currentFile!!)){
-                currentFile = null
-            }else{
-                this.doneTakePhotoBefore.visibility = View.VISIBLE
-            }*/
         }} catch (e:java.lang.Exception) {
             Log.e("Ошибка фото", "Ошибка фото $e")
             Toast.makeText(requireContext(),"Ошибка $e",Toast.LENGTH_LONG).show()

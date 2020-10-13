@@ -176,6 +176,10 @@ class RouteRepository constructor(application: Application) {
         }
     }
 
+    suspend fun updatePointAsync(point: Point) {
+        GlobalScope.launch { mRoutesDao!!.updatePoint(point) }
+    }
+
     suspend fun getFilesFromDBAsync(point: Point, photoOrder: PhotoOrder): MutableList<PointFile>? {
         val result = GlobalScope.async { getFilesFromDB(point, photoOrder) }
         return result.await()
