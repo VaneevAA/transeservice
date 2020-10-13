@@ -21,11 +21,11 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
     //var fileBeforeIsDone: LiveData<Boolean> = liveData { false }
     var fileBeforeIsDone: LiveData<Boolean> = liveData {
         val data = routeRepository.getFilesFromDBAsync(point,PhotoOrder.PHOTO_BEFORE)
-        emit( data!!.size>0 )
+        emit( data!!.size > 0 )
     }
     var fileAfterIsDone: LiveData<Boolean> = liveData {
         val data = routeRepository.getFilesFromDBAsync(point,PhotoOrder.PHOTO_AFTER)
-        emit( data!!.size>0 ) }
+        emit( data!!.size > 0 ) }
 
     class ViewPointsFactory(private val application: Application,val point: Point): ViewModelProvider.Factory{
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -49,12 +49,12 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
 
         fileBeforeIsDone = liveData {
             val data = routeRepository.getFilesFromDBAsync(point,PhotoOrder.PHOTO_BEFORE)
-            emit( data!!.size>0 )
+            emit( data!!.size > 0 )
         }
 
         fileAfterIsDone = liveData {
             val data = routeRepository.getFilesFromDBAsync(point,PhotoOrder.PHOTO_AFTER)
-            emit( data!!.size>0 )
+            emit( data!!.size > 0 )
         }
     }
 
