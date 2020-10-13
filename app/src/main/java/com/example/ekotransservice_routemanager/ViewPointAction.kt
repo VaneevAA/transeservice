@@ -21,18 +21,32 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
    private val routeRepository: RouteRepository = RouteRepository(application)
 
     val currentPoint: MutableLiveData<Point> = MutableLiveData(point)
-    var currentFile: PointFile? = null
 
-    val fileBeforeIsDone: MutableLiveData<Boolean> = MutableLiveData()
-    val fileAfterIsDone: MutableLiveData<Boolean> = MutableLiveData()
+    val fileBeforeIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
+    val fileAfterIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
 
-    init {
+    /*init {
+        currentPoint.value = point
         viewModelScope.launch {
             var data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_AFTER)
             fileAfterIsDone.value = data!!.size > 0
             data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_BEFORE)
             fileBeforeIsDone.value = data!!.size > 0
         }
+    }*/
+
+    fun setViewData(point: Point){
+        currentPoint.value = point
+        viewModelScope.launch {
+            var data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_AFTER)
+            fileAfterIsDone.value = data!!.size > 0
+            data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_BEFORE)
+            fileBeforeIsDone.value = data!!.size > 0
+        }
+    }
+
+    fun getRepository(): RouteRepository{
+        return routeRepository
     }
 
     /*var fileBeforeIsDone: LiveData<Boolean> = currentState.switchMap {
@@ -65,78 +79,26 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
             }
             throw IllegalArgumentException("Unknown class")
         }
-
     }
 
     fun getPoint() : MutableLiveData<Point> {
         return currentPoint
     }
 
-    /*fun setPoint(point:Point){
-        currentPoint.value = point
-    }
-
-
-    fun setPointData(){
-        viewModelScope.launch {
-            var data =
-                routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_AFTER)
-            fileAfterIsDone.value = data!!.size > 0
-            data =
-                routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_BEFORE)
-            fileBeforeIsDone.value = data!!.size > 0
-        }
-    }*/
 
     fun saveFile(file: File, point: Point, fileOrder: PhotoOrder) {
         val exifInterface = androidx.exifinterface.media.ExifInterface(file.absoluteFile)
         val latLon = exifInterface.latLong
-        val pointFile: PointFile = PointFile(point!!.getLineUID(), Date(file.lastModified()), fileOrder,
-            latLon!!.get(0), latLon!!.get(1))
-        currentFile = pointFile
-        saveCurrentFile()
-
-    }
-
-    /*fun saveCurrentFile() {
+        val pointFile: PointFile = PointFile(point!!.getLineUID(), Date(file.lastModified()), fileOrder, latLon!!.get(0), latLon!!.get(1))
         viewModelScope.launch {
-            if (currentFile!!.photoOrder == PhotoOrder.PHOTO_BEFORE) {
-                val result = kotlin.runCatching { routeRepository.saveFileIntoDBAsync(currentFile!!)}
-                result.onSuccess {
-                    fileBeforeIsDone.postValue(true)
-                }.onFailure {
-                    fileBeforeIsDone.postValue(false) }
+            val result = routeRepository.saveFileIntoDBAsync(pointFile)
+            if (pointFile!!.photoOrder == PhotoOrder.PHOTO_BEFORE) {
+                fileBeforeIsDone.value = result
             } else {
-                val result = routeRepository.saveFileIntoDBAsync(currentFile!!)
-                fileAfterIsDone.postValue(result)
+                fileAfterIsDone.value = result
             }
         }
-    }*/
 
-    @UiThread
-    fun saveCurrentFile(): MutableLiveData<Boolean>{
-
-            GlobalScope.launch(Dispatchers.Main) {
-                if (currentFile!!.photoOrder == PhotoOrder.PHOTO_BEFORE) {
-                    val result = async(Dispatchers.IO) {
-                        return@async routeRepository.saveFileIntoDBAsync(currentFile!!)
-                    }.await()
-                    fileBeforeIsDone.value = result
-
-                } else {
-                    val result = routeRepository.saveFileIntoDBAsync(currentFile!!)
-                    fileAfterIsDone.postValue(result)
-                }
-            }
-
-        return fileBeforeIsDone
-    }
-
-
-
-    private suspend fun saveFileIntDB(pointFile: PointFile): Boolean {
-        val data = viewModelScope.async {routeRepository.saveFileIntoDBAsync(pointFile)}
-        return data.await()
     }
 
 }
