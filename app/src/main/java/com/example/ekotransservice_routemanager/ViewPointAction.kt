@@ -50,10 +50,11 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
 
     /*var fileBeforeIsDone: LiveData<Boolean> = liveData {
         val data = routeRepository.getFilesFromDBAsync(point,PhotoOrder.PHOTO_BEFORE)
-        emit( data!!.size>0 )
+        emit( data!!.size > 0 )
     }
     var fileAfterIsDone: LiveData<Boolean> = liveData {
         val data = routeRepository.getFilesFromDBAsync(point,PhotoOrder.PHOTO_AFTER)
+
         emit( data!!.size>0 ) }*/
 
 
@@ -74,6 +75,7 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
     /*fun setPoint(point:Point){
         currentPoint.value = point
     }
+
 
     fun setPointData(){
         viewModelScope.launch {
