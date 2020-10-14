@@ -215,7 +215,6 @@ class point_action : Fragment() {
             if(fileBefore != null){
                 val dialog = FactDialog(requireParentFragment(),viewPointModel!!.currentPoint,this,mainFragment)
                 dialog.show(requireActivity().supportFragmentManager,"factDialog")
-
             }else{
                 Toast.makeText(requireContext(),"Нет фото до",Toast.LENGTH_LONG).show()
             }
