@@ -19,7 +19,7 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/PortText"
-            app:useSimpleSummaryProvider="true"/>
+            app:useSimpleSummaryProvider="true" />
         <androidx.preference.EditTextPreference
             android:defaultValue="Default value"
             android:inputType="textPassword"

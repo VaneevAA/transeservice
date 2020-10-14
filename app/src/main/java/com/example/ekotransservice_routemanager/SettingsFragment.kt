@@ -8,6 +8,7 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.preference.*
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -42,7 +43,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
         savedInstanceState: Bundle?
     ): View? {
         //requireContext().getTheme().applyStyle(R.style.PreferenceScreen, true);
-        return super.onCreateView(inflater, container, savedInstanceState)
+        val view = super.onCreateView(inflater, container, savedInstanceState)
+        view?.background = requireActivity().getDrawable(R.drawable.pictures_back)
+        /*for( child in (view as ViewGroup).children){
+            //child.background = requireActivity().getDrawable(R.drawable.point_back)
+            if (child is ViewGroup){
+                for (grandChild in (child as ViewGroup).children){
+                    grandChild.background = requireActivity().getDrawable(R.drawable.point_back)
+                }
+            }
+        }*/
+
+        return view
     }
 
 }
