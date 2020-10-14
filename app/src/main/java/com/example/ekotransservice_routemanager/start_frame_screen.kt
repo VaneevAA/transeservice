@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager
 
+import android.content.Context
 import android.database.Observable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
@@ -43,12 +45,14 @@ class start_frame_screen : Fragment() {
             .get(StartFrameScreenViewModel::class.java)
 
         //Получение машины
-        vehicleUpdate(viewScreen.vehicle.value,mainView)
+        //vehicleUpdate(viewScreen.vehicle.value,mainView)
         //Отслеживание изменения маршрута
+        viewScreen.routeLiveData.removeObservers(requireActivity())
         viewScreen.routeLiveData.observe(requireActivity(), Observer {
             routeUpdate(it,mainView)
         })
         //Отслеживание изменения машины
+        viewScreen.vehicle.removeObservers(requireActivity())
         viewScreen.vehicle.observe(requireActivity(), Observer {
             vehicleUpdate(it,mainView)
         })
@@ -59,6 +63,8 @@ class start_frame_screen : Fragment() {
             viewScreen.onRefresh()
 
         }
+
+        viewScreen.onRefresh()
 
         //Сворачивание/разворачивание маршрута
         closeView.setOnClickListener {
@@ -167,6 +173,8 @@ class start_frame_screen : Fragment() {
         val atAllCount : TextView = mainView.findViewById(R.id.atAllCount)
         val doneCount : TextView = mainView.findViewById(R.id.doneCount)
         val dateView = mainView.findViewById<TextView>(R.id.dateOfRoute)
+
+
         if(route == null){
             val animation = AnimateView(routeGroup,requireContext(),animate)
             animation.hideHeight()

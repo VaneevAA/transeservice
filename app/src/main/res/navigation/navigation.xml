@@ -13,6 +13,8 @@
         <action
             android:id="@+id/action_route_list_to_point_action"
             app:destination="@id/point_action"
+            app:popUpTo="@id/point_action"
+            app:popUpToInclusive="true"
             app:enterAnim="@android:anim/slide_in_left"
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
@@ -40,6 +42,8 @@
         <action
             android:id="@+id/action_start_frame_screen_to_route_list"
             app:destination="@id/route_list"
+            app:popUpTo="@id/route_list"
+            app:popUpToInclusive="true"
             app:enterAnim="@android:anim/slide_in_left"
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
@@ -47,6 +51,8 @@
         <action
             android:id="@+id/action_start_frame_screen_to_settingFragment"
             app:destination="@id/settingFragment"
+            app:popUpTo="@id/settingFragment"
+            app:popUpToInclusive="true"
             app:enterAnim="@android:anim/slide_in_left"
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
@@ -54,6 +60,8 @@
         <action
             android:id="@+id/action_start_frame_screen_to_vehicle_screen"
             app:destination="@id/vehicle_screen"
+            app:popUpTo="@id/vehicle_screen"
+            app:popUpToInclusive="true"
             app:enterAnim="@android:anim/slide_in_left"
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
