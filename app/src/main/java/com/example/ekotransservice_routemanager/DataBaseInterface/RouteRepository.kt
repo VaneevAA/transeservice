@@ -2,11 +2,14 @@ package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import android.app.Application
 import android.app.Notification
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
+import androidx.room.Room
 import com.example.ekotransservice_routemanager.DataClasses.*
 import com.example.ekotransservice_routemanager.ErrorMessage
 import kotlinx.coroutines.*
@@ -25,7 +28,7 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.reflect.jvm.internal.pcollections.HashPMap
 
-class RouteRepository constructor(application: Application) {
+class RouteRepository constructor(context: Context) {
 
     private val serverConnector: RouteServerConnection = RouteServerConnection()
     /*private val serverConnector: RouteServerConnection = RouteServerConnection(
@@ -38,23 +41,43 @@ class RouteRepository constructor(application: Application) {
     private var vehicle: Vehicle? = null
     private var errorArrayList: ArrayList<ErrorMessage> = ArrayList()
 
-   init {
-       // инициальзация базы данных Room
-       db = RouteRoomDatabase.getDatabase(application.applicationContext)
-       mRoutesDao = db!!.routesDao()
+    companion object {
+        // Singleton prevents multiple instances of database opening at the
+        // same time.
+        @Volatile
+        private var INSTANCE: RouteRepository? = null
 
-       // Получение текущих настроек
-       val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application.applicationContext)
-       val urlName = sharedPreferences.getString("URL_NAME","") as String
-       val urlPort = sharedPreferences.getString("URL_PORT","80") as String
-       val urlPass = sharedPreferences.getString("URL_AUTHPASS","") as String
-       val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
-       vehicle = Vehicle(vehicleString)
+        fun getInstance(context: Context): RouteRepository {
+            val tempInstance = INSTANCE
+            if (tempInstance != null) {
+                return tempInstance
+            }
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: RouteRepository(context.applicationContext)
+                    .also { INSTANCE = it }
+            }
 
-       // установка параметров подключения
-       serverConnector.setConnectionParams(urlName,urlPort.toInt())
-       serverConnector.setAuthPass(urlPass)
+        }
     }
+
+    init {
+        // инициальзация базы данных Room
+        db = RouteRoomDatabase.getDatabase(context)
+        mRoutesDao = db!!.routesDao()
+
+        // Получение текущих настроек
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
+        val urlName = sharedPreferences.getString("URL_NAME","") as String
+        val urlPort = sharedPreferences.getString("URL_PORT","80") as String
+        val urlPass = sharedPreferences.getString("URL_AUTHPASS","") as String
+        val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
+        vehicle = Vehicle(vehicleString)
+
+        // установка параметров подключения
+        serverConnector.setConnectionParams(urlName,urlPort.toInt())
+        serverConnector.setAuthPass(urlPass)
+    }
+
 
     // Загрузка списка точек
     // reload - требуется загрузка с  Postgres
@@ -176,8 +199,12 @@ class RouteRepository constructor(application: Application) {
         }
     }
 
-    suspend fun updatePointAsync(point: Point) {
-        GlobalScope.launch { mRoutesDao!!.updatePoint(point) }
+    fun updatePointAsync(point: Point) {
+        GlobalScope.launch {
+            mRoutesDao!!.updatePoint(point)
+            val list = loadTrackListFromRoom(true)
+            val i = 1
+        }
     }
 
     suspend fun getFilesFromDBAsync(point: Point, photoOrder: PhotoOrder): MutableList<PointFile>? {
@@ -193,5 +220,6 @@ class RouteRepository constructor(application: Application) {
             return null
         }
     }
+
 
 }

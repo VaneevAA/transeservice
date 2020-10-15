@@ -1,6 +1,7 @@
 package com.example.ekotransservice_routemanager
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Point
@@ -14,12 +15,8 @@ class ViewPointList(application: Application, activity: MainActivity):AndroidVie
         emit(loadDataFromDB())
         activity.mSwipeRefreshLayout!!.isRefreshing = false
     }
-    private val routeRepository: RouteRepository = RouteRepository(application)
-    /*init {
-        pointsList.value = mutableListOf()
-        viewModelScope.launch { loadData() }
 
-    }*/
+    private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
 
     class ViewPointsFactory(private val application: Application, private  val activity: MainActivity):ViewModelProvider.Factory{
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -31,20 +28,18 @@ class ViewPointList(application: Application, activity: MainActivity):AndroidVie
 
     }
 
-    /*private suspend fun loadData() {
-
-        val trackList = viewModelScope.async {routeRepository.getPointList(true)}
-        val result = trackList.await()
-        if (result != null){
-            for (point: Point in result){
-                pointsList.value?.add(point)
-            }
-        }
-    }*/
+    private suspend fun loadData() {
+        try {
+            val trackList = viewModelScope.async {routeRepository.getPointList(false)}
+            val result = trackList.await()
+            if (result != null){
+                for (point: Point in result){
+                    pointsList.value?.add(point)
+                }
 
     private suspend fun loadDataFromDB() : MutableList<Point>{
 
-        val trackList = viewModelScope.async {routeRepository.getPointList(true)}
+        val trackList = viewModelScope.async {routeRepository.getPointList(false)}
         return trackList.await() ?: mutableListOf()
     }
 

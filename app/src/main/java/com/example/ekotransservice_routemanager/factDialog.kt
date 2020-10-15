@@ -48,7 +48,7 @@ class FactDialog(parentFragment : Fragment,val point : MutableLiveData<Point>, v
             point.value!!.setCountFact(fact)
             point.value!!.setDone(true)
 
-            GlobalScope.launch {mainFragment.getViewModel().getRepository().updatePointAsync(point.value!!)}
+            mainFragment.getViewModel().getRepository().updatePointAsync(point.value!!)
 
             mainFragment.endOfDialog(mainParentView)
 

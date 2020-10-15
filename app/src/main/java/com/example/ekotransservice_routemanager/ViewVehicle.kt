@@ -30,7 +30,8 @@ class ViewVehicle (application: Application): AndroidViewModel(application) {
     var currentRegion: Region? = null
     var currentVehicle: Vehicle? = null
 
-    val routeRepository: RouteRepository = RouteRepository(application)
+    private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
+    //val routeRepository: RouteRepository = RouteRepository(application)
 
     init {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application.applicationContext)
