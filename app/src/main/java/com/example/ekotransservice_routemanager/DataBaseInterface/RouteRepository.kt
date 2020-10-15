@@ -82,18 +82,18 @@ class RouteRepository constructor(context: Context) {
     // Загрузка списка точек
     // reload - требуется загрузка с  Postgres
     suspend fun getPointList(reload: Boolean): MutableList<Point>? {
-        try {
+        return try {
             if (reload) {
                 val currentRoute = GlobalScope.async { getCurrentRoute() }
                 val dataLoaded = GlobalScope.async { loadTaskFromServer(currentRoute.await()) }
                 val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await()) }
-                return tracklist.await()
+                tracklist.await()
             } else {
                 val tracklist = GlobalScope.async { loadTrackListFromRoom(true) }
-                return tracklist.await()
+                tracklist.await()
             }
         }catch (e: java.lang.Exception){
-            return null
+            null
         }
     }
 
@@ -144,50 +144,51 @@ class RouteRepository constructor(context: Context) {
     // Cохранение массива точек в локальную базу
     private fun saveTrackListIntoRoom(trackList: ArrayList<Point>?):Boolean {
         if (trackList != null) {
-            try {
+            return try {
                 mRoutesDao!!.insertPointListOnlyNew(trackList)
-                return true
+                true
             } catch (e: java.lang.Exception){
                 errorArrayList.add(ErrorMessage("Ошибка работы с локальной базой данных", "Ошибка записи данных",e))
-                return false
+                false
             }
         }
         return false
     }
 
+    // Сохранение маршрута
     private fun saveRouteIntoRoom(data: ArrayList<Point>, vehicle: Vehicle, dateTask: Date ):Boolean {
-            try {
-                val route = Route()
-                route.setCountPoint(data.size)
-                route.setVehicle(vehicle)
-                route.setRouteDate(dateTask)
-                route.setDocUid(data[0].getDocUID())
-                mRoutesDao!!.insertRouteWithReplace(route)
-                return true
-            } catch (e: java.lang.Exception){
-                errorArrayList.add(ErrorMessage("Ошибка работы с локальной базой данных", "Ошибка записи данных",e))
-                return false
-            }
-        return false
+        return try {
+            val route = Route()
+            route.setCountPoint(data.size)
+            route.setVehicle(vehicle)
+            route.setRouteDate(dateTask)
+            route.setDocUid(data[0].getDocUID())
+            mRoutesDao!!.insertRouteWithReplace(route)
+            true
+        } catch (e: java.lang.Exception){
+            errorArrayList.add(ErrorMessage("Ошибка работы с локальной базой данных", "Ошибка записи данных",e))
+            false
+        }
     }
 
 
     // Получение списка точек из локальной базы
     private fun loadTrackListFromRoom(dataLoaded: Boolean): MutableList<Point>? {
-        if (dataLoaded) {
+        return if (dataLoaded) {
             try {
                 val data = mRoutesDao!!.getCurrentList()
-                return data
+                data
             } catch (e: Exception) {
                 errorArrayList.add(ErrorMessage("Ошибка работы с локальной базой данных", "Ошибка чтения данных",e))
-                return null
+                null
             }
         }else {
-            return null
+            null
         }
 
     }
 
+    // Сохранение файлов в локальную базу данных. Асинхронный вызов
     suspend fun saveFileIntoDBAsync(pointFile: PointFile): Boolean = withContext(Dispatchers.IO){
         val result =  GlobalScope.async { saveFileIntoDB(pointFile) }
         result.await()
@@ -195,33 +196,37 @@ class RouteRepository constructor(context: Context) {
     }
 
     private fun saveFileIntoDB(pointFile: PointFile): Boolean {
-        try {
+        return try {
             mRoutesDao!!.insertPointFile(pointFile)
-            return true
+            true
         } catch (e: java.lang.Exception) {
-            return false
+            false
         }
     }
 
+    //Получение файлов из локальной базы данных
+    suspend fun getFilesFromDBAsync(point: Point, photoOrder: PhotoOrder? = null): MutableList<PointFile>? {
+        val result = GlobalScope.async { getFilesFromDB(point, photoOrder) }
+        return result.await()
+    }
+
+    private fun getFilesFromDB(point: Point, photoOrder: PhotoOrder?): MutableList<PointFile>? {
+        return try {
+            val data = mRoutesDao!!.getPointFiles(point.getLineUID(),photoOrder)
+            data
+        } catch (e: java.lang.Exception) {
+            null
+        }
+    }
+
+
+    // Обновление выполнения / данных по точке
     fun updatePointAsync(point: Point) {
         GlobalScope.launch {
             mRoutesDao!!.updatePointWithRoute(point)
         }
     }
 
-    suspend fun getFilesFromDBAsync(point: Point, photoOrder: PhotoOrder): MutableList<PointFile>? {
-        val result = GlobalScope.async { getFilesFromDB(point, photoOrder) }
-        return result.await()
-    }
-
-    private fun getFilesFromDB(point: Point, photoOrder: PhotoOrder): MutableList<PointFile>? {
-        try {
-           val data = mRoutesDao!!.getPointFiles(point.getLineUID(),photoOrder)
-            return data
-        } catch (e: java.lang.Exception) {
-            return null
-        }
-    }
 
 
 }
