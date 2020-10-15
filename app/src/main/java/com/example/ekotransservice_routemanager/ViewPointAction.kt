@@ -16,9 +16,9 @@ import java.io.File
 import java.lang.IllegalArgumentException
 import java.util.*
 
-class ViewPointAction(application: Application,point: Point) : AndroidViewModel(application) {
+class ViewPointAction(application: Application,activity: MainActivity,point: Point) : AndroidViewModel(application) {
 
-   private val routeRepository: RouteRepository = RouteRepository(application)
+    private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
 
     val currentPoint: MutableLiveData<Point> = MutableLiveData(point)
 
@@ -72,10 +72,10 @@ class ViewPointAction(application: Application,point: Point) : AndroidViewModel(
         emit( data!!.size>0 ) }*/
 
 
-    class ViewPointsFactory(private val application: Application,val point: Point): ViewModelProvider.Factory{
+    class ViewPointsFactory(private val application: Application,private val activity: MainActivity,val point: Point): ViewModelProvider.Factory{
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if(modelClass.isAssignableFrom(ViewPointAction::class.java)){
-                return ViewPointAction(application,point) as T
+                return ViewPointAction(application,activity,point) as T
             }
             throw IllegalArgumentException("Unknown class")
         }

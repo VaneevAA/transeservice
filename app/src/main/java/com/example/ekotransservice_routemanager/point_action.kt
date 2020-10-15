@@ -160,7 +160,7 @@ class point_action : Fragment() {
         val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
 
         viewPointModel = ViewModelProvider(this.requireActivity(),
-            ViewPointAction.ViewPointsFactory(this.requireActivity().application,point!!))
+            ViewPointAction.ViewPointsFactory(this.requireActivity().application,requireActivity() as MainActivity,point!!))
             .get(ViewPointAction::class.java)
 
 

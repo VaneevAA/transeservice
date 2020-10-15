@@ -11,7 +11,7 @@ import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.DataClasses.Route
 
-@Database(entities = [Point::class,Route::class, PointFile::class], version = 1, exportSchema = false)
+@Database(entities = [Point::class,Route::class,PointFile::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class RouteRoomDatabase : RoomDatabase() {
 
@@ -22,21 +22,22 @@ abstract class RouteRoomDatabase : RoomDatabase() {
         // same time.
         @Volatile
         private var INSTANCE: RouteRoomDatabase? = null
-        private val LOCK = Any()
 
         fun getDatabase(context: Context): RouteRoomDatabase {
             val tempInstance = INSTANCE
             if (tempInstance != null) {
                 return tempInstance
             }
-            synchronized(LOCK) {
-                INSTANCE = Room.databaseBuilder(
-                    context,
+            synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
                     RouteRoomDatabase::class.java,
                     "trackList_database.db"
                 ).build()
-                return INSTANCE as RouteRoomDatabase
+                INSTANCE = instance
+                return instance
             }
         }
+
     }
 }

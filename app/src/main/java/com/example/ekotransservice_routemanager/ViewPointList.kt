@@ -1,6 +1,7 @@
 package com.example.ekotransservice_routemanager
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Point
@@ -15,10 +16,10 @@ class ViewPointList(application: Application, activity: MainActivity):AndroidVie
         emit(loadDataFromDB())
         activity.mSwipeRefreshLayout!!.isRefreshing = false
     }
-    private val routeRepository: RouteRepository = RouteRepository(application)
+    private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
     init {
-        pointsList.value = mutableListOf()
-        viewModelScope.launch { loadData() }
+        /*pointsList.value = mutableListOf()
+        viewModelScope.launch { loadData() }*/
 
     }
 
@@ -33,19 +34,23 @@ class ViewPointList(application: Application, activity: MainActivity):AndroidVie
     }
 
     private suspend fun loadData() {
-
-        val trackList = viewModelScope.async {routeRepository.getPointList(true)}
-        val result = trackList.await()
-        if (result != null){
-            for (point: Point in result){
-                pointsList.value?.add(point)
+        try {
+            val trackList = viewModelScope.async {routeRepository.getPointList(false)}
+            val result = trackList.await()
+            if (result != null){
+                for (point: Point in result){
+                    pointsList.value?.add(point)
+                }
             }
+        }catch(e: Exception) {
+            //TODO Обработка исключений
+            Toast.makeText(getApplication(),"Ошибка получения данных",Toast.LENGTH_LONG).show()
         }
     }
 
     private suspend fun loadDataFromDB() : MutableList<Point>{
 
-        val trackList = viewModelScope.async {routeRepository.getPointList(true)}
+        val trackList = viewModelScope.async {routeRepository.getPointList(false)}
         return trackList.await() ?: pointsList.value!!
     }
 

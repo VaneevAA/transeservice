@@ -13,7 +13,10 @@ import java.lang.IllegalArgumentException
 
 class StartFrameScreenViewModel (val activity: MainActivity): ViewModel() {
     // TODO: Implement the ViewModel
-    private val routeRepository = RouteRepository(activity.application)
+    //private val routeRepository = RouteRepository(activity.application)
+
+    private val routeRepository = RouteRepository.getInstance(activity.applicationContext)
+
     var routeLiveData : LiveData<Route> = liveData {
         activity.mSwipeRefreshLayout!!.isRefreshing = true
         try {
