@@ -18,6 +18,9 @@ interface RouteDaoInterface {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPointListWithReplace(pointList: ArrayList<Point>)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertPointListOnlyNew(pointList: ArrayList<Point>)
+
     @Query("SELECT * from currentRoute_table ") //ORDER BY addressName ASC")
     fun getCurrentRoute(): MutableList<Route>
 
@@ -30,8 +33,20 @@ interface RouteDaoInterface {
     @Query("SELECT * from pointFiles_table where lineUID = :lineUID AND photoOrder =:photoOrder") //ORDER BY addressName ASC")
     fun getPointFiles(lineUID: String, photoOrder: PhotoOrder): MutableList<PointFile>
 
+    @Query("UPDATE currentRoute_table SET countPointDone = :countPointDone")
+    fun updateCountPointDone(countPointDone: Int)
+
+    @Query("SELECT COUNT(1) as countDone from pointList_table where done Group By docUID")
+    fun countPointDone(): Int
+
     @Update
     fun updatePoint(point: Point)
-    /*@Query("SELECT * from pointFiles_table where lineUID = :lineUID") //ORDER BY addressName ASC")
-    fun getPointFiles(lineUID: String): MutableList<PointFile>*/
+
+    @Transaction
+    open fun updatePointWithRoute(point: Point) {
+        val updateResult = updatePoint(point)
+        val countDone = countPointDone()
+        updateCountPointDone(countDone)
+    }
+
 }

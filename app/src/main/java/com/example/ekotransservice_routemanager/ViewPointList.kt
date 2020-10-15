@@ -28,15 +28,6 @@ class ViewPointList(application: Application, activity: MainActivity):AndroidVie
 
     }
 
-    private suspend fun loadData() {
-        try {
-            val trackList = viewModelScope.async {routeRepository.getPointList(false)}
-            val result = trackList.await()
-            if (result != null){
-                for (point: Point in result){
-                    pointsList.value?.add(point)
-                }
-
     private suspend fun loadDataFromDB() : MutableList<Point>{
 
         val trackList = viewModelScope.async {routeRepository.getPointList(false)}

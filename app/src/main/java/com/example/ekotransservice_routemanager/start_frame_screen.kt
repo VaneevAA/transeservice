@@ -78,7 +78,7 @@ class start_frame_screen : Fragment() {
 
         //Кнопка обновления маршрута
         imageButton.setOnClickListener {
-            viewScreen.onRefresh()
+            viewScreen.onRefresh(true)
         }
 
         mainView.findViewById<View>(R.id.routeInfo).setOnClickListener {

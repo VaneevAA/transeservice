@@ -95,8 +95,8 @@ class point_action : Fragment() {
             }
     }
 
-    var fileBefore : File? = null
-    var fileAfter : File? = null
+    //var fileBefore : File? = null
+    //var fileAfter : File? = null
     var currentFile: File? = null
     var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
     var currentFilePath: String =""
@@ -212,7 +212,7 @@ class point_action : Fragment() {
         }
 
         mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
-            if(fileBefore != null){
+            if(viewPointModel!!.fileBeforeIsDone.value!!){
                 val dialog = FactDialog(requireParentFragment(),viewPointModel!!.currentPoint,this,mainFragment)
                 dialog.show(requireActivity().supportFragmentManager,"factDialog")
             }else{
@@ -322,10 +322,10 @@ class point_action : Fragment() {
         try {
         if (resultCode == Activity.RESULT_OK) {
             setGeoTag(currentFile!!)
-            when (currentFileOrder) {
+            /*when (currentFileOrder) {
                 PhotoOrder.PHOTO_BEFORE -> fileBefore = currentFile
                 PhotoOrder.PHOTO_AFTER -> fileAfter = currentFile
-            }
+            }*/
             if (currentFile != null) {
                viewPointModel!!.saveFile(currentFile!!,point!!,currentFileOrder)
             }
