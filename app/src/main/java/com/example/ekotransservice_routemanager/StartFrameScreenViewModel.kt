@@ -37,7 +37,7 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
         }
     }
 
-    fun onRefresh (){
+    fun onRefresh (reload: Boolean = false){
         /*routeLiveData = liveData {
             try {
                  emit(routeRepository.getCurrentRoute()!!)
@@ -46,11 +46,14 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
             }
         }*/
         viewModelScope.launch {
-            val valueRoute = routeRepository.getCurrentRoute()!!
+            if (reload) {
+                val pointList = routeRepository.getPointList(true)
+            }
+            val valueRoute = routeRepository.getCurrentRoute()
             if(valueRoute != null){
                 routeLiveData.value = valueRoute
             }else{
-                Toast.makeText(activity.applicationContext, "Нет подключения к БД", Toast.LENGTH_LONG).show()
+                Toast.makeText(activity.applicationContext, "Маршрут не загружен", Toast.LENGTH_LONG).show()
             }
 
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)

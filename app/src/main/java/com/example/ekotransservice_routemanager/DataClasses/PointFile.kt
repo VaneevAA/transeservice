@@ -10,7 +10,7 @@ import java.util.*
             childColumns = ["lineUID"],
             onDelete = CASCADE)],
     indices = arrayOf(Index("lineUID","lineUID")))
-class PointFile(val lineUID: String, val timeDate: Date, var photoOrder: PhotoOrder, val lat: Double, val lon: Double)  {
+class PointFile(val lineUID: String, val timeDate: Date, var photoOrder: PhotoOrder, val lat: Double, val lon: Double, val filePath: String)  {
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0L
 

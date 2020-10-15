@@ -82,14 +82,18 @@ class RouteRepository constructor(context: Context) {
     // Загрузка списка точек
     // reload - требуется загрузка с  Postgres
     suspend fun getPointList(reload: Boolean): MutableList<Point>? {
-        if (reload) {
-            val currentRoute = GlobalScope.async { getCurrentRoute() }
-            val dataLoaded = GlobalScope.async { loadTaskFromServer(currentRoute.await()) }
-            val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await()) }
-            return tracklist.await()
-        } else {
-            val tracklist = GlobalScope.async { loadTrackListFromRoom(true) }
-            return tracklist.await()
+        try {
+            if (reload) {
+                val currentRoute = GlobalScope.async { getCurrentRoute() }
+                val dataLoaded = GlobalScope.async { loadTaskFromServer(currentRoute.await()) }
+                val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await()) }
+                return tracklist.await()
+            } else {
+                val tracklist = GlobalScope.async { loadTrackListFromRoom(true) }
+                return tracklist.await()
+            }
+        }catch (e: java.lang.Exception){
+            return null
         }
     }
 
@@ -141,7 +145,7 @@ class RouteRepository constructor(context: Context) {
     private fun saveTrackListIntoRoom(trackList: ArrayList<Point>?):Boolean {
         if (trackList != null) {
             try {
-                mRoutesDao!!.insertPointListWithReplace(trackList)
+                mRoutesDao!!.insertPointListOnlyNew(trackList)
                 return true
             } catch (e: java.lang.Exception){
                 errorArrayList.add(ErrorMessage("Ошибка работы с локальной базой данных", "Ошибка записи данных",e))
@@ -201,9 +205,7 @@ class RouteRepository constructor(context: Context) {
 
     fun updatePointAsync(point: Point) {
         GlobalScope.launch {
-            mRoutesDao!!.updatePoint(point)
-            val list = loadTrackListFromRoom(true)
-            val i = 1
+            mRoutesDao!!.updatePointWithRoute(point)
         }
     }
 
