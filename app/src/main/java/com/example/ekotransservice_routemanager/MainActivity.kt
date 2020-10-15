@@ -1,6 +1,8 @@
 package com.example.ekotransservice_routemanager
 
 
+import android.annotation.SuppressLint
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -8,20 +10,24 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.Guideline
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
-
+import java.util.function.Predicate
 
 
 class MainActivity : AppCompatActivity() {
     var mSwipeRefreshLayout : SwipeRefreshLayout? = null
-    private var mViewList : ViewPointList? = null
     private var doubleBackClick = false
     lateinit var navController : NavController
+   @RequiresApi(Build.VERSION_CODES.N)
+   @SuppressLint("RestrictedApi")
    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -31,7 +37,6 @@ class MainActivity : AppCompatActivity() {
        val navHostFragment = supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
        val guideLine = findViewById<Guideline>(R.id.guidelineMain)
        navController = navHostFragment.navController
-
        bottomMenu.setOnNavigationItemSelectedListener(BottomNavigationView.OnNavigationItemSelectedListener { menuItem ->
            when (menuItem.itemId) {
                R.id.home -> {
@@ -60,6 +65,12 @@ class MainActivity : AppCompatActivity() {
        })
         navController.addOnDestinationChangedListener{_,destanation, _ ->
             findViewById<View>(R.id.bottom_menu).visibility = View.VISIBLE
+
+            navController.backStack.removeIf {
+                it.destination.id == destanation.id
+                        && navController.backStack.last != it && navController.backStack.first != it}
+
+
             when(destanation.id){
                 R.id.route_list ->{
                     bottomMenu.menu.findItem(R.id.list).isChecked = true
@@ -106,10 +117,10 @@ class MainActivity : AppCompatActivity() {
 
    }
 
+    @SuppressLint("RestrictedApi")
     override fun onBackPressed() {
-
-        if(navController.popBackStack()){
-
+        if(navController.previousBackStackEntry != null){
+            navController.popBackStack()
             return
         }
 

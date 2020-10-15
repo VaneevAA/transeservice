@@ -1,23 +1,19 @@
 package com.example.ekotransservice_routemanager
 
 import android.widget.Toast
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.liveData
+import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 
-class StartFrameScreenViewModel (val activity: MainActivity): ViewModel() {
+class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel() {
     // TODO: Implement the ViewModel
-    //private val routeRepository = RouteRepository(activity.application)
 
     private val routeRepository = RouteRepository.getInstance(activity.applicationContext)
-
-    var routeLiveData : LiveData<Route> = liveData {
+    var routeLiveData : MutableLiveData<Route> = MutableLiveData()/*liveData {
         activity.mSwipeRefreshLayout!!.isRefreshing = true
         try {
             emit(routeRepository.getCurrentRoute()!!)
@@ -25,12 +21,12 @@ class StartFrameScreenViewModel (val activity: MainActivity): ViewModel() {
             Toast.makeText(activity.applicationContext, "Нет подключения к БД", Toast.LENGTH_LONG).show()
         }
         activity.mSwipeRefreshLayout!!.isRefreshing = false
-    }
+    }*/
 
-    var vehicle : LiveData<Vehicle> = liveData<Vehicle> {
+    var vehicle : MutableLiveData<Vehicle> = MutableLiveData()/*liveData<Vehicle> {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
         emit(Vehicle(sharedPreferences.getString("VEHICLE","") as String))
-    }
+    }*/
 
     class StartFrameScreenModelFactory(private  val activity: MainActivity): ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -42,17 +38,29 @@ class StartFrameScreenViewModel (val activity: MainActivity): ViewModel() {
     }
 
     fun onRefresh (){
-        routeLiveData = liveData {
+        /*routeLiveData = liveData {
             try {
                  emit(routeRepository.getCurrentRoute()!!)
             }catch (e:Exception){
                 Toast.makeText(activity.applicationContext, "Нет подключения к БД", Toast.LENGTH_LONG).show()
             }
+        }*/
+        viewModelScope.launch {
+            val valueRoute = routeRepository.getCurrentRoute()!!
+            if(valueRoute != null){
+                routeLiveData.value = valueRoute
+            }else{
+                Toast.makeText(activity.applicationContext, "Нет подключения к БД", Toast.LENGTH_LONG).show()
+            }
+
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
+            vehicle.value = Vehicle(sharedPreferences.getString("VEHICLE","") as String)
+            activity.mSwipeRefreshLayout!!.isRefreshing = false
         }
-        vehicle = liveData<Vehicle> {
+        /*vehicle = liveData<Vehicle> {
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
             emit(Vehicle(sharedPreferences.getString("VEHICLE","") as String))
-        }
-        activity.mSwipeRefreshLayout!!.isRefreshing = false
+        }*/
+
     }
 }

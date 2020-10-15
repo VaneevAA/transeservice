@@ -25,24 +25,11 @@ class AnimateView (var view : View, var context : Context, val animate : Boolean
 
     fun hideHeight (){
         if(view is ConstraintLayout) {
-            /*val set = ConstraintSet()
-            set.clone(view as ConstraintLayout)
-            set.connect(view.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
-            setHeightAndVisibility(set,view as ConstraintLayout,0,View.GONE)
 
-            if(animate) {
-                val autoTransition = AutoTransition()
-                autoTransition.duration = 300;
-                TransitionManager.beginDelayedTransition(view as ConstraintLayout, autoTransition)
-            }
-            set.applyTo(view as ConstraintLayout)*/
 
-            val tY = view.translationY
-            val goneY = ((view.top - (view.parent as ViewGroup).height) / 3).toFloat()
-            view.translationY = goneY
             val animator = ObjectAnimator.ofPropertyValuesHolder(
                 view,
-                PropertyValuesHolder.ofFloat(View.TRANSLATION_Y,tY,goneY),
+
                 PropertyValuesHolder.ofFloat(View.SCALE_Y,0F)
 
             ).apply {
@@ -64,45 +51,16 @@ class AnimateView (var view : View, var context : Context, val animate : Boolean
             view.requestLayout()
 
         }
-        /*val hide = AnimationUtils.loadAnimation(context,R.anim.hide_height)
-        view.startAnimation(hide)
-        hide.setAnimationListener(object  : Animation.AnimationListener{
-            override fun onAnimationStart(animation: Animation?) {
 
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                view.visibility = View.GONE
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {
-
-            }
-
-        })*/
     }
 
     fun showHeight(){
 
         if(view is ConstraintLayout) {
-            /*val set = ConstraintSet()
-            set.clone(view as ConstraintLayout)
 
-            view.visibility = ViewGroup.VISIBLE
-            setHeightAndVisibility(set,view as ConstraintLayout,ConstraintSet.WRAP_CONTENT,View.VISIBLE)
-            if(animate) {
-                val autoTransition = AutoTransition()
-                autoTransition.duration = 300;
-                TransitionManager.beginDelayedTransition(view as ConstraintLayout, autoTransition)
-            }
-            set.applyTo(view as ConstraintLayout)*/
 
-            val tY = view.translationY
-            val goneY = ((view.top - (view.parent as ViewGroup).height ) / 3 ).toFloat()
-            view.translationY = goneY
             val animator = ObjectAnimator.ofPropertyValuesHolder(
                 view,
-                PropertyValuesHolder.ofFloat(View.TRANSLATION_Y,tY,goneY),
                 PropertyValuesHolder.ofFloat(View.SCALE_Y,1F)
 
             ).apply {

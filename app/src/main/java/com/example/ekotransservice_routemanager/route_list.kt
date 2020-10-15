@@ -57,6 +57,7 @@ class route_list : Fragment() {
         val observer = Observer<MutableList<Point>> {
                 (pointList) -> (recycleView.adapter as PointListAdapter).setList(mViewList!!.getList())
         }
+        mViewList!!.getList().removeObservers(requireActivity())
         mViewList!!.getList().observe(requireActivity(), observer)
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
         return view

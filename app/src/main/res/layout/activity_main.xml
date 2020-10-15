@@ -19,7 +19,8 @@
         android:layout_height="match_parent"
         android:id="@+id/mainLayout"
         android:animateLayoutChanges="true"
-        android:background="@drawable/gradient_list">
+        android:background="@drawable/gradient_list"
+        >
 
       <fragment
           android:id="@+id/my_nav_host_fragment"
