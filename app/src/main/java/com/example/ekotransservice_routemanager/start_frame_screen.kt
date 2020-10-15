@@ -90,6 +90,7 @@ class start_frame_screen : Fragment() {
 
         //всё сворачиваем для старта
         showHideRouteLiveData(viewScreen.routeLiveData.value,false,mainView)
+        closedRoute = false
         showHideCloseRoute(mainView)
 
         return mainView
