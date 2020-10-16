@@ -34,6 +34,9 @@
             android:name="canDone"
             app:argType="boolean"
             android:defaultValue="true" />
+        <action
+            android:id="@+id/action_point_action_to_pointFiles"
+            app:destination="@id/pointFiles" />
     </fragment>
     <fragment
         android:id="@+id/start_frame_screen"
@@ -77,5 +80,14 @@
         android:id="@+id/vehicle_screen"
         android:name="com.example.ekotransservice_routemanager.vehicle_screen"
         android:label="vehicle_screen" />
+    <fragment
+        android:id="@+id/pointFiles"
+        android:name="com.example.ekotransservice_routemanager.PointFiles"
+        android:label="point_files_fragment"
+        tools:layout="@layout/point_files_fragment" >
+        <argument
+            android:name="point"
+            app:argType="com.example.ekotransservice_routemanager.DataClasses.Point" />
+    </fragment>
 
 </navigation>

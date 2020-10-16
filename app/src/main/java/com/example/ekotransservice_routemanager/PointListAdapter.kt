@@ -16,6 +16,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.DataClasses.PointFile
 
 
 class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapter.PointViewHolder>() {
@@ -31,7 +32,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     }
 
     private var mLayout : LayoutInflater = LayoutInflater.from(context)
-    var pointList : MutableList<Point>? = null
+    private var pointList : MutableList<Point>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointViewHolder {
         val itemView : View = mLayout.inflate(R.layout.recycleview_item,parent,false)
@@ -45,10 +46,6 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         return 0
     }
 
-    fun setList(pointList: LiveData<MutableList<Point>>){
-        this.pointList = pointList.value
-        notifyDataSetChanged()
-    }
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: PointViewHolder, position: Int) = if (pointList != null){
@@ -95,6 +92,10 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         animateView.hideHeight()
     }
 
+    fun setList(pointList: LiveData<MutableList<Point>>){
+        this.pointList = pointList.value
+        notifyDataSetChanged()
+    }
 
 
 
