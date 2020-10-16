@@ -1,24 +1,21 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
-import android.content.Context
-import android.database.Observable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
-import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
+import com.example.ekotransservice_routemanager.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
-import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
-import kotlinx.coroutines.*
+import com.example.ekotransservice_routemanager.MainActivity
+import com.example.ekotransservice_routemanager.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -41,7 +38,8 @@ class start_frame_screen : Fragment() {
         val vehicleView: View = mainView.findViewById(R.id.vehicleLayout)
         val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
         viewScreen = ViewModelProvider(this.requireActivity(),
-            StartFrameScreenViewModel.StartFrameScreenModelFactory(requireActivity() as MainActivity))
+            StartFrameScreenViewModel.StartFrameScreenModelFactory(requireActivity() as MainActivity)
+        )
             .get(StartFrameScreenViewModel::class.java)
 
         //Получение машины
@@ -186,7 +184,7 @@ class start_frame_screen : Fragment() {
         }else{
             val animation = AnimateView(routeGroup,requireContext(),animate)
             animation.showHeight()
-            imageButton.setImageResource( R.drawable.ic_baseline_replay_24)
+            imageButton.setImageResource(R.drawable.ic_baseline_replay_24)
             atAllCount!!.text = route!!.getCountPoint().toString()
             doneCount!!.text = route!!.getCountPointDone().toString()
             dateView.text = SimpleDateFormat("dd.MM.yyyy").format(route.getRouteDate())

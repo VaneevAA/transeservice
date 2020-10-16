@@ -1,4 +1,4 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.VehicleScreen
 
 import android.app.Application
 import android.content.Context
@@ -12,6 +12,7 @@ import android.widget.TextView
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Region
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import com.example.ekotransservice_routemanager.R
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch

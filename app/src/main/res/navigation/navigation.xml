@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/route_list"
-        android:name="com.example.ekotransservice_routemanager.route_list"
+        android:name="com.example.ekotransservice_routemanager.ViewIssues.RouteList.route_list"
         android:label="fragment_route_list"
         tools:layout="@layout/fragment_route_list" >
         <action
@@ -23,7 +23,7 @@
     </fragment>
     <fragment
         android:id="@+id/point_action"
-        android:name="com.example.ekotransservice_routemanager.point_action"
+        android:name="com.example.ekotransservice_routemanager.ViewIssues.PointAction.point_action"
         android:label="fragment_point_action"
         tools:layout="@layout/fragment_point_action" >
         <argument
@@ -40,7 +40,7 @@
     </fragment>
     <fragment
         android:id="@+id/start_frame_screen"
-        android:name="com.example.ekotransservice_routemanager.start_frame_screen"
+        android:name="com.example.ekotransservice_routemanager.ViewIssues.StartScreen.start_frame_screen"
         android:label="start_frame_screen_fragment"
         tools:layout="@layout/start_frame_screen_fragment" >
         <action
@@ -78,11 +78,11 @@
     </fragment>
     <fragment
         android:id="@+id/vehicle_screen"
-        android:name="com.example.ekotransservice_routemanager.vehicle_screen"
+        android:name="com.example.ekotransservice_routemanager.ViewIssues.VehicleScreen.vehicle_screen"
         android:label="vehicle_screen" />
     <fragment
         android:id="@+id/pointFiles"
-        android:name="com.example.ekotransservice_routemanager.PointFiles"
+        android:name="com.example.ekotransservice_routemanager.ViewIssues.PointFiles.PointFiles"
         android:label="point_files_fragment"
         tools:layout="@layout/point_files_fragment" >
         <argument

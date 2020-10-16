@@ -1,17 +1,17 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.PointFiles
 
 import android.content.Context
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
+import com.example.ekotransservice_routemanager.MainActivity
+import com.example.ekotransservice_routemanager.R
 
 class PointFiles : Fragment() {
 

@@ -1,4 +1,4 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.PointFiles
 
 import android.content.Context
 import android.content.Intent
@@ -17,7 +17,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
-import java.io.File
+import com.example.ekotransservice_routemanager.R
 
 class PointFilesAdapter(val context : Context) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
 

@@ -1,26 +1,12 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.VehicleScreen
 
 import android.app.Application
-import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.drawable.Drawable
-import android.text.TextPaint
-import android.util.AttributeSet
-import android.util.Log
-import android.view.View
 import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
-import com.example.ekotransservice_routemanager.DataBaseInterface.RouteServerConnection
-import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.Region
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import java.lang.Exception
 import java.lang.IllegalArgumentException
 
 class ViewVehicle (application: Application): AndroidViewModel(application) {

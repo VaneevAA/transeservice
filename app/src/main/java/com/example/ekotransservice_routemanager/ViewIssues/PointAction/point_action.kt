@@ -1,21 +1,11 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.PointAction
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Context.LOCATION_SERVICE
 import android.content.Intent
-import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.location.Criteria
 import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
-import android.location.LocationManager.NETWORK_PROVIDER
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -31,28 +21,18 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.core.view.children
-import androidx.exifinterface.media.ExifInterface
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointActoins
-import com.example.ekotransservice_routemanager.DataClasses.PointFile
-import com.google.android.gms.common.api.ResolvableApiException
+import com.example.ekotransservice_routemanager.MainActivity
+import com.example.ekotransservice_routemanager.R
 import com.google.android.gms.location.*
-import com.google.android.gms.tasks.RuntimeExecutionException
-import kotlinx.android.synthetic.main.fragment_point_action.*
-import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
@@ -127,7 +107,7 @@ class point_action : Fragment() {
         }
     }
 
-    fun getViewModel():ViewPointAction {
+    fun getViewModel(): ViewPointAction {
         return viewPointModel!!
     }
 
@@ -161,7 +141,12 @@ class point_action : Fragment() {
         val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
 
         viewPointModel = ViewModelProvider(this.requireActivity(),
-            ViewPointAction.ViewPointsFactory(this.requireActivity().application,requireActivity() as MainActivity,point!!))
+            ViewPointAction.ViewPointsFactory(
+                this.requireActivity().application,
+                requireActivity() as MainActivity,
+                point!!
+            )
+        )
             .get(ViewPointAction::class.java)
 
 

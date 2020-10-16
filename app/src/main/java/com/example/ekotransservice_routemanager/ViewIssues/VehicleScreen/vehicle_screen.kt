@@ -1,4 +1,4 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.VehicleScreen
 
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataClasses.Region
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import com.example.ekotransservice_routemanager.R
+import com.example.ekotransservice_routemanager.RegionListAdapter
 import java.lang.Exception
 
 class vehicle_screen : Fragment() {
@@ -41,7 +43,7 @@ class vehicle_screen : Fragment() {
 
         val RegionName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewRegionName)
         val dataList: ArrayList<Region> = ArrayList<Region>()
-        val adapter = RegionListAdapter(view.context,R.layout.regionlist_item,dataList)
+        val adapter = RegionListAdapter(view.context, R.layout.regionlist_item,dataList)
 
         RegionName.setAdapter(adapter)
         RegionName.setOnItemClickListener() { parent, _, position, id ->
@@ -50,7 +52,8 @@ class vehicle_screen : Fragment() {
             savePrefernce("REGION",selectedItem!!.toJSONString())
             mViewVehicle!!.currentRegion = selectedItem
             if (selectedItem!=null){
-                val adapter = VehicleListAdapter(view.context,R.layout.regionlist_item, ArrayList<Vehicle>(),selectedItem)
+                val adapter = VehicleListAdapter(view.context,
+                    R.layout.regionlist_item, ArrayList<Vehicle>(),selectedItem)
                 val VehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
                 VehicleName.setAdapter(adapter)
             }

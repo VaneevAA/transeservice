@@ -1,9 +1,10 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.PointFiles
 
 import androidx.lifecycle.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
+import com.example.ekotransservice_routemanager.MainActivity
 import kotlinx.coroutines.launch
 
 class PointFilesViewModel(private val activity: MainActivity, val point : Point) : ViewModel() {

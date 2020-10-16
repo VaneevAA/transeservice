@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient_list"
     app:layout_anchorGravity="bottom"
-    tools:context=".start_frame_screen">
+    tools:context=".ViewIssues.StartScreen.start_frame_screen">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
