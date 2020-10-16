@@ -223,5 +223,9 @@ class RouteRepository constructor(context: Context) {
         }
     }
 
+    fun setVehicle (vehicle: Vehicle?){
+        this.vehicle = vehicle
+    }
+
 
 }
