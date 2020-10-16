@@ -31,7 +31,19 @@ interface RouteDaoInterface {
     fun insertPointFile(pointFile: PointFile)
 
     @Query("SELECT * from pointFiles_table where lineUID = :lineUID AND photoOrder =:photoOrder") //ORDER BY addressName ASC")
-    fun getPointFiles(lineUID: String, photoOrder: PhotoOrder): MutableList<PointFile>
+    fun getPointFilesByOrder(lineUID: String, photoOrder: PhotoOrder): MutableList<PointFile>
+
+    @Query("SELECT * from pointFiles_table where lineUID = :lineUID") //ORDER BY addressName ASC")
+    fun getAllPointFiles(lineUID: String): MutableList<PointFile>
+
+    @Transaction
+    fun getPointFiles(lineUID: String, photoOrder: PhotoOrder?): MutableList<PointFile>{
+        return if (photoOrder == null) {
+            getAllPointFiles(lineUID)
+        } else {
+            getPointFilesByOrder(lineUID,photoOrder)
+        }
+    }
 
     @Query("UPDATE currentRoute_table SET countPointDone = :countPointDone")
     fun updateCountPointDone(countPointDone: Int)
@@ -43,8 +55,8 @@ interface RouteDaoInterface {
     fun updatePoint(point: Point)
 
     @Transaction
-    open fun updatePointWithRoute(point: Point) {
-        val updateResult = updatePoint(point)
+    fun updatePointWithRoute(point: Point) {
+        updatePoint(point)
         val countDone = countPointDone()
         updateCountPointDone(countDone)
     }
