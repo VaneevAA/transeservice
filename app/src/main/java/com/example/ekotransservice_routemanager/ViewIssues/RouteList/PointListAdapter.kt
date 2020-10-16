@@ -14,7 +14,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.example.ekotransservice_routemanager.AnimateView
+import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.R
 

@@ -1,15 +1,10 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues
 
 import android.animation.LayoutTransition
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.content.Context
-import android.transition.AutoTransition
-import android.transition.TransitionManager
-import android.util.Property
 import android.view.View
-import android.view.ViewGroup
-import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -17,9 +12,7 @@ import androidx.constraintlayout.widget.Guideline
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.view.children
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlin.math.sign
-import kotlin.math.ulp
+import com.example.ekotransservice_routemanager.R
 
 class AnimateView (var view : View, var context : Context, val animate : Boolean){
 
@@ -88,12 +81,12 @@ class AnimateView (var view : View, var context : Context, val animate : Boolean
     }
 
     fun rotate (){
-        val rotate = AnimationUtils.loadAnimation(this.context,R.anim.routate_pict)
+        val rotate = AnimationUtils.loadAnimation(this.context, R.anim.routate_pict)
         view.startAnimation(rotate)
     }
 
     fun rotateBack (){
-        val rotate = AnimationUtils.loadAnimation(this.context,R.anim.rotate_pict_back)
+        val rotate = AnimationUtils.loadAnimation(this.context, R.anim.rotate_pict_back)
         view.startAnimation(rotate)
     }
 

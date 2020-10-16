@@ -12,14 +12,11 @@ import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.Guideline
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
-import java.util.function.Predicate
 
 
 class MainActivity : AppCompatActivity() {

@@ -11,7 +11,7 @@ import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
-import com.example.ekotransservice_routemanager.AnimateView
+import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import com.example.ekotransservice_routemanager.MainActivity
