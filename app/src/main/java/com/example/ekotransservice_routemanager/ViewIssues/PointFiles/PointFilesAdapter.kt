@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager.ViewIssues.PointFiles
 
+import android.R.attr.path
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -18,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.R
+import java.io.*
+
 
 class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
 
@@ -53,9 +56,13 @@ class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesA
         }
         try {
 
-            val imageBytes = Base64.decode(pointFile.filePath, Base64.DEFAULT or Base64.NO_WRAP)
-            val mBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-            holder.pointFile.setImageBitmap(Bitmap.createScaledBitmap(mBitmap, 50, 50, false))
+            val imageBytes = getByteArray(pointFile.filePath)
+            val mBitmap = BitmapFactory.decodeByteArray(
+                imageBytes,
+                0,
+                imageBytes.size
+            )
+            holder.pointFile.setImageBitmap(Bitmap.createScaledBitmap(mBitmap, 300, 300, false))
         }catch (e: Exception){
             Toast.makeText(context, "Ошибка сжатия файла: $e", Toast.LENGTH_LONG).show()
             holder.pointFile.setImageURI(Uri.parse(pointFile.filePath))
@@ -91,6 +98,23 @@ class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesA
     fun setList(pointList: MutableLiveData<MutableList<PointFile>>){
         this.pointFilesList = pointList.value
         notifyDataSetChanged()
+    }
+
+    private fun getByteArray(filePath: String) : ByteArray{
+        val file = File(filePath)
+        val bytes = ByteArray(file.length().toInt())
+        try {
+            val buf = BufferedInputStream(FileInputStream(file))
+            buf.read(bytes, 0, bytes.size)
+            buf.close()
+        } catch (e: FileNotFoundException) {
+            // TODO Auto-generated catch block
+            e.printStackTrace()
+        } catch (e: IOException) {
+            // TODO Auto-generated catch block
+            e.printStackTrace()
+        }
+        return bytes
     }
 }
 

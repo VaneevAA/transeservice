@@ -33,7 +33,7 @@ class PointFiles : Fragment() {
         (requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(graphicPoint)
 
 
-        val countOfImages = (graphicPoint.x / 400).toInt()
+        val countOfImages = (graphicPoint.x / 300).toInt()
         recycleView.layoutManager = GridLayoutManager(requireContext(),countOfImages)
         val adapter = PointFilesAdapter(view.context)
         recycleView.adapter = adapter
