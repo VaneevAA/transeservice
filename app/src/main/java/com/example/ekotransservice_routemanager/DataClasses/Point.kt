@@ -12,13 +12,15 @@ import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 
-@Entity(tableName = "pointList_table", indices = arrayOf(Index("lineUID","lineUID")))
+@Entity(tableName = "pointList_table",primaryKeys = ["docUID","lineUID"], indices =arrayOf(Index("docUID","lineUID","docUID","lineUID")))
 class Point : Serializable{
-    @PrimaryKey
+
     @NonNull
     private var lineUID: String         = ""
-
+    @NonNull
     private var docUID: String          = ""
+
+    private var rowNumber: Int          = 0
     private var dateStart: Date?        = null
     private var dateEnd: Date?          = null
     private var driverName:String       = ""
@@ -106,6 +108,7 @@ class Point : Serializable{
             this.containerUID = properties.getString("containerUID").trim { it <= ' ' }
             this.containerSize = properties.getDouble("containerSize")
             this.countPlan = properties.getInt("countPlan")
+            this.rowNumber = properties.getInt("rowNumber")
 
         } catch (e: Exception) {
             //TODO error parsing JSON
@@ -115,6 +118,7 @@ class Point : Serializable{
     override fun toString(): String {
         return "$addressName, $countPlan контейнеров типа $containerName"
     }
+
 
     //region Получение свойств класса - обязательно для классов Room Entity, переименовывать нельзя, критично для Room
 
@@ -136,6 +140,7 @@ class Point : Serializable{
     fun getCountPlan (): Int { return this.countPlan }
     fun getCountFact (): Int { return this.countFact }
     fun getStatus():PointStatuses{ return this.status }
+    fun getRowNumber():Int{ return this.rowNumber }
     fun getPointActionsArray(): ArrayList<PointActoins>{ return this.pointActionsArray }
     fun getPointActionsCancelArray() : ArrayList<PointActoins>{ return this.pointActionsCancelArray }
 
@@ -159,6 +164,8 @@ class Point : Serializable{
 
     fun setCountPlan(countPlan: Int) { this.countPlan = countPlan}
     fun setCountFact(countFact: Int) { this.countFact = countFact}
+
+    fun setRowNumber(rowNumber: Int) { this.rowNumber = rowNumber}
 
     fun setPointActionsArray(pointActionsArray: ArrayList<PointActoins>) { this.pointActionsArray = pointActionsArray}
     fun setPointActionsCancelArray(pointActionsCancelArray: ArrayList<PointActoins>) { this.pointActionsCancelArray = pointActionsCancelArray}

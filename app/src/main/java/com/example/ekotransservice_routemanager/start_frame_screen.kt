@@ -18,6 +18,7 @@ import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepositor
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
+import kotlinx.android.synthetic.main.start_frame_screen_fragment.view.*
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -86,6 +87,10 @@ class start_frame_screen : Fragment() {
                 findNavController().navigate(R.id.route_list)
             }
 
+        }
+
+        mainView.finishRoute.setOnClickListener {
+            viewScreen.finishRoute()
         }
 
         //всё сворачиваем для старта

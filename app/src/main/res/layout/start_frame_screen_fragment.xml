@@ -202,7 +202,7 @@
                     app:layout_constraintTop_toBottomOf="@id/constraintLayoutDown">
 
                     <Button
-                        android:id="@+id/button"
+                        android:id="@+id/finishRoute"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
@@ -210,7 +210,9 @@
                         android:background="@drawable/pictures_back"
                         android:text="@string/closeRoute"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="parent"
+                        tools:layout_editor_absoluteY="0dp" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout

@@ -9,7 +9,7 @@ import com.example.ekotransservice_routemanager.DataClasses.Route
 @Dao
 interface RouteDaoInterface {
 
-    @Query("SELECT * from pointList_table ") //ORDER BY addressName ASC")
+    @Query("SELECT * from pointList_table ORDER BY rowNumber")
     fun getCurrentList(): MutableList<Point>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
