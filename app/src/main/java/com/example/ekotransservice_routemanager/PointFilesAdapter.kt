@@ -68,7 +68,7 @@ class PointFilesAdapter(val context : Context) : RecyclerView.Adapter<PointFiles
             try {
                 context.startActivity(openImage)
             }catch (e : Exception){
-                Toast.makeText(context,"Нет приложения для отображения данного типа файла",Toast.LENGTH_LONG)
+                Toast.makeText(context,"Нет приложения для отображения данного типа файла",Toast.LENGTH_LONG).show()
             }
         }
         //holder.pointFile.setImageURI(Uri.parse(pointFile.filePath))
