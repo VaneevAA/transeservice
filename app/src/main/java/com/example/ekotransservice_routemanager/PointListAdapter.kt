@@ -66,19 +66,19 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
             bind(holder)
         }
         holder.itemView.findViewById<Button>(R.id.doneButton).setOnClickListener {
-            if (point.getDone()) {
-                val bundle = bundleOf("point" to point, "canDone" to true)
-                holder.itemView.findNavController()
-                    .navigate(R.id.action_route_list_to_point_action, bundle)
-            }
+
+            val bundle = bundleOf("point" to point, "canDone" to true)
+            holder.itemView.findNavController()
+                .navigate(R.id.action_route_list_to_point_action, bundle)
+
         }
 
         holder.itemView.findViewById<Button>(R.id.cannotDoneButton).setOnClickListener {
-            if(point.getDone()) {
-                val bundle = bundleOf("point" to point, "canDone" to false)
-                holder.itemView.findNavController()
-                    .navigate(R.id.action_route_list_to_point_action, bundle)
-            }
+
+            val bundle = bundleOf("point" to point, "canDone" to false)
+            holder.itemView.findNavController()
+                .navigate(R.id.action_route_list_to_point_action, bundle)
+
         }
 
     }else{

@@ -22,6 +22,7 @@ class PointFilesViewModel(private val activity: MainActivity, val point : Point)
                     files.value?.addAll(resultBefore)
                 }
             }
+            activity.mSwipeRefreshLayout!!.isRefreshing = false
         }
 
 
