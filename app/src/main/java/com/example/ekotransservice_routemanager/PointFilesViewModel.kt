@@ -8,13 +8,13 @@ import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import kotlinx.coroutines.launch
 
-class PointFilesViewModel(val activity: MainActivity, val point : Point) : ViewModel() {
+class PointFilesViewModel(private val activity: MainActivity, val point : Point) : ViewModel() {
     val files : MutableLiveData<MutableList<PointFile>> = MutableLiveData()
     private val routeRepository = RouteRepository.getInstance(activity.applicationContext)
 
     fun loadDataFromDB() {
         viewModelScope.launch {
-            val resultBefore = routeRepository.getFilesFromDBAsync(point, PhotoOrder.PHOTO_BEFORE)
+            val resultBefore = routeRepository.getFilesFromDBAsync(point)
             if (resultBefore != null) {
                 if (files.value == null) {
                     files.value = resultBefore as MutableList<PointFile>
@@ -24,27 +24,6 @@ class PointFilesViewModel(val activity: MainActivity, val point : Point) : ViewM
             }
         }
 
-        viewModelScope.launch {
-            val resultAfter = routeRepository.getFilesFromDBAsync(point, PhotoOrder.PHOTO_AFTER)
-            if (resultAfter != null) {
-                if (files.value == null) {
-                    files.value = resultAfter as MutableList<PointFile>
-                } else {
-                    files.value?.addAll(resultAfter)
-                }
-            }
-        }
-        viewModelScope.launch {
-            val resultDontSet = routeRepository.getFilesFromDBAsync(point, PhotoOrder.DONT_SET)
-            if (resultDontSet != null) {
-                if (files.value == null) {
-                    files.value = resultDontSet as MutableList<PointFile>
-                } else {
-                    files.value?.addAll(resultDontSet)
-                }
-            }
-            activity.mSwipeRefreshLayout!!.isRefreshing = false
-        }
 
     }
 
