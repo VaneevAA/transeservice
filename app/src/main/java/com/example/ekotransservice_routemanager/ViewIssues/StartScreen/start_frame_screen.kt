@@ -17,6 +17,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import com.example.ekotransservice_routemanager.MainActivity
+import com.example.ekotransservice_routemanager.R
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.view.*
 import kotlinx.coroutines.*

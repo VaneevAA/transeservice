@@ -19,7 +19,7 @@ import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.R
 
-class PointFilesAdapter(val context : Context) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
+class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
 
     class PointFilesHolder(itemView: View) : RecyclerView.ViewHolder(
         itemView
@@ -33,7 +33,7 @@ class PointFilesAdapter(val context : Context) : RecyclerView.Adapter<PointFiles
     private var pointFilesList : MutableList<PointFile>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointFilesHolder {
-        val itemView : View = mLayout.inflate(R.layout.point_file_item,parent,false)
+        val itemView : View = mLayout.inflate(R.layout.point_file_item, parent, false)
         return PointFilesHolder(itemView)
     }
 
@@ -52,23 +52,28 @@ class PointFilesAdapter(val context : Context) : RecyclerView.Adapter<PointFiles
             }
         }
         try {
-            val imageBytes = Base64.decode(pointFile.filePath,1)
-            val mBitmap = BitmapFactory.decodeByteArray(imageBytes,0,imageBytes.size)
-            holder.pointFile.setImageBitmap(Bitmap.createScaledBitmap(mBitmap,50,50,false))
-        }catch (e : Exception){
-            Toast.makeText(context,"Ошибка сжатия файла: $e",Toast.LENGTH_LONG)
+
+            val imageBytes = Base64.decode(pointFile.filePath, Base64.DEFAULT or Base64.NO_WRAP)
+            val mBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            holder.pointFile.setImageBitmap(Bitmap.createScaledBitmap(mBitmap, 50, 50, false))
+        }catch (e: Exception){
+            Toast.makeText(context, "Ошибка сжатия файла: $e", Toast.LENGTH_LONG).show()
             holder.pointFile.setImageURI(Uri.parse(pointFile.filePath))
         }
 
         holder.listElement.setOnClickListener {
             val openImage = Intent(Intent.ACTION_VIEW)
-            openImage.setDataAndType(Uri.parse(pointFile.filePath),"image/*")
+            openImage.setDataAndType(Uri.parse(pointFile.filePath), "image/*")
             openImage.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
             try {
                 context.startActivity(openImage)
-            }catch (e : Exception){
-                Toast.makeText(context,"Нет приложения для отображения данного типа файла",Toast.LENGTH_LONG).show()
+            }catch (e: Exception){
+                Toast.makeText(
+                    context,
+                    "Нет приложения для отображения данного типа файла",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
         //holder.pointFile.setImageURI(Uri.parse(pointFile.filePath))
