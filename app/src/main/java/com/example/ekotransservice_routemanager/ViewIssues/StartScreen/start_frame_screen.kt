@@ -1,11 +1,14 @@
 package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
+import android.content.Context
+import android.database.Observable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
@@ -14,8 +17,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
-import com.example.ekotransservice_routemanager.MainActivity
-import com.example.ekotransservice_routemanager.R
+import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
+import kotlinx.android.synthetic.main.start_frame_screen_fragment.view.*
+import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,8 +42,7 @@ class start_frame_screen : Fragment() {
         val vehicleView: View = mainView.findViewById(R.id.vehicleLayout)
         val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
         viewScreen = ViewModelProvider(this.requireActivity(),
-            StartFrameScreenViewModel.StartFrameScreenModelFactory(requireActivity() as MainActivity)
-        )
+            StartFrameScreenViewModel.StartFrameScreenModelFactory(requireActivity() as MainActivity))
             .get(StartFrameScreenViewModel::class.java)
 
         //Получение машины
@@ -84,6 +87,10 @@ class start_frame_screen : Fragment() {
                 findNavController().navigate(R.id.route_list)
             }
 
+        }
+
+        mainView.finishRoute.setOnClickListener {
+            viewScreen.finishRoute()
         }
 
         //всё сворачиваем для старта

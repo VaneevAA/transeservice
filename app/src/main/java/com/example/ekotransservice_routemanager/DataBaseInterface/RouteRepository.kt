@@ -3,6 +3,7 @@ package com.example.ekotransservice_routemanager.DataBaseInterface
 import android.app.Application
 import android.app.Notification
 import android.content.Context
+import android.util.JsonWriter
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -12,7 +13,9 @@ import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.example.ekotransservice_routemanager.DataClasses.*
 import com.example.ekotransservice_routemanager.ErrorMessage
+import com.example.ekotransservice_routemanager.UploadResult
 import kotlinx.coroutines.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.lang.NumberFormatException
@@ -123,6 +126,7 @@ class RouteRepository constructor(context: Context) {
 
     // Загрузка данных путевого листа с сервера и сохранение их в локальную базу Room
     private fun loadTaskFromServer(currentRoute: Route?): Boolean {
+        errorArrayList.clear()
         val vehicleNumber: String? = if (currentRoute != null ) {currentRoute.getVehicleNumber() } else {this.vehicle!!.getName()}
         val dateTask: Date = if (currentRoute != null ) { currentRoute.getRouteDate() } else { SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2020-09-03 00:00:00") }
         if (vehicleNumber != null) {
@@ -186,6 +190,22 @@ class RouteRepository constructor(context: Context) {
             null
         }
 
+    }
+
+    suspend fun uploadTrackListToServerAsync(): Boolean {
+        errorArrayList.clear()
+        val uploadResult = GlobalScope.async {uploadTrackListToServer()}
+        return uploadResult.await().success
+    }
+
+    fun uploadTrackListToServer(): UploadResult {
+        val trackList = loadTrackListFromRoom(true)
+        return if (trackList != null) {
+            serverConnector.uploadTrackList(trackList as ArrayList<Point>)
+        }else {
+            val errorArray = ArrayList<ErrorMessage>()
+            UploadResult(false,ArrayList<ErrorMessage>())
+        }
     }
 
     // Сохранение файлов в локальную базу данных. Асинхронный вызов

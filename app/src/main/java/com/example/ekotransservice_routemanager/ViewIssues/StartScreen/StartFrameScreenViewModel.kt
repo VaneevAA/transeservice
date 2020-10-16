@@ -69,4 +69,15 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
         }*/
 
     }
+
+    fun finishRoute(){
+        viewModelScope.launch {
+            val result = routeRepository.uploadTrackListToServerAsync()
+            if (result) {
+                Toast.makeText(activity.applicationContext,"Данные выгружены успешно",Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(activity.applicationContext,"Ошибка выгрузки",Toast.LENGTH_LONG).show()
+            }
+        }
+    }
 }
