@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/gradient_list"
-    tools:context=".route_list">
+    tools:context=".ViewIssues.RouteList.route_list">
 
     <TextView
         android:id="@+id/pointNameText"

@@ -1,22 +1,18 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.PointAction
 
 import android.app.Application
-import android.content.Context
-import androidx.annotation.UiThread
 import androidx.lifecycle.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import com.example.ekotransservice_routemanager.MainActivity
 import kotlinx.coroutines.launch
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.util.*
 
-class ViewPointAction(application: Application,activity: MainActivity,point: Point) : AndroidViewModel(application) {
+class ViewPointAction(application: Application, activity: MainActivity, point: Point) : AndroidViewModel(application) {
 
     private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
 
@@ -72,7 +68,7 @@ class ViewPointAction(application: Application,activity: MainActivity,point: Poi
         emit( data!!.size>0 ) }*/
 
 
-    class ViewPointsFactory(private val application: Application,private val activity: MainActivity,val point: Point): ViewModelProvider.Factory{
+    class ViewPointsFactory(private val application: Application, private val activity: MainActivity, val point: Point): ViewModelProvider.Factory{
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if(modelClass.isAssignableFrom(ViewPointAction::class.java)){
                 return ViewPointAction(application,activity,point) as T

@@ -1,27 +1,23 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.PointAction
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
-import android.view.Window
 import android.widget.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
-import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Point
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.example.ekotransservice_routemanager.R
 
-class FactDialog(parentFragment : Fragment,val point : MutableLiveData<Point>, val mainFragment : point_action,val mainParentView : View) : DialogFragment() {
+class FactDialog(parentFragment : Fragment, val point : MutableLiveData<Point>, val mainFragment : point_action, val mainParentView : View) : DialogFragment() {
 
     var plan = point.value!!.getCountPlan()
     var fact : Int = point.value!!.getCountFact()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = AlertDialog.Builder(activity,R.style.ThemeOverlay_AppCompat_Dialog)
+        val builder = AlertDialog.Builder(activity, R.style.ThemeOverlay_AppCompat_Dialog)
         val inflater = activity?.layoutInflater
         val mainView = inflater?.inflate(R.layout.fact_dialog,null)
 

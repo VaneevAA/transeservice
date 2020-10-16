@@ -1,4 +1,4 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
 import android.widget.Toast
 import androidx.lifecycle.*
@@ -6,6 +6,7 @@ import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import com.example.ekotransservice_routemanager.MainActivity
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 

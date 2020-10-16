@@ -1,4 +1,4 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.RouteList
 
 
 
@@ -12,11 +12,11 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.example.ekotransservice_routemanager.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Point
-import com.example.ekotransservice_routemanager.DataClasses.PointFile
+import com.example.ekotransservice_routemanager.R
 
 
 class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapter.PointViewHolder>() {
