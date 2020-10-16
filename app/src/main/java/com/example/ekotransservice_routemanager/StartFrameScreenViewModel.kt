@@ -28,6 +28,7 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
         emit(Vehicle(sharedPreferences.getString("VEHICLE","") as String))
     }*/
 
+
     class StartFrameScreenModelFactory(private  val activity: MainActivity): ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if(modelClass.isAssignableFrom(StartFrameScreenViewModel::class.java)){
@@ -58,6 +59,7 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
 
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
             vehicle.value = Vehicle(sharedPreferences.getString("VEHICLE","") as String)
+            routeRepository.setVehicle(vehicle.value)
             activity.mSwipeRefreshLayout!!.isRefreshing = false
         }
         /*vehicle = liveData<Vehicle> {
