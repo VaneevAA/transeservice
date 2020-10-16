@@ -229,6 +229,13 @@ class point_action : Fragment() {
             }
         }
 
+        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).setOnClickListener {
+            if(viewPointModel!!.fileBeforeIsDone.value!!){
+                val bundle = bundleOf("point" to point!!)
+                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles,bundle)
+            }
+        }
+
         return mainFragment
     }
 
