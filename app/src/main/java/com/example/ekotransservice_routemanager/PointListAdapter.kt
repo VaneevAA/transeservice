@@ -29,6 +29,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         var contCountType : TextView = itemView.findViewById(R.id.contTypeTextView)
         var buttonsView : View = itemView.findViewById(R.id.laynerButtons)
         var pointPosition : Int = 0
+        var viewClosed = true
     }
 
     private var mLayout : LayoutInflater = LayoutInflater.from(context)
@@ -61,7 +62,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         //при нажатии определяется пока только точка
 
         holder.itemView.setOnClickListener {
-            point.setDone(!point.getDone())
+            holder.viewClosed = !holder.viewClosed
             bind(holder)
         }
         holder.itemView.findViewById<Button>(R.id.doneButton).setOnClickListener {
@@ -84,7 +85,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.pointItemView.text = "no points"
     }
 
-    private fun bind (holder: PointViewHolder) = if(pointList!![holder.pointPosition].getDone()) {
+    private fun bind (holder: PointViewHolder) = if(!holder.viewClosed) {
         val animateView = AnimateView(holder.buttonsView,holder.itemView.context,true)
         animateView.showHeight()
     }else{
