@@ -31,6 +31,7 @@ class ViewPointList(application: Application, activity: MainActivity):AndroidVie
     private suspend fun loadDataFromDB() : MutableList<Point>{
 
         val trackList = viewModelScope.async {routeRepository.getPointList(false)}
+
         return trackList.await() ?: mutableListOf()
     }
 

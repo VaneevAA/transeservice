@@ -33,6 +33,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
+import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.LiveData
@@ -219,6 +220,20 @@ class point_action : Fragment() {
                 Toast.makeText(requireContext(),"Нет фото до",Toast.LENGTH_LONG).show()
             }
 
+        }
+
+        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).setOnClickListener {
+            if(viewPointModel!!.fileBeforeIsDone.value!!){
+                val bundle = bundleOf("point" to point!!)
+                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles,bundle)
+            }
+        }
+
+        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).setOnClickListener {
+            if(viewPointModel!!.fileBeforeIsDone.value!!){
+                val bundle = bundleOf("point" to point!!)
+                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles,bundle)
+            }
         }
 
         return mainFragment
