@@ -305,7 +305,7 @@ class point_action : Fragment() {
         val timeCreated = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
         val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         try {
-            currentFile = File.createTempFile("${point!!.getLineUID()}_($timeCreated)_${currentFileOrder.string}",".jpg",storage)
+            currentFile = File.createTempFile("${point!!.getAddressName()}_($timeCreated)_${currentFileOrder.string}",".jpg",storage)
                 .apply { currentFilePath = absolutePath }
             return currentFile
         }catch (e : Exception){
