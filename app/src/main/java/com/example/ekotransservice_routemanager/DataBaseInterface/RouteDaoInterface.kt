@@ -36,6 +36,9 @@ interface RouteDaoInterface {
     @Query("SELECT * from pointFiles_table where lineUID = :lineUID") //ORDER BY addressName ASC")
     fun getAllPointFiles(lineUID: String): MutableList<PointFile>
 
+    @Query("SELECT * from pointFiles_table") //ORDER BY addressName ASC")
+    fun getRoutePointFiles(): List<PointFile>
+
     @Transaction
     fun getPointFiles(lineUID: String, photoOrder: PhotoOrder?): MutableList<PointFile>{
         return if (photoOrder == null) {
