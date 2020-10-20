@@ -61,10 +61,11 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
         val graphicPoint = android.graphics.Point()
         (activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(graphicPoint)
         val itemGroup = holder.itemView.findViewById<View>(R.id.pointFilesParent)
-        itemGroup.background.alpha = 0
-        holder.itemView.findViewById<FrameLayout>(R.id.photoFilesFragment).layoutParams.height = -2
+
+        recycleView.layoutParams.height = -2
         val countOfImages = (graphicPoint.x / 300).toInt()
         recycleView.layoutManager = GridLayoutManager(context,countOfImages)
+        recycleView.isVerticalScrollBarEnabled = false
         val adapter = PointFilesAdapter(holder.itemView.context)
         recycleView.adapter = adapter
 

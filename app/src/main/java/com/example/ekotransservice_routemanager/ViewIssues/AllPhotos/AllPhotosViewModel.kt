@@ -16,7 +16,7 @@ class AllPhotosViewModel (private val activity: MainActivity) : ViewModel() {
     fun loadDataFromDB() {
 
         viewModelScope.launch {
-            val result = routeRepository.getPointList(false)
+            val result = routeRepository.getPointsWithFilesAsync()
             if(result != null){
                 allPoints.value = result
             }

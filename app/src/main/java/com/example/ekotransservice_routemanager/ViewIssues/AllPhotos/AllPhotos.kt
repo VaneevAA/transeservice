@@ -44,7 +44,7 @@ class AllPhotos : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = AllPhotosViewModel(requireActivity() as MainActivity)
+        //viewModel = AllPhotosViewModel(requireActivity() as MainActivity)
         // TODO: Use the ViewModel
     }
 
