@@ -36,6 +36,9 @@ interface RouteDaoInterface {
     @Query("SELECT * from pointFiles_table where lineUID = :lineUID") //ORDER BY addressName ASC")
     fun getAllPointFiles(lineUID: String): MutableList<PointFile>
 
+    @Query("SELECT * from pointFiles_table") //ORDER BY addressName ASC")
+    fun getRoutePointFiles(): List<PointFile>
+
     @Transaction
     fun getPointFiles(lineUID: String, photoOrder: PhotoOrder?): MutableList<PointFile>{
         return if (photoOrder == null) {
@@ -60,5 +63,8 @@ interface RouteDaoInterface {
         val countDone = countPointDone()
         updateCountPointDone(countDone)
     }
+
+    @Query("SELECT DISTINCT pointList_table.* from pointList_table INNER JOIN pointFiles_table on pointList_table.docUID = pointFiles_table.docUID AND pointList_table.lineUID = pointFiles_table.lineUID ORDER BY pointList_table.rowNumber")
+    fun getPointsWithFiles(): MutableList<Point>
 
 }

@@ -1,8 +1,8 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
-import com.example.ekotransservice_routemanager.DataClasses.Point
-import com.example.ekotransservice_routemanager.DataClasses.Region
-import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import android.os.Build
+import androidx.annotation.RequiresApi
+import com.example.ekotransservice_routemanager.DataClasses.*
 import com.example.ekotransservice_routemanager.DownloadResult
 import com.example.ekotransservice_routemanager.ErrorMessage
 import com.example.ekotransservice_routemanager.UploadResult
@@ -16,6 +16,7 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 import java.security.Key
+import java.text.SimpleDateFormat
 
 class RouteServerConnection {
     private var urlName:String = ""
@@ -230,6 +231,38 @@ class RouteServerConnection {
         val data = getData(methodName, "POST", postParam, errorArrayList)
         var result = false
         if ( data != null && data.length() != 0 && data.getJSONObject(0).has("result")) {
+            result = true
+        }
+        return UploadResult(result, errorArrayList)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun uploadFiles(data: List<PointFile>):UploadResult{
+        val jsonArray = JSONArray()
+        data.forEach(){
+            val jo = JSONObject()
+            jo.put("docUID", it.docUID)
+            jo.put("lineUID", it.lineUID)
+            jo.put("lat", it.lat)
+            jo.put("lon", it.lon)
+            jo.put("fileName",it.fileName)
+            jo.put("fileExtension",it.fileExtension)
+            jo.put("timestamp", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(it.timeDate))
+            if (it.photoOrder == PhotoOrder.PHOTO_BEFORE) {
+                jo.put("photoOrder", 0)
+            }else{
+                jo.put("photoOrder", 1)
+            }
+            jo.put("fileBase64",it.getCompresedBase64())
+            jsonArray.put(jo)
+        }
+        val postParam = JSONObject()
+        postParam.put("files", jsonArray)
+        val methodName = "rpc/loadFiles"
+        val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
+        val uploadResult = getData(methodName, "POST", postParam, errorArrayList)
+        var result = false
+        if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has("result")) {
             result = true
         }
         return UploadResult(result, errorArrayList)

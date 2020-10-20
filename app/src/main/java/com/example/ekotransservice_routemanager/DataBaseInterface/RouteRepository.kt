@@ -1,11 +1,14 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.app.Notification
 import android.content.Context
+import android.os.Build
 import android.util.JsonWriter
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,7 +20,7 @@ import com.example.ekotransservice_routemanager.UploadResult
 import kotlinx.coroutines.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
+import java.io.*
 import java.lang.NumberFormatException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -96,6 +99,20 @@ class RouteRepository constructor(context: Context) {
                 tracklist.await()
             }
         }catch (e: java.lang.Exception){
+            null
+        }
+    }
+
+    suspend fun getPointsWithFilesAsync(): MutableList<Point>? {
+        val result = GlobalScope.async { getPointsWithFiles() }
+        return result.await()
+    }
+
+    private fun getPointsWithFiles():MutableList<Point>? {
+        return try {
+            val data = mRoutesDao!!.getPointsWithFiles()
+            data
+        } catch (e: java.lang.Exception) {
             null
         }
     }
@@ -194,18 +211,33 @@ class RouteRepository constructor(context: Context) {
 
     suspend fun uploadTrackListToServerAsync(): Boolean {
         errorArrayList.clear()
-        val uploadResult = GlobalScope.async {uploadTrackListToServer()}
+        val uploadResult = GlobalScope.async {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                uploadTrackListToServer()
+            } else {
+                TODO("VERSION.SDK_INT < O")
+            }
+        }
         return uploadResult.await().success
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun uploadTrackListToServer(): UploadResult {
         val trackList = loadTrackListFromRoom(true)
         return if (trackList != null) {
-            serverConnector.uploadTrackList(trackList as ArrayList<Point>)
+            val result = serverConnector.uploadTrackList(trackList as ArrayList<Point>)
+            if (result.success) {
+                val data = mRoutesDao!!.getRoutePointFiles()
+                serverConnector.uploadFiles(data)
+            }else{
+                result
+            }
+
         }else {
             val errorArray = ArrayList<ErrorMessage>()
             UploadResult(false,ArrayList<ErrorMessage>())
         }
+
     }
 
     // Сохранение файлов в локальную базу данных. Асинхронный вызов
