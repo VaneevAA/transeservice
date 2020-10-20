@@ -16,6 +16,7 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 import java.security.Key
+import java.text.SimpleDateFormat
 
 class RouteServerConnection {
     private var urlName:String = ""
@@ -246,6 +247,7 @@ class RouteServerConnection {
             jo.put("lon", it.lon)
             jo.put("fileName",it.fileName)
             jo.put("fileExtension",it.fileExtension)
+            jo.put("timestamp", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(it.timeDate))
             if (it.photoOrder == PhotoOrder.PHOTO_BEFORE) {
                 jo.put("photoOrder", 0)
             }else{
