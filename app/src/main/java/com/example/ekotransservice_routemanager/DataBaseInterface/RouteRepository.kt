@@ -103,6 +103,20 @@ class RouteRepository constructor(context: Context) {
         }
     }
 
+    suspend fun getPointsWithFilesAsync(): MutableList<Point>? {
+        val result = GlobalScope.async { getPointsWithFiles() }
+        return result.await()
+    }
+
+    private fun getPointsWithFiles():MutableList<Point>? {
+        return try {
+            val data = mRoutesDao!!.getPointsWithFiles()
+            data
+        } catch (e: java.lang.Exception) {
+            null
+        }
+    }
+
     suspend fun getRegionList(): ArrayList<Region> {
         val serverData = GlobalScope.async { serverConnector.getRegions() }
         val downloadResult = serverData.await()
