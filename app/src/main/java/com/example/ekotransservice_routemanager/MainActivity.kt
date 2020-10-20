@@ -26,10 +26,10 @@ class MainActivity : AppCompatActivity() {
    @RequiresApi(Build.VERSION_CODES.N)
    @SuppressLint("RestrictedApi")
    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        mSwipeRefreshLayout = findViewById<View>(R.id.thinking) as SwipeRefreshLayout
-        val bottomMenu = findViewById<BottomNavigationView>(R.id.bottom_menu)
+       super.onCreate(savedInstanceState)
+       setContentView(R.layout.activity_main)
+       mSwipeRefreshLayout = findViewById<View>(R.id.thinking) as SwipeRefreshLayout
+       val bottomMenu = findViewById<BottomNavigationView>(R.id.bottom_menu)
 
        val navHostFragment = supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment
        val guideLine = findViewById<Guideline>(R.id.guidelineMain)
