@@ -95,6 +95,12 @@ class start_frame_screen : Fragment() {
             viewScreen.finishRoute()
         }
 
+        mainView.findViewById<View>(R.id.photoLayout).setOnClickListener {
+            if(viewScreen.routeLiveData.value != null){
+                findNavController().navigate(R.id.allPhotos)
+            }
+        }
+
         //всё сворачиваем для старта
         showHideRouteLiveData(viewScreen.routeLiveData.value,false,mainView)
         closedRoute = false

@@ -70,6 +70,9 @@
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_start_frame_screen_to_allPhotos"
+            app:destination="@id/allPhotos" />
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
@@ -89,5 +92,10 @@
             android:name="point"
             app:argType="com.example.ekotransservice_routemanager.DataClasses.Point" />
     </fragment>
+    <fragment
+        android:id="@+id/allPhotos"
+        android:name="com.example.ekotransservice_routemanager.ViewIssues.AllPhotos.AllPhotos"
+        android:label="all_photos_fragment"
+        tools:layout="@layout/all_photos_fragment" />
 
 </navigation>

@@ -2,28 +2,29 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/photoFilesFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ViewIssues.PointFiles.PointFiles"
-    android:layout_marginTop="5dp"
+    android:layout_height="wrap_content"
     android:layout_marginLeft="5dp"
+    android:layout_marginTop="5dp"
     android:layout_marginRight="5dp"
-    android:padding="5dp">
+    android:padding="5dp"
+    tools:context=".ViewIssues.PointFiles.PointFiles">
+
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:id="@+id/pointFilesParent"
-        android:background="@drawable/gradient_list">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/pointNameLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/pictures_back"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="MissingConstraints"
-            android:background="@drawable/pictures_back">
+            tools:ignore="MissingConstraints">
 
             <TextView
                 android:id="@+id/pointNameText"
@@ -43,20 +44,20 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerview"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:importantForAutofill="auto"
+            android:paddingVertical="5dp"
+            android:scrollbars="vertical"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/pointNameLayout"
-            android:scrollbars="vertical"
-            tools:listitem="@layout/point_file_item"
-            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            android:importantForAutofill="auto"
-            android:paddingVertical="5dp"/>
-
+            tools:listitem="@layout/point_file_item" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
