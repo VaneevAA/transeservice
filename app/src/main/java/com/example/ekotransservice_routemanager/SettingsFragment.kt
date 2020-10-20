@@ -57,4 +57,5 @@ class SettingsFragment : PreferenceFragmentCompat() {
         return view
     }
 
+    
 }

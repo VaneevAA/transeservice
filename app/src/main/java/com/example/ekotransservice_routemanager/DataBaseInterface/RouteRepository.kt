@@ -34,7 +34,7 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.reflect.jvm.internal.pcollections.HashPMap
 
-class RouteRepository constructor(context: Context) {
+class RouteRepository constructor(val context: Context) {
 
     private val serverConnector: RouteServerConnection = RouteServerConnection()
     /*private val serverConnector: RouteServerConnection = RouteServerConnection(
@@ -71,8 +71,24 @@ class RouteRepository constructor(context: Context) {
         db = RouteRoomDatabase.getDatabase(context)
         mRoutesDao = db!!.routesDao()
 
-        // Получение текущих настроек
+        /*// Получение текущих настроек
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
+        val urlName = sharedPreferences.getString("URL_NAME","") as String
+        val urlPort = sharedPreferences.getString("URL_PORT","80") as String
+        val urlPass = sharedPreferences.getString("URL_AUTHPASS","") as String
+        val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
+        vehicle = Vehicle(vehicleString)
+
+        // установка параметров подключения
+        serverConnector.setConnectionParams(urlName,urlPort.toInt())
+        serverConnector.setAuthPass(urlPass)*/
+        setPrefernces()
+    }
+
+
+    fun setPrefernces() {
+        // Получение текущих настроек
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.context.applicationContext)
         val urlName = sharedPreferences.getString("URL_NAME","") as String
         val urlPort = sharedPreferences.getString("URL_PORT","80") as String
         val urlPass = sharedPreferences.getString("URL_AUTHPASS","") as String
@@ -83,7 +99,6 @@ class RouteRepository constructor(context: Context) {
         serverConnector.setConnectionParams(urlName,urlPort.toInt())
         serverConnector.setAuthPass(urlPass)
     }
-
 
     // Загрузка списка точек
     // reload - требуется загрузка с  Postgres
