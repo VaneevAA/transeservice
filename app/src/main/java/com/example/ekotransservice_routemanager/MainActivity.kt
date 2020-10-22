@@ -12,6 +12,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Guideline
+import androidx.core.app.NotificationManagerCompat
+import androidx.media.app.NotificationCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.preference.PreferenceManager
@@ -158,6 +160,32 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
         PreferenceManager.getDefaultSharedPreferences(this)
             .unregisterOnSharedPreferenceChangeListener(mPrefsListener);
+    }
+
+    fun endOfTheRoute (){
+       val builder = androidx.core.app.NotificationCompat.Builder(this,this.localClassName)
+           .setContentTitle("Выгрузка данных")
+           .setContentText("Выгрузка данных маршрута и фотографий")
+           .setSmallIcon(R.drawable.ic_logo_mini)
+           .setPriority(androidx.core.app.NotificationCompat.PRIORITY_LOW)
+
+        NotificationManagerCompat.from(this).apply {
+            val notificationId = 1
+            builder.setProgress(100,0,false)
+            notify(notificationId,builder.build())
+
+            var progress = 0
+
+            while (progress <= 100){
+                Handler().postDelayed({ progress++ }, 1000)
+            }
+
+            builder.setProgress(0,0,false)
+            builder.setContentText("Выгрузка завершена")
+
+            notify(notificationId,builder.build())
+
+        }
     }
 
 }
