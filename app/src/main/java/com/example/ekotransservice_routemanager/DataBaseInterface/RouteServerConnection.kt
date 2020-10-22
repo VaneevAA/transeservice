@@ -223,6 +223,7 @@ class RouteServerConnection {
             jo.put("docUID", it.getDocUID())
             jo.put("lineUID", it.getLineUID())
             jo.put("countFact", it.getCountFact())
+            jo.put("countOver", it.getCountOver())
             jo.put("done", it.getDone())
             jsonArray.put(jo)
         }
