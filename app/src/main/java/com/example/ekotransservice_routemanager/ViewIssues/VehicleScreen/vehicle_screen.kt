@@ -45,6 +45,10 @@ class vehicle_screen : Fragment() {
         val dataList: ArrayList<Region> = ArrayList<Region>()
         val adapter = RegionListAdapter(view.context, R.layout.regionlist_item,dataList)
 
+        if (currentRegion != null && currentRegion.getUid() != "" ) {
+            setVehicleAdapter(currentRegion,view)
+        }
+
         RegionName.setAdapter(adapter)
         RegionName.setOnItemClickListener() { parent, _, position, id ->
             val selectedItem = parent.adapter.getItem(position) as Region?
@@ -52,10 +56,7 @@ class vehicle_screen : Fragment() {
             savePrefernce("REGION",selectedItem!!.toJSONString())
             mViewVehicle!!.currentRegion = selectedItem
             if (selectedItem!=null){
-                val adapter = VehicleListAdapter(view.context,
-                    R.layout.regionlist_item, ArrayList<Vehicle>(),selectedItem)
-                val VehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
-                VehicleName.setAdapter(adapter)
+                setVehicleAdapter(selectedItem,view)
             }
         }
 
@@ -83,6 +84,13 @@ class vehicle_screen : Fragment() {
             prefEditor.putString(prefName,prefValue)
             prefEditor.commit()
         }
+    }
+
+    private fun setVehicleAdapter(region: Region, view: View){
+        val adapter = VehicleListAdapter(view.context,
+            R.layout.regionlist_item, ArrayList(),region)
+        val VehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
+        VehicleName.setAdapter(adapter)
     }
 
 }
