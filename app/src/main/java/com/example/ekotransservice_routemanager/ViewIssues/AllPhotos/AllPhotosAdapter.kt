@@ -60,12 +60,12 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
         val recycleView : RecyclerView = holder.itemView.findViewById(R.id.recyclerview)
         val graphicPoint = android.graphics.Point()
         (activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(graphicPoint)
-        val itemGroup = holder.itemView.findViewById<View>(R.id.pointFilesParent)
 
         recycleView.layoutParams.height = -2
         val countOfImages = (graphicPoint.x / 300).toInt()
         recycleView.layoutManager = GridLayoutManager(context,countOfImages)
         recycleView.isVerticalScrollBarEnabled = false
+        recycleView.isNestedScrollingEnabled = false
         val adapter = PointFilesAdapter(holder.itemView.context)
         recycleView.adapter = adapter
 
@@ -84,6 +84,7 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
     }
 
     fun setList(points : MutableLiveData<MutableList<Point>>){
-        this.pointList = points.value
+        this.pointList = points.value?.size?.let { MutableList(it) { i: Int -> points.value!![i] } }
+        notifyDataSetChanged()
     }
 }

@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
                     return@OnNavigationItemSelectedListener true
                 }
                 R.id.photos -> {
+                    navController.navigate(R.id.allPhotos)
                     return@OnNavigationItemSelectedListener false
                 }
                 R.id.settings -> {
@@ -107,6 +108,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.settingFragment -> {
                     bottomMenu.menu.findItem(R.id.settings).isChecked = true
+                    val animateView = AnimateView(guideLine, this, true)
+                    animateView.showHeight()
+                    return@addOnDestinationChangedListener
+
+                }
+                R.id.allPhotos -> {
+                    bottomMenu.menu.findItem(R.id.photos).isChecked = true
                     val animateView = AnimateView(guideLine, this, true)
                     animateView.showHeight()
                     return@addOnDestinationChangedListener
