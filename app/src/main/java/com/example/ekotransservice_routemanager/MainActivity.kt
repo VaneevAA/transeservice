@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
+    var refreshPointList = false
     var mSwipeRefreshLayout: SwipeRefreshLayout? = null
     private var doubleBackClick = false
     lateinit var navController: NavController
@@ -213,6 +214,12 @@ class MainActivity : AppCompatActivity() {
                     builder.setContentTitle("Ошибка выгрузки")
 
                     notify(notificationId, builder.build())
+                }
+                viewModel.routeLiveData.value = routeRepository.getCurrentRoute()
+                refreshPointList = true
+
+                if (navController.currentDestination?.id  != R.id.start_frame_screen){
+                    navController.navigate(R.id.start_frame_screen)
                 }
             }
         }

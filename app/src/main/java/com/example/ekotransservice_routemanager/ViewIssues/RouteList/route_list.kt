@@ -26,6 +26,7 @@ private const val ARG_PARAM2 = "canDone"
  */
 class route_list : Fragment() {
     private var mViewList : ViewPointList? = null
+    private var recycleView : RecyclerView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,13 +41,32 @@ class route_list : Fragment() {
         // Inflate the layout for this fragment
 
         val view : View = inflater.inflate(R.layout.fragment_route_list, container, false)
-        val recycleView : RecyclerView = view.findViewById(R.id.recyclerview)
-        (recycleView.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = true
+        recycleView = view.findViewById(R.id.recyclerview)
+
+        (recycleView!!.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = true
         val adapter = PointListAdapter(view.context)
-        recycleView.adapter = adapter
-        recycleView.layoutManager = LinearLayoutManager(view.context)
+        recycleView!!.adapter = adapter
+        recycleView!!.layoutManager = LinearLayoutManager(view.context)
+
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.touchscreenBlocksFocus = true
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = true
+        setNewViewModel()
+        (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
+        return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if((requireActivity() as MainActivity).refreshPointList){
+            mViewList = ViewPointList(requireActivity().application,
+                requireActivity() as MainActivity
+            )
+            setNewViewModel()
+            (requireActivity() as MainActivity).refreshPointList = false
+        }
+    }
+
+    private fun setNewViewModel(){
         mViewList = ViewModelProvider(this.requireActivity(),
             ViewPointList.ViewPointsFactory(
                 this.requireActivity().application,
@@ -54,32 +74,16 @@ class route_list : Fragment() {
             )
         )
             .get(ViewPointList::class.java)
+        /*if(mViewList!!.getList().value == null){
+            activity?.onBackPressed()
+            return
+        }*/
         val observer = Observer<MutableList<Point>> {
-                (pointList) -> (recycleView.adapter as PointListAdapter).setList(mViewList!!.getList())
+                (pointList) -> ((recycleView?.adapter as PointListAdapter)
+            .setList(mViewList!!.getList()))
         }
         mViewList!!.getList().removeObservers(requireActivity())
         mViewList!!.getList().observe(requireActivity(), observer)
-        (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
-        return view
-    }
 
-    /*companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment route_list.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(point: Point, canDone: Boolean) =
-            route_list().apply {
-                arguments = Bundle().apply {
-                    putParcelable("point", point as Parcelable)
-                    putBoolean("canDone", canDone)
-                }
-            }
-    }*/
+    }
 }
