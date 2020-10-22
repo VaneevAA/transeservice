@@ -37,25 +37,18 @@ class Point : Serializable{
     private var agentUID : String   = ""
     private var agentName: String   = ""
 
-    private var countPlan: Int      = 0
-    private var countFact: Int      = 0
+    private var countPlan: Double      = 0.0
+    private var countFact: Double      = 0.0
+    private var countOver: Double      = 0.0
+    private var status : PointStatuses = PointStatuses.NOT_VISITED
 
-
-
-    /* private val name : String = name;
-    private val lon : Double = lon;
-    private val lan : Double = lan;*/
     private var done : Boolean = false
-  /*  private val contCount : Int = contCount;
-    private val contType : String = contType; //TODO: поменять на какой-то ограниченный тип*/
+
 
     @Ignore
     private var pointActionsArray: ArrayList<PointActoins> = ArrayList()
     @Ignore
     private var pointActionsCancelArray : ArrayList<PointActoins> = ArrayList()
-    @Ignore
-    private var status : PointStatuses = PointStatuses.NOT_VISITED
-
 
     init {
         pointActionsArray.add(PointActoins.TAKE_PHOTO_AFTER)
@@ -83,7 +76,7 @@ class Point : Serializable{
     constructor(
         name: String, lon: Double,
         lat: Double, done: Boolean,
-        contCount: Int, contType: String
+        contCount: Double, contType: String
     ){
         this.addressName = name
         this.containerName = contType
@@ -107,7 +100,7 @@ class Point : Serializable{
             this.containerName = properties.getString("containerName").trim { it <= ' ' }
             this.containerUID = properties.getString("containerUID").trim { it <= ' ' }
             this.containerSize = properties.getDouble("containerSize")
-            this.countPlan = properties.getInt("countPlan")
+            this.countPlan = properties.getDouble("countPlan")
             this.rowNumber = properties.getInt("rowNumber")
 
         } catch (e: Exception) {
@@ -137,8 +130,9 @@ class Point : Serializable{
     fun getAgentUID() : String { return this.agentUID}
     fun getAgentName() : String { return this.agentName}
     fun getDone (): Boolean { return this.done }
-    fun getCountPlan (): Int { return this.countPlan }
-    fun getCountFact (): Int { return this.countFact }
+    fun getCountPlan (): Double { return this.countPlan }
+    fun getCountFact (): Double { return this.countFact }
+    fun getCountOver (): Double { return this.countOver }
     fun getStatus():PointStatuses{ return this.status }
     fun getRowNumber():Int{ return this.rowNumber }
     fun getPointActionsArray(): ArrayList<PointActoins>{ return this.pointActionsArray }
@@ -162,18 +156,17 @@ class Point : Serializable{
     fun setAgentUID(agentUID: String) { this.agentUID = agentUID}
     fun setAgentName(agentName: String) { this.agentName = agentName}
 
-    fun setCountPlan(countPlan: Int) { this.countPlan = countPlan}
-    fun setCountFact(countFact: Int) { this.countFact = countFact}
+    fun setCountPlan(count: Double) { this.countPlan = count}
+    fun setCountFact(count: Double) { this.countFact = count}
+    fun setCountOver(count: Double) { this.countOver = count}
 
     fun setRowNumber(rowNumber: Int) { this.rowNumber = rowNumber}
 
-    fun setPointActionsArray(pointActionsArray: ArrayList<PointActoins>) { this.pointActionsArray = pointActionsArray}
-    fun setPointActionsCancelArray(pointActionsCancelArray: ArrayList<PointActoins>) { this.pointActionsCancelArray = pointActionsCancelArray}
     fun setStatus(status: PointStatuses) { this.status = status}
     fun setDone(done: Boolean){ this.done = done }
     //endregion
 
-    fun getContCount (): Int{
+    fun getContCount (): Double{
         return this.countPlan
     }
 

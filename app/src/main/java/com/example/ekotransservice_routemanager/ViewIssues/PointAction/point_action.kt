@@ -430,7 +430,7 @@ class point_action : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        fusedLocationClient?.removeLocationUpdates(locationUpdatesCallback)
+        fusedLocationClient.removeLocationUpdates(locationUpdatesCallback)
     }
 
     override fun onRequestPermissionsResult(

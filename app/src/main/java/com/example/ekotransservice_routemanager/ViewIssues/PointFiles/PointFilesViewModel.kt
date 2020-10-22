@@ -16,7 +16,7 @@ class PointFilesViewModel(private val activity: MainActivity, val point : Point)
             val resultBefore = routeRepository.getFilesFromDBAsync(point)
             if (resultBefore != null) {
                 if (files.value == null) {
-                    files.value = resultBefore as MutableList<PointFile>
+                    files.value = resultBefore
                 } else {
                     files.value?.addAll(resultBefore)
                 }

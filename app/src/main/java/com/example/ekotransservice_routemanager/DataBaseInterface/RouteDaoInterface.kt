@@ -67,4 +67,9 @@ interface RouteDaoInterface {
     @Query("SELECT DISTINCT pointList_table.* from pointList_table INNER JOIN pointFiles_table on pointList_table.docUID = pointFiles_table.docUID AND pointList_table.lineUID = pointFiles_table.lineUID ORDER BY pointList_table.rowNumber")
     fun getPointsWithFiles(): MutableList<Point>
 
+    @Query("DELETE FROM pointList_table")
+    fun deletePointList()
+
+    @Query("DELETE FROM currentRoute_table")
+    fun deleteCurrentRoute()
 }

@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import com.example.ekotransservice_routemanager.DataClasses.*
 import com.example.ekotransservice_routemanager.DownloadResult
 import com.example.ekotransservice_routemanager.ErrorMessage
+import com.example.ekotransservice_routemanager.ErrorTypes
 import com.example.ekotransservice_routemanager.UploadResult
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -17,6 +18,8 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.security.Key
 import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class RouteServerConnection {
     private var urlName:String = ""
@@ -58,14 +61,14 @@ class RouteServerConnection {
     ): JSONArray? {
         //val url = URL("http://$urlName:$urlPort/$methodName")
         //val url = URL("http",urlName, urlPort,"mobileapp/$methodName")
-        val url = URL("http", urlName, urlPort, "$methodName")
+        val url = URL("http", urlName, urlPort, methodName)
         var connector: HttpURLConnection? = null
         try {
             connector = url.openConnection() as HttpURLConnection
         }catch (e: Exception){
             errorArrayList.add(
                 ErrorMessage(
-                    "Ошибка загрузки данных",
+                    ErrorTypes.DOWNLOAD_ERROR,
                     "Ошибка соединения с сервером",
                     e
                 )
@@ -92,7 +95,7 @@ class RouteServerConnection {
                 } catch (e: java.lang.Exception) {
                     errorArrayList.add(
                         ErrorMessage(
-                            "Ошибка загрузки данных",
+                            ErrorTypes.DOWNLOAD_ERROR,
                             "Ошибка чтения потока/формата данных",
                             e
                         )
@@ -105,7 +108,7 @@ class RouteServerConnection {
             } else {
                 errorArrayList.add(
                     ErrorMessage(
-                        "Ошибка загрузки данных",
+                        ErrorTypes.DOWNLOAD_ERROR,
                         connector.responseMessage,
                         null
                     )
@@ -116,15 +119,15 @@ class RouteServerConnection {
             }
         } catch (e: MalformedURLException) {
             //TODO Требуется обработка Плохой URL
-            errorArrayList.add(ErrorMessage("Ошибка загрузки данных", "Плохой URL", e))
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Плохой URL", e))
             connector.disconnect()
             null
         } catch (e: IOException) {
-            errorArrayList.add(ErrorMessage("Ошибка загрузки данных", "Проблемы с сетью", e))
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Проблемы с сетью", e))
             connector.disconnect()
             null
         } catch (e: java.lang.Exception) {
-            errorArrayList.add(ErrorMessage("Ошибка загрузки данных", "Ошибка обработки кода", e))
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Ошибка обработки кода", e))
            null
         }
         finally {
@@ -144,7 +147,7 @@ class RouteServerConnection {
                 } catch (e: java.lang.Exception) {
                     errorArrayList.add(
                         ErrorMessage(
-                            "Ошибка загрузки данных",
+                            ErrorTypes.DOWNLOAD_ERROR,
                             "Ошибка создания элемента класса",
                             e
                         )
@@ -159,14 +162,14 @@ class RouteServerConnection {
     fun getRegions() : DownloadResult {
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val methodName = "regions"
-        val regionArrayList: ArrayList<Region> = ArrayList<Region>()
+        val regionArrayList: ArrayList<Region> = ArrayList()
         var data: JSONArray? =null
         try {
             data = getData(methodName, "GET", null, errorArrayList)
         }catch (e: java.lang.Exception){
             errorArrayList.add(
                 ErrorMessage(
-                    "Ошибка загрузки данных",
+                    ErrorTypes.DOWNLOAD_ERROR,
                     "Ошибка получения данных с сервера",
                     e
                 )
@@ -179,7 +182,7 @@ class RouteServerConnection {
                 } catch (e: java.lang.Exception) {
                     errorArrayList.add(
                         ErrorMessage(
-                            "Ошибка загрузки данных",
+                            ErrorTypes.DOWNLOAD_ERROR,
                             "Ошибка создания элемента класса",
                             e
                         )
@@ -202,7 +205,7 @@ class RouteServerConnection {
                 } catch (e: java.lang.Exception) {
                     errorArrayList.add(
                         ErrorMessage(
-                            "Ошибка загрузки данных",
+                            ErrorTypes.DOWNLOAD_ERROR,
                             "Ошибка создания элемента класса",
                             e
                         )
@@ -239,7 +242,7 @@ class RouteServerConnection {
     @RequiresApi(Build.VERSION_CODES.O)
     fun uploadFiles(data: List<PointFile>):UploadResult{
         val jsonArray = JSONArray()
-        data.forEach(){
+        data.forEach{
             val jo = JSONObject()
             jo.put("docUID", it.docUID)
             jo.put("lineUID", it.lineUID)
@@ -247,7 +250,7 @@ class RouteServerConnection {
             jo.put("lon", it.lon)
             jo.put("fileName",it.fileName)
             jo.put("fileExtension",it.fileExtension)
-            jo.put("timestamp", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(it.timeDate))
+            jo.put("timestamp", SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(it.timeDate))
             if (it.photoOrder == PhotoOrder.PHOTO_BEFORE) {
                 jo.put("photoOrder", 0)
             }else{
@@ -259,6 +262,24 @@ class RouteServerConnection {
         val postParam = JSONObject()
         postParam.put("files", jsonArray)
         val methodName = "rpc/loadFiles"
+        val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
+        val uploadResult = getData(methodName, "POST", postParam, errorArrayList)
+        var result = false
+        if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has("result")) {
+            result = true
+        }
+        return UploadResult(result, errorArrayList)
+    }
+
+    fun setStatus(docUID: String, status: Int): UploadResult {
+        val jsonArray = JSONArray()
+        val jo = JSONObject()
+        jo.put("docUID", docUID)
+        jo.put("docStatus", status)
+        jsonArray.put(jo)
+        val postParam = JSONObject()
+        postParam.put("dList", jsonArray)
+        val methodName = "rpc/setDocStatus"
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val uploadResult = getData(methodName, "POST", postParam, errorArrayList)
         var result = false

@@ -78,6 +78,7 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
             } else {
                 Toast.makeText(activity.applicationContext,"Ошибка выгрузки",Toast.LENGTH_LONG).show()
             }
+            routeLiveData.value = routeRepository.getCurrentRoute()
         }
     }
 }
