@@ -8,7 +8,7 @@ import com.example.ekotransservice_routemanager.MainActivity
 import kotlinx.coroutines.async
 import java.lang.IllegalArgumentException
 
-class ViewPointList(application: Application, activity: MainActivity):AndroidViewModel(application) {
+class ViewPointList(application: Application, val activity: MainActivity):AndroidViewModel(application) {
     //var pointsList = MutableLiveData<MutableList<Point>>()
     private val result : LiveData<MutableList<Point>> = liveData {
         activity.mSwipeRefreshLayout!!.isRefreshing = true
@@ -31,7 +31,6 @@ class ViewPointList(application: Application, activity: MainActivity):AndroidVie
     private suspend fun loadDataFromDB() : MutableList<Point>{
 
         val trackList = viewModelScope.async {routeRepository.getPointList(false)}
-
         return trackList.await() ?: mutableListOf()
     }
 
