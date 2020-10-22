@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
                     return@OnNavigationItemSelectedListener true
                 }
                 R.id.photos -> {
+                    navController.navigate(R.id.allPhotos)
                     return@OnNavigationItemSelectedListener false
                 }
                 R.id.settings -> {
@@ -107,6 +108,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.settingFragment -> {
                     bottomMenu.menu.findItem(R.id.settings).isChecked = true
+                    val animateView = AnimateView(guideLine, this, true)
+                    animateView.showHeight()
+                    return@addOnDestinationChangedListener
+
+                }
+                R.id.allPhotos -> {
+                    bottomMenu.menu.findItem(R.id.photos).isChecked = true
                     val animateView = AnimateView(guideLine, this, true)
                     animateView.showHeight()
                     return@addOnDestinationChangedListener
@@ -169,24 +177,30 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun endOfTheRoute (viewModel : StartFrameScreenViewModel){
+
+        //создание потока
         val mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(
             "UPLOAD_ROUTE_DATA",
             "upload route data",
             NotificationManager.IMPORTANCE_DEFAULT
         )
-        channel.description = "YOUR_NOTIFICATION_CHANNEL_DESCRIPTION"
+        channel.description = "Выгрузка данных и фотографий на сервер"
         mNotificationManager.createNotificationChannel(channel)
+
+        //создание builder'а (что будет отображаться)
         val builder = androidx.core.app.NotificationCompat.Builder(this, channel.id)
            .setContentTitle("Выгрузка данных")
            .setContentText("Выгрузка данных маршрута и фотографий")
            .setSmallIcon(R.drawable.ic_logo_mini)
            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_LOW)
 
+        //вывод уведомления
         NotificationManagerCompat.from(this).apply {
             val notificationId : Int = 100
             builder.setProgress(100, 0, true)
             notify(notificationId, builder.build())
+
             viewModel.viewModelScope.launch {
                 val result = routeRepository.uploadTrackListToServerAsync()
                 if (result) {
