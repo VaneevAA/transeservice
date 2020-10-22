@@ -2,6 +2,7 @@ package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
 import android.content.Context
 import android.database.Observable
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
@@ -34,6 +36,7 @@ class start_frame_screen : Fragment() {
 
     private lateinit var viewScreen: StartFrameScreenViewModel
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -92,7 +95,8 @@ class start_frame_screen : Fragment() {
         }
 
         mainView.finishRoute.setOnClickListener {
-            viewScreen.finishRoute()
+            //viewScreen.finishRoute()
+            (activity as MainActivity).endOfTheRoute(viewScreen)
         }
 
         mainView.findViewById<View>(R.id.photoLayout).setOnClickListener {
