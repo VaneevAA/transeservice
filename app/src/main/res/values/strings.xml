@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ekotransservice_routemanager</string>
+    <string name="app_name">Управление вывозами</string>
     <string name="doneText">ДА</string>
     <string name="cannotDoneText">НЕТ</string>
     <string name="ifPointCanDone">Можно ли выполнить?</string>
