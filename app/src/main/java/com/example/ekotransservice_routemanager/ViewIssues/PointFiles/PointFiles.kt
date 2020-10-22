@@ -42,7 +42,7 @@ class PointFiles : Fragment() {
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = true
 
         val observer = Observer<MutableList<PointFile>> {
-                (pointFile) -> (recycleView.adapter as PointFilesAdapter).setList(viewModel!!.getList())
+                (_) -> (recycleView.adapter as PointFilesAdapter).setList(viewModel.getList())
         }
 
         viewModel.files.removeObservers(requireActivity())

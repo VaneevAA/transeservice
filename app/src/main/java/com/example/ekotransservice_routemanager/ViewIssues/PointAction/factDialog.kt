@@ -14,7 +14,7 @@ import com.example.ekotransservice_routemanager.R
 class FactDialog(parentFragment : Fragment, val point : MutableLiveData<Point>, val mainFragment : point_action, val mainParentView : View) : DialogFragment() {
 
     var plan = point.value!!.getCountPlan()
-    var fact : Int = point.value!!.getCountFact()
+    var fact : Double = point.value!!.getCountFact()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(activity, R.style.ThemeOverlay_AppCompat_Dialog)
@@ -40,7 +40,7 @@ class FactDialog(parentFragment : Fragment, val point : MutableLiveData<Point>, 
             dialogInterface.cancel()
         }*/
         mainView?.findViewById<ImageButton>(R.id.OK)?.setOnClickListener {
-            fact = mainView?.findViewById<EditText>(R.id.factCount)?.text.toString().toInt()
+            fact = mainView?.findViewById<EditText>(R.id.factCount)?.text.toString().toDouble()
             point.value!!.setCountFact(fact)
             point.value!!.setDone(true)
 
