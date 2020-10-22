@@ -41,43 +41,41 @@ class vehicle_screen : Fragment() {
         val currentRegion = mViewVehicle!!.currentRegion
         val currentVehicle = mViewVehicle!!.currentVehicle
 
-        val RegionName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewRegionName)
-        val dataList: ArrayList<Region> = ArrayList<Region>()
+        val regionName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewRegionName)
+        val dataList: ArrayList<Region> = ArrayList()
         val adapter = RegionListAdapter(view.context, R.layout.regionlist_item,dataList)
 
         if (currentRegion != null && currentRegion.getUid() != "" ) {
             setVehicleAdapter(currentRegion,view)
         }
 
-        RegionName.setAdapter(adapter)
-        RegionName.setOnItemClickListener() { parent, _, position, id ->
+        regionName.setAdapter(adapter)
+        regionName.setOnItemClickListener { parent, _, position, id ->
             val selectedItem = parent.adapter.getItem(position) as Region?
-            RegionName.setText(selectedItem?.toString())
-            savePrefernce("REGION",selectedItem!!.toJSONString())
+            regionName.setText(selectedItem?.toString())
+            savePreference("REGION",selectedItem!!.toJSONString())
             mViewVehicle!!.currentRegion = selectedItem
-            if (selectedItem!=null){
-                setVehicleAdapter(selectedItem,view)
-            }
+            setVehicleAdapter(selectedItem,view)
         }
 
-        val VehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
-        VehicleName.setOnItemClickListener { parent, _, position, id ->
+        val vehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
+        vehicleName.setOnItemClickListener { parent, _, position, id ->
             val selectedItem = parent.adapter.getItem(position) as Vehicle?
-            VehicleName.setText(selectedItem?.toString())
-            savePrefernce("VEHICLE",selectedItem?.toJSONString())
+            vehicleName.setText(selectedItem?.toString())
+            savePreference("VEHICLE",selectedItem?.toJSONString())
             mViewVehicle!!.currentVehicle = selectedItem
         }
         if (currentRegion!=null) {
-            RegionName.setText(currentRegion.toString())
+            regionName.setText(currentRegion.toString())
         }
         if (currentVehicle!=null) {
-            VehicleName.setText(currentVehicle.toString())
+            vehicleName.setText(currentVehicle.toString())
         }
 
          return view
     }
 
-    private fun savePrefernce(prefName: String, prefValue: String?){
+    private fun savePreference(prefName: String, prefValue: String?){
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity().application)
         val prefEditor = sharedPreferences.edit()
         if (prefValue!=null){
@@ -89,8 +87,8 @@ class vehicle_screen : Fragment() {
     private fun setVehicleAdapter(region: Region, view: View){
         val adapter = VehicleListAdapter(view.context,
             R.layout.regionlist_item, ArrayList(),region)
-        val VehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
-        VehicleName.setAdapter(adapter)
+        val vehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
+        vehicleName.setAdapter(adapter)
     }
 
 }
