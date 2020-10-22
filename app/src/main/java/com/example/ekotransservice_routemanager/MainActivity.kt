@@ -2,6 +2,8 @@ package com.example.ekotransservice_routemanager
 
 
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Build
 import android.os.Bundle
@@ -13,14 +15,16 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.app.NotificationManagerCompat
-import androidx.media.app.NotificationCompat
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
+import com.example.ekotransservice_routemanager.ViewIssues.StartScreen.StartFrameScreenViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -118,6 +122,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
         /*
         val recycleView : RecyclerView = this.findViewById(R.id.recyclerview)
         val adapter = PointListAdapter(this)
@@ -162,29 +167,40 @@ class MainActivity : AppCompatActivity() {
             .unregisterOnSharedPreferenceChangeListener(mPrefsListener);
     }
 
-    fun endOfTheRoute (){
-       val builder = androidx.core.app.NotificationCompat.Builder(this,this.localClassName)
+    @RequiresApi(Build.VERSION_CODES.P)
+    fun endOfTheRoute (viewModel : StartFrameScreenViewModel){
+        val mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel(
+            "UPLOAD_ROUTE_DATA",
+            "upload route data",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        channel.description = "YOUR_NOTIFICATION_CHANNEL_DESCRIPTION"
+        mNotificationManager.createNotificationChannel(channel)
+        val builder = androidx.core.app.NotificationCompat.Builder(this, channel.id)
            .setContentTitle("Выгрузка данных")
            .setContentText("Выгрузка данных маршрута и фотографий")
            .setSmallIcon(R.drawable.ic_logo_mini)
            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_LOW)
 
         NotificationManagerCompat.from(this).apply {
-            val notificationId = 1
-            builder.setProgress(100,0,false)
-            notify(notificationId,builder.build())
+            val notificationId : Int = 100
+            builder.setProgress(100, 0, true)
+            notify(notificationId, builder.build())
+            viewModel.viewModelScope.launch {
+                val result = routeRepository.uploadTrackListToServerAsync()
+                if (result) {
+                    builder.setProgress(0, 0, false)
+                    builder.setContentTitle("Выгрузка завершена")
 
-            var progress = 0
+                    notify(notificationId, builder.build())
+                } else {
+                    builder.setProgress(0, 0, false)
+                    builder.setContentTitle("Ошибка выгрузки")
 
-            while (progress <= 100){
-                Handler().postDelayed({ progress++ }, 1000)
+                    notify(notificationId, builder.build())
+                }
             }
-
-            builder.setProgress(0,0,false)
-            builder.setContentText("Выгрузка завершена")
-
-            notify(notificationId,builder.build())
-
         }
     }
 
