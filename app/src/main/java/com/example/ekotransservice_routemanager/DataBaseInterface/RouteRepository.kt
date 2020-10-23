@@ -231,8 +231,10 @@ class RouteRepository constructor(val context: Context) {
                 serverConnector.setStatus(trackList[0].getDocUID(),STATUS_UPLOAD_TO_SERVER)
                 val data = mRoutesDao!!.getRoutePointFiles()
                 val resultFiles = serverConnector.uploadFiles(data)
-                mRoutesDao!!.deletePointList()
-                mRoutesDao!!.deleteCurrentRoute()
+                if (resultFiles.success) {
+                    mRoutesDao!!.deletePointList()
+                    mRoutesDao!!.deleteCurrentRoute()
+                }
                 resultFiles
             }else{
                 result
@@ -240,7 +242,8 @@ class RouteRepository constructor(val context: Context) {
 
         }else {
             val errorArray = ArrayList<ErrorMessage>()
-            UploadResult(false,ArrayList())
+            errorArray.add(ErrorMessage(ErrorTypes.ROOM_ERROR,"Отсутствуют данные для выгрузки",null))
+            UploadResult(false,errorArray)
         }
 
     }

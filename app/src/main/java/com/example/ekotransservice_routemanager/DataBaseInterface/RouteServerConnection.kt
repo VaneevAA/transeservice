@@ -106,10 +106,11 @@ class RouteServerConnection {
                     connector.disconnect()
                 }
             } else {
+                val outputString: String = connector.errorStream.bufferedReader().readText()
                 errorArrayList.add(
                     ErrorMessage(
                         ErrorTypes.DOWNLOAD_ERROR,
-                        connector.responseMessage,
+                        outputString,
                         null
                     )
                 )

@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.os.Build
+import android.util.Base64.encodeToString
 import androidx.annotation.RequiresApi
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
