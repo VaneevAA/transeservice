@@ -33,6 +33,7 @@ import com.example.ekotransservice_routemanager.DataClasses.PointActoins
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 import com.google.android.gms.location.*
+import com.google.android.material.transition.MaterialContainerTransform
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
@@ -113,6 +114,7 @@ class point_action : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedElementEnterTransition = MaterialContainerTransform()
         arguments?.let {
             point  = it.getSerializable("point") as Point
             canDone = it.getBoolean("canDone")

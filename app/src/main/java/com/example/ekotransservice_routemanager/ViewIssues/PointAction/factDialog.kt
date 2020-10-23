@@ -40,9 +40,16 @@ class FactDialog(parentFragment : Fragment, val point : MutableLiveData<Point>, 
             dialogInterface.cancel()
         }*/
         mainView?.findViewById<ImageButton>(R.id.OK)?.setOnClickListener {
-            fact = mainView?.findViewById<EditText>(R.id.factCount)?.text.toString().toDouble()
+            try {
+                fact = mainView.findViewById<EditText>(R.id.factCount)?.text.toString().toDouble()
+            }catch (e:Exception){
+                Toast.makeText(activity,"Число введено неправильно",Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
             point.value!!.setCountFact(fact)
             point.value!!.setDone(true)
+            point.value!!.setCountOverFromPlanAndFact()
 
             mainFragment.getViewModel().getRepository().updatePointAsync(point.value!!)
 

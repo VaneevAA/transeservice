@@ -5,11 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/gradient_list"
-    tools:context=".ViewIssues.VehicleScreen.vehicle_screen">
+    tools:context=".ViewIssues.VehicleScreen.vehicle_screen"
+    android:transitionName="vehicle">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        >
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layoutRegion"

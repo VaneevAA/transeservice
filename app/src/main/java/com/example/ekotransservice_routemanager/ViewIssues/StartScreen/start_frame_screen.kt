@@ -15,12 +15,16 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
+import com.google.android.material.transition.Hold
+import com.google.android.material.transition.MaterialContainerTransform
+import com.google.android.material.transition.MaterialElevationScale
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.view.*
 import kotlinx.coroutines.*
@@ -79,7 +83,7 @@ class start_frame_screen : Fragment() {
 
         //Установка машины
         vehicleView.setOnClickListener{
-            showVehiclePrefernces(mainView)
+            showVehiclePrefernces(mainView,it)
         }
 
         //Кнопка обновления маршрута
@@ -89,7 +93,7 @@ class start_frame_screen : Fragment() {
 
         mainView.findViewById<View>(R.id.routeInfo).setOnClickListener {
             if(viewScreen.routeLiveData.value != null){
-                findNavController().navigate(R.id.route_list)
+                findNavController().navigate(R.id.action_start_frame_screen_to_route_list)
             }
 
         }
@@ -101,7 +105,7 @@ class start_frame_screen : Fragment() {
 
         mainView.findViewById<View>(R.id.photoLayout).setOnClickListener {
             if(viewScreen.routeLiveData.value != null){
-                findNavController().navigate(R.id.allPhotos)
+                findNavController().navigate(R.id.action_start_frame_screen_to_allPhotos)
             }
         }
 
@@ -142,8 +146,9 @@ class start_frame_screen : Fragment() {
         closedRoute = !closedRoute
     }
 
-    private fun showVehiclePrefernces(mainView: View) {
-       mainView.findNavController().navigate(R.id.vehicle_screen)
+    private fun showVehiclePrefernces(mainView: View, view : View) {
+        val extra = FragmentNavigatorExtras(view to "vehicle")
+       mainView.findNavController().navigate(R.id.action_start_frame_screen_to_vehicle_screen,null,null,extra)
     }
 
     /*private fun getCurrentRoute(){
@@ -223,6 +228,12 @@ class start_frame_screen : Fragment() {
             vehicleView.text = vehicle!!.getNumber()
         }
 
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedElementEnterTransition = MaterialContainerTransform()
+        exitTransition = Hold()
     }
 
 }
