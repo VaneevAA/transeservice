@@ -106,10 +106,11 @@ class RouteServerConnection {
                     connector.disconnect()
                 }
             } else {
+                val outputString: String = connector.errorStream.bufferedReader().readText()
                 errorArrayList.add(
                     ErrorMessage(
                         ErrorTypes.DOWNLOAD_ERROR,
-                        connector.responseMessage,
+                        outputString,
                         null
                     )
                 )
@@ -223,6 +224,7 @@ class RouteServerConnection {
             jo.put("docUID", it.getDocUID())
             jo.put("lineUID", it.getLineUID())
             jo.put("countFact", it.getCountFact())
+            jo.put("countOver", it.getCountOver())
             jo.put("done", it.getDone())
             jsonArray.put(jo)
         }
