@@ -11,6 +11,7 @@ import org.json.JSONObject
 import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.max
 
 @Entity(tableName = "pointList_table",primaryKeys = ["docUID","lineUID"], indices =arrayOf(Index("docUID","lineUID","docUID","lineUID")))
 class Point : Serializable{
@@ -172,6 +173,10 @@ class Point : Serializable{
 
     fun getContType (): String{
         return this.containerName
+    }
+
+    fun setCountOverFromPlanAndFact(){
+        this.countOver = max(0.0, this.countFact - this.countPlan)
     }
 
 }
