@@ -87,6 +87,7 @@ class route_list : Fragment() {
         }
         mViewList!!.getList().removeObservers(requireActivity())
         mViewList!!.getList().observe(requireActivity(), observer)
+        mViewList!!.loadDataFromDB()
 
     }
 }

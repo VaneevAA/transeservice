@@ -77,9 +77,9 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.itemView.findViewById<Button>(R.id.cannotDoneButton).setOnClickListener {
 
             val bundle = bundleOf("point" to point, "canDone" to false)
-            val extra = FragmentNavigatorExtras(holder.buttonsView to "singlePoint")
+
             holder.itemView.findNavController()
-                .navigate(R.id.action_route_list_to_point_action, bundle,null,extra)
+                .navigate(R.id.action_route_list_to_point_action, bundle)
 
         }
 

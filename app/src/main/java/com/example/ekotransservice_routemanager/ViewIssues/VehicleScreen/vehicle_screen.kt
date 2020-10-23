@@ -13,6 +13,7 @@ import com.example.ekotransservice_routemanager.DataClasses.Region
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import com.example.ekotransservice_routemanager.R
 import com.example.ekotransservice_routemanager.RegionListAdapter
+import com.google.android.material.transition.MaterialContainerTransform
 import java.lang.Exception
 
 class vehicle_screen : Fragment() {
@@ -21,7 +22,7 @@ class vehicle_screen : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        sharedElementEnterTransition = MaterialContainerTransform()
     }
 
     override fun onCreateView(
