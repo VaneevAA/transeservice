@@ -14,12 +14,9 @@
         <action
             android:id="@+id/action_route_list_to_point_action"
             app:destination="@id/point_action"
-            app:popUpTo="@id/point_action"
-            app:popUpToInclusive="true"
-            app:enterAnim="@android:anim/slide_in_left"
-            app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
-            app:popExitAnim="@android:anim/slide_out_right" />
+            app:popUpTo="@id/point_action"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/point_action"
@@ -56,20 +53,11 @@
             android:id="@+id/action_start_frame_screen_to_settingFragment"
             app:destination="@id/settingFragment"
             app:popUpTo="@id/settingFragment"
-            app:popUpToInclusive="true"
-            app:enterAnim="@android:anim/slide_in_left"
-            app:exitAnim="@android:anim/slide_out_right"
-            app:popEnterAnim="@android:anim/slide_in_left"
-            app:popExitAnim="@android:anim/slide_out_right" />
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_start_frame_screen_to_vehicle_screen"
             app:destination="@id/vehicle_screen"
-            app:popUpTo="@id/vehicle_screen"
-            app:popUpToInclusive="true"
-            app:enterAnim="@android:anim/slide_in_left"
-            app:exitAnim="@android:anim/slide_out_right"
-            app:popEnterAnim="@android:anim/slide_in_left"
-            app:popExitAnim="@android:anim/slide_out_right" />
+            app:popUpTo="@id/vehicle_screen" />
         <action
             android:id="@+id/action_start_frame_screen_to_allPhotos"
             app:destination="@id/allPhotos" />

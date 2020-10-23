@@ -4,6 +4,8 @@ package com.example.ekotransservice_routemanager
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Intent
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Build
 import android.os.Bundle
@@ -15,6 +17,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -208,12 +211,33 @@ class MainActivity : AppCompatActivity() {
                     builder.setProgress(0, 0, false)
                     builder.setContentTitle("Выгрузка завершена")
 
+                    val intent = Intent(this@MainActivity,MainActivity::class.java)
+                    intent.putExtra("error","Good test")
+                    builder.setContentIntent(PendingIntent.getActivity(this@MainActivity,0,intent,PendingIntent.FLAG_UPDATE_CURRENT))
+
                     notify(notificationId, builder.build())
+
+                    Toast.makeText(this@MainActivity,
+                        "Выгрузка завершена",
+                        Toast.LENGTH_LONG).show()
+
+
                 } else {
                     builder.setProgress(0, 0, false)
                     builder.setContentTitle("Ошибка выгрузки")
 
+                    val intent = Intent(this@MainActivity,MainActivity::class.java)
+                    intent.putExtra("error","Error test")
+                    builder.setContentIntent(PendingIntent.getActivity(this@MainActivity,0,intent,PendingIntent.FLAG_UPDATE_CURRENT))
+
                     notify(notificationId, builder.build())
+
+                    Toast.makeText(this@MainActivity,
+                        "Ошибка выгрузки",
+                        Toast.LENGTH_LONG).show()
+
+
+
                 }
                 viewModel.routeLiveData.value = routeRepository.getCurrentRoute()
                 refreshPointList = true

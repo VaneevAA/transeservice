@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
+import com.google.android.material.transition.Hold
+import com.google.android.material.transition.MaterialElevationScale
 import com.example.ekotransservice_routemanager.DataClasses.Point as Point
 
 // TODO: Rename parameter arguments, choose names that match
@@ -31,7 +33,8 @@ class route_list : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
+        exitTransition = MaterialElevationScale(false).setDuration(1000L)
+        reenterTransition = MaterialElevationScale(true).setDuration(1000L)
     }
 
     override fun onCreateView(
@@ -84,6 +87,7 @@ class route_list : Fragment() {
         }
         mViewList!!.getList().removeObservers(requireActivity())
         mViewList!!.getList().observe(requireActivity(), observer)
+        mViewList!!.loadDataFromDB()
 
     }
 }

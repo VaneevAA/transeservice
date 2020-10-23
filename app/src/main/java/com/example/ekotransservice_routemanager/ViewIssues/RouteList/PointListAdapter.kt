@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Point
@@ -76,6 +77,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.itemView.findViewById<Button>(R.id.cannotDoneButton).setOnClickListener {
 
             val bundle = bundleOf("point" to point, "canDone" to false)
+
             holder.itemView.findNavController()
                 .navigate(R.id.action_route_list_to_point_action, bundle)
 
