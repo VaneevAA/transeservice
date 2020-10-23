@@ -3,6 +3,7 @@ package com.example.ekotransservice_routemanager.ViewIssues.PointFiles
 import android.R.attr.path
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -69,9 +70,14 @@ class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesA
         }
 
         holder.listElement.setOnClickListener {
-            val openImage = Intent(Intent.ACTION_VIEW)
-            openImage.setDataAndType(Uri.parse(pointFile.filePath), "image/*")
-            openImage.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+            val openImage = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(pointFile.filePath)
+                type = "image/*"
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            //openImage.setDataAndType(Uri.parse(pointFile.filePath), "image/*")
+            //openImage.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
             try {
                 context.startActivity(openImage)

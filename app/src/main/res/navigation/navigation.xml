@@ -14,12 +14,9 @@
         <action
             android:id="@+id/action_route_list_to_point_action"
             app:destination="@id/point_action"
-            app:popUpTo="@id/point_action"
-            app:popUpToInclusive="true"
-            app:enterAnim="@android:anim/slide_in_left"
-            app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
-            app:popExitAnim="@android:anim/slide_out_right" />
+            app:popUpTo="@id/point_action"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/point_action"
