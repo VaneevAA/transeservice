@@ -226,6 +226,18 @@ class RouteServerConnection {
             jo.put("countFact", it.getCountFact())
             jo.put("countOver", it.getCountOver())
             jo.put("done", it.getDone())
+            val timestamp = it.getTimestamp()
+            if (timestamp != null) {
+                jo.put(
+                    "timestamp",
+                    SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss",
+                        Locale.getDefault()
+                    ).format(it.getTimestamp())
+                )
+            }else{
+                jo.put("timestamp","")
+            }
             jsonArray.put(jo)
         }
 

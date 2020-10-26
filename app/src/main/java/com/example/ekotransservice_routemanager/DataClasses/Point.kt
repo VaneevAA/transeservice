@@ -44,6 +44,9 @@ class Point : Serializable{
     private var status : PointStatuses = PointStatuses.NOT_VISITED
 
     private var done : Boolean = false
+    private var tripNumber: Int = 0
+    private var polygon: Boolean = false
+    private var timestamp: Date? = null
 
 
     @Ignore
@@ -103,6 +106,8 @@ class Point : Serializable{
             this.containerSize = properties.getDouble("containerSize")
             this.countPlan = properties.getDouble("countPlan")
             this.rowNumber = properties.getInt("rowNumber")
+            this.tripNumber = properties.getInt("tripNumber")
+            this.polygon = properties.getBoolean("polygon")
 
         } catch (e: Exception) {
             //TODO error parsing JSON
@@ -136,8 +141,11 @@ class Point : Serializable{
     fun getCountOver (): Double { return this.countOver }
     fun getStatus():PointStatuses{ return this.status }
     fun getRowNumber():Int{ return this.rowNumber }
+    fun getTripNumber():Int{ return this.tripNumber }
+    fun getPolygon():Boolean { return this.polygon }
     fun getPointActionsArray(): ArrayList<PointActoins>{ return this.pointActionsArray }
     fun getPointActionsCancelArray() : ArrayList<PointActoins>{ return this.pointActionsCancelArray }
+    fun getTimestamp() : Date? { return this.timestamp}
 
     //endregion
 
@@ -162,9 +170,12 @@ class Point : Serializable{
     fun setCountOver(count: Double) { this.countOver = count}
 
     fun setRowNumber(rowNumber: Int) { this.rowNumber = rowNumber}
+    fun setTripNumber(tripNumber: Int) { this.tripNumber = tripNumber}
 
     fun setStatus(status: PointStatuses) { this.status = status}
     fun setDone(done: Boolean){ this.done = done }
+    fun setPolygon(polygon: Boolean){ this.polygon = polygon }
+    fun setTimestamp(timestamp: Date?) { this.timestamp = timestamp}
     //endregion
 
     fun getContCount (): Double{
