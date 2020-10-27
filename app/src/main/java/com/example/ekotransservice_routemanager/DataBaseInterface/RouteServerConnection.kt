@@ -17,14 +17,20 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 import java.security.Key
+import java.security.KeyStore
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
 import kotlin.collections.ArrayList
+import kotlin.coroutines.coroutineContext
 
 class RouteServerConnection {
     private var urlName:String = ""
     private var urlPort:Int =80
     private var authPass:String = ""
+    private var sslSocketFactory = SSLSocketFactory.getDefault()
 
     fun setAuthPass(authPass: String) {
         val token = encodeToken(authPass)
@@ -32,6 +38,7 @@ class RouteServerConnection {
             this.authPass = token
         }
     }
+
 
     private fun encodeToken(authPass: String): String? {
         var token:String? = null
@@ -53,6 +60,9 @@ class RouteServerConnection {
         this.urlPort = urlPort
     }
 
+    fun setSSl(sslSocketFactory: SSLSocketFactory){
+        this.sslSocketFactory = sslSocketFactory
+    }
     private fun getData(
         methodName: String,
         requestMethod: String,
@@ -61,10 +71,10 @@ class RouteServerConnection {
     ): JSONArray? {
         //val url = URL("http://$urlName:$urlPort/$methodName")
         //val url = URL("http",urlName, urlPort,"mobileapp/$methodName")
-        val url = URL("http", urlName, urlPort, methodName)
-        var connector: HttpURLConnection? = null
+        val url = URL("https", urlName, urlPort, "mobileapp/$methodName")
+        var connector: HttpsURLConnection? = null
         try {
-            connector = url.openConnection() as HttpURLConnection
+            connector = url.openConnection() as HttpsURLConnection
         }catch (e: Exception){
             errorArrayList.add(
                 ErrorMessage(
@@ -75,7 +85,7 @@ class RouteServerConnection {
             )
         }
         if (connector==null) { return null}
-
+        connector.sslSocketFactory = sslSocketFactory as SSLSocketFactory?
         connector.setRequestProperty("Content-Type", "application/json")
         connector.setRequestProperty("Authorization", "Bearer $authPass")
         connector.requestMethod = requestMethod
@@ -85,7 +95,6 @@ class RouteServerConnection {
             wr.write(postParam.toString())
             wr.flush()
         }
-
         return try {
             val code = connector.responseCode
             if (code == 200) {

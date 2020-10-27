@@ -1,17 +1,27 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import android.content.Context
+import android.media.RingtoneManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataClasses.*
 import com.example.ekotransservice_routemanager.ErrorMessage
 import com.example.ekotransservice_routemanager.ErrorTypes
+import com.example.ekotransservice_routemanager.R
 import com.example.ekotransservice_routemanager.UploadResult
 import kotlinx.coroutines.*
 import org.json.JSONObject
+import java.io.BufferedInputStream
+import java.io.InputStream
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManagerFactory
 import kotlin.collections.ArrayList
 
 class RouteRepository constructor(val context: Context) {
@@ -81,6 +91,7 @@ class RouteRepository constructor(val context: Context) {
         // установка параметров подключения
         serverConnector.setConnectionParams(urlName,urlPort.toInt())
         serverConnector.setAuthPass(urlPass)
+        serverConnector.setSSl(getSSLSocketFactory())
     }
 
     // Загрузка списка точек
@@ -291,6 +302,30 @@ class RouteRepository constructor(val context: Context) {
         this.vehicle = vehicle
     }
 
+    private fun getSSLSocketFactory(): SSLSocketFactory {
+        //val keyStoreType = KeyStore.getDefaultType()
+        val cert = context.resources.openRawResource(R.raw.apache_selfsigned)
+        val caInput: InputStream = BufferedInputStream(cert)
+        val cf: CertificateFactory = CertificateFactory.getInstance("X.509")
+        val ca: X509Certificate = caInput.use {
+            cf.generateCertificate(it) as X509Certificate
+        }
+        val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
+            load(null, null)
+            setCertificateEntry("ca", ca)
+        }
+        // Create a TrustManager that trusts the CAs inputStream our KeyStore
+        val tmfAlgorithm: String = TrustManagerFactory.getDefaultAlgorithm()
+        val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(tmfAlgorithm).apply {
+            init(keyStore)
+        }
 
+        // Create an SSLContext that uses our TrustManager
+        val sslContext: SSLContext = SSLContext.getInstance("TLSv1.2").apply {
+            init(null, tmf.trustManagers, null)
+        }
+
+        return sslContext.socketFactory
+    }
 
 }
