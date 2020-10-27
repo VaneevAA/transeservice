@@ -57,11 +57,19 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
     @SuppressLint("ResourceType")
     override fun onBindViewHolder(holder: PointPhotosViewHolder, position: Int) {
         val viewModel = pointList?.get(position)?.let { PointFilesViewModel(activity, it) }
+
+        //установка размеров элементов формы (-2 - wrap content)
         val recycleView : RecyclerView = holder.itemView.findViewById(R.id.recyclerview)
+        val photoFilesFragment = holder.itemView.findViewById<View>(R.id.photoFilesFragment)
+        val pointFilesParent = holder.itemView.findViewById<View>(R.id.pointFilesParent)
+        val listOfPointFiles = holder.itemView.findViewById<View>(R.id.listOfPointFiles)
+        photoFilesFragment.layoutParams.height = -2
+        pointFilesParent.layoutParams.height = -2
+        recycleView.layoutParams.height = -2
+        listOfPointFiles.layoutParams.height = -2
+        //установка количества фото на ширену экрана
         val graphicPoint = android.graphics.Point()
         (activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(graphicPoint)
-
-        recycleView.layoutParams.height = -2
         val countOfImages = (graphicPoint.x / 300).toInt()
         recycleView.layoutManager = GridLayoutManager(context,countOfImages)
         recycleView.isVerticalScrollBarEnabled = false

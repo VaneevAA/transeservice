@@ -12,10 +12,13 @@ import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
+import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 
 class PointFiles : Fragment() {
 
     var point : Point? = null
+    var sendFilesView : View? = null
+    var sendFilesShow : Boolean = false
 
     companion object {
         fun newInstance() = PointFiles()
@@ -31,7 +34,8 @@ class PointFiles : Fragment() {
         val recycleView : RecyclerView = view.findViewById(R.id.recyclerview)
         val graphicPoint = android.graphics.Point()
         (requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(graphicPoint)
-
+        sendFilesView = view.findViewById(R.id.bottomSender)
+        sendFilesShow = false
 
         val countOfImages = (graphicPoint.x / 300).toInt()
         recycleView.layoutManager = GridLayoutManager(requireContext(),countOfImages)
@@ -50,6 +54,20 @@ class PointFiles : Fragment() {
 
         viewModel.loadDataFromDB()
         view.findViewById<TextView>(R.id.pointNameText).text = point!!.getAddressName()
+
+        val selectObserver = Observer<Boolean> {
+            (recycleView.adapter as PointFilesAdapter).selectedViewModel.getList().value?.let {
+                showHideFileSend(
+                    it
+                )
+            }
+        }
+
+        (recycleView.adapter as PointFilesAdapter).selectedViewModel.selectedListFilled
+            .removeObservers(requireActivity())
+        (recycleView.adapter as PointFilesAdapter).selectedViewModel.selectedListFilled
+            .observe(requireActivity(),selectObserver)
+
         return view
     }
 
@@ -67,4 +85,19 @@ class PointFiles : Fragment() {
             viewModel = PointFilesViewModel(requireActivity() as MainActivity, point!!)
         }
     }
+
+    private fun showHideFileSend (show : Boolean){
+        val animator =  AnimateView(sendFilesView!!,context as MainActivity,true)
+        if(show && !sendFilesShow){
+            animator.showHeight()
+            sendFilesShow = true
+
+        }else if(!show && sendFilesShow){
+            animator.hideHeight()
+            sendFilesShow = false
+        }
+    }
+
 }
+
+

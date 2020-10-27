@@ -13,9 +13,11 @@ class AllPhotosViewModel (private val activity: MainActivity) : ViewModel() {
     val allPoints : MutableLiveData<MutableList<Point>> = MutableLiveData()
     private val routeRepository = RouteRepository.getInstance(activity.applicationContext)
 
+    
     fun loadDataFromDB() {
 
         viewModelScope.launch {
+
             val result = routeRepository.getPointsWithFilesAsync()
             if(result != null){
                 allPoints.value = result
