@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.R
+import java.util.*
 
 class FactDialog(parentFragment : Fragment, val point : MutableLiveData<Point>, val mainFragment : point_action, val mainParentView : View) : DialogFragment() {
 
@@ -50,6 +51,7 @@ class FactDialog(parentFragment : Fragment, val point : MutableLiveData<Point>, 
             point.value!!.setCountFact(fact)
             point.value!!.setDone(true)
             point.value!!.setCountOverFromPlanAndFact()
+            point.value!!.setTimestamp(Date())
 
             mainFragment.getViewModel().getRepository().updatePointAsync(point.value!!)
 
