@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.Point
@@ -30,12 +31,11 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
     class PointPhotosViewHolder( itemView: View, val viewGroup : ViewGroup) : RecyclerView.ViewHolder(
         itemView
     ) {
-        var currentItem : View? = null
         var pointPosition : Int = 0
     }
     private var mLayout : LayoutInflater = LayoutInflater.from(context)
     private var pointList : MutableList<Point>? = null
-
+    val viewModelIsSelected = AllPhotoSelected(context as MainActivity)
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -72,6 +72,7 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
         (activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(graphicPoint)
         val countOfImages = (graphicPoint.x / 300).toInt()
         recycleView.layoutManager = GridLayoutManager(context,countOfImages)
+
         recycleView.isVerticalScrollBarEnabled = false
         recycleView.isNestedScrollingEnabled = false
         val adapter = PointFilesAdapter(holder.itemView.context)
@@ -88,11 +89,34 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
         holder.itemView.findViewById<TextView>(R.id.pointNameText).text = pointList?.get(position)!!.getAddressName()
 
         holder.pointPosition = position
+        viewModelIsSelected.viewModelList.add((recycleView.adapter as PointFilesAdapter).selectedViewModel)
+        val selectObserver = Observer<Boolean> {
+            viewModelIsSelected.setSelected()
+        }
+
+        (recycleView.adapter as PointFilesAdapter).selectedViewModel.selectedListFilled
+            .observe(context as MainActivity,selectObserver)
 
     }
 
     fun setList(points : MutableLiveData<MutableList<Point>>){
         this.pointList = points.value?.size?.let { MutableList(it) { i: Int -> points.value!![i] } }
         notifyDataSetChanged()
+    }
+
+    class AllPhotoSelected (val activity: MainActivity) : ViewModel(){
+        var viewModelList : MutableList<PointFilesAdapter.SelectedViewModel> = mutableListOf()
+        var hasSelected : MutableLiveData<Boolean> = MutableLiveData(false)
+
+        fun setSelected (){
+            for(viewModel in viewModelList){
+                if (viewModel.selectedListFilled.value == true) {
+                    hasSelected.value = true
+                    return
+                }
+
+            }
+            hasSelected.value = false
+        }
     }
 }
