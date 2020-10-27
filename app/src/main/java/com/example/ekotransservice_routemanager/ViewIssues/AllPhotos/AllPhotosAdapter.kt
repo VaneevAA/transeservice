@@ -3,7 +3,9 @@ package com.example.ekotransservice_routemanager.ViewIssues.AllPhotos
 import android.annotation.SuppressLint
 import android.app.ActionBar
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -117,6 +119,26 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
 
             }
             hasSelected.value = false
+        }
+
+        fun getOnClickListener () : View.OnClickListener{
+            return View.OnClickListener {
+                val imageUris : ArrayList<Uri> = arrayListOf()
+                for (viewModel in viewModelList){
+                    for (pointFile in viewModel.selectedList){
+                        imageUris.add(Uri.parse(pointFile.filePath))
+                    }
+                }
+
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND_MULTIPLE
+                    putParcelableArrayListExtra(Intent.EXTRA_STREAM,imageUris)
+                    type = "image/*"
+                }
+
+                activity.startActivity(Intent.createChooser(shareIntent,"Отправка фото"))
+
+            }
         }
     }
 }

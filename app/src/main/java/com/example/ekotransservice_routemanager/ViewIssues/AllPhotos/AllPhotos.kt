@@ -1,6 +1,5 @@
 package com.example.ekotransservice_routemanager.ViewIssues.AllPhotos
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,7 +12,6 @@ import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
-import com.example.ekotransservice_routemanager.ViewIssues.RouteList.PointListAdapter
 
 class AllPhotos : Fragment() {
 
@@ -54,6 +52,8 @@ class AllPhotos : Fragment() {
         (recycleView.adapter as AllPhotosAdapter).viewModelIsSelected.hasSelected
             .observe(requireActivity(),selectObserver)
 
+        sendFilesView!!.setOnClickListener((recycleView.adapter as AllPhotosAdapter)
+            .viewModelIsSelected.getOnClickListener())
         return view
     }
 

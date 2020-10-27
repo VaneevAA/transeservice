@@ -68,6 +68,9 @@ class PointFiles : Fragment() {
         (recycleView.adapter as PointFilesAdapter).selectedViewModel.selectedListFilled
             .observe(requireActivity(),selectObserver)
 
+        sendFilesView!!.setOnClickListener((recycleView.adapter as PointFilesAdapter)
+            .selectedViewModel.getOnClickListener())
+
         return view
     }
 

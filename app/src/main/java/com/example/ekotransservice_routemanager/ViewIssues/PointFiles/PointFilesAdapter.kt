@@ -173,7 +173,25 @@ class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesA
 
         fun getSize() : Boolean = selectedList.size > 0
 
+        fun getOnClickListener () : View.OnClickListener{
+            return View.OnClickListener {
+                val imageUris : ArrayList<Uri> = arrayListOf()
 
+                for (pointFile in selectedList){
+                    imageUris.add(Uri.parse(pointFile.filePath))
+                }
+
+
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND_MULTIPLE
+                    putParcelableArrayListExtra(Intent.EXTRA_STREAM,imageUris)
+                    type = "image/*"
+                }
+
+                activity.startActivity(Intent.createChooser(shareIntent,"Отправка фото"))
+
+            }
+        }
 
     }
 }
