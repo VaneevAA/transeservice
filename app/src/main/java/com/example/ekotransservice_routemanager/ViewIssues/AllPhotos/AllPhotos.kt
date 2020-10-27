@@ -1,6 +1,5 @@
 package com.example.ekotransservice_routemanager.ViewIssues.AllPhotos
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -12,9 +11,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
-import com.example.ekotransservice_routemanager.ViewIssues.RouteList.PointListAdapter
+import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 
 class AllPhotos : Fragment() {
+
+    var sendFilesView : View? = null
+    var sendFilesShow : Boolean = false
 
     companion object {
         fun newInstance() = AllPhotos()
@@ -39,6 +41,19 @@ class AllPhotos : Fragment() {
         viewModel.allPoints.removeObservers(requireActivity())
         viewModel.allPoints.observe(requireActivity(),observer)
         viewModel.loadDataFromDB()
+
+        sendFilesView = view.findViewById(R.id.bottomSender)
+        sendFilesShow = false
+
+        val selectObserver = Observer<Boolean> {
+            showHideFileSend(it)
+        }
+
+        (recycleView.adapter as AllPhotosAdapter).viewModelIsSelected.hasSelected
+            .observe(requireActivity(),selectObserver)
+
+        sendFilesView!!.setOnClickListener((recycleView.adapter as AllPhotosAdapter)
+            .viewModelIsSelected.getOnClickListener())
         return view
     }
 
@@ -48,4 +63,15 @@ class AllPhotos : Fragment() {
         // TODO: Use the ViewModel
     }
 
+    private fun showHideFileSend (show : Boolean){
+        val animator =  AnimateView(sendFilesView!!,context as MainActivity,true)
+        if(show && !sendFilesShow){
+            animator.showHeight()
+            sendFilesShow = true
+
+        }else if(!show && sendFilesShow){
+            animator.hideHeight()
+            sendFilesShow = false
+        }
+    }
 }

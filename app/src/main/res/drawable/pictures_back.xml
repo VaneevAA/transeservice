@@ -7,7 +7,6 @@
             <corners android:radius="5dp"/>
             <stroke android:width="5dp"
                 android:color="@color/colorPrimary"/>
-            <padding android:top="5dp"/>
             <solid android:color="@color/colorPrimary"/>
 
         </shape>
@@ -18,7 +17,6 @@
             <corners android:radius="5dp"/>
             <stroke android:width="5dp"
                 android:color="@color/colorPrimaryDark"/>
-            <padding android:top="5dp"/>
             <solid android:color="@color/colorPrimaryDark"/>
         </shape>
     </item>
