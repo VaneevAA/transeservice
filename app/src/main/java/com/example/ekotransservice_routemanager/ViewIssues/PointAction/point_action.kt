@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Location
 import android.net.Uri
 import android.os.Build
@@ -34,6 +35,7 @@ import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 import com.google.android.gms.location.*
 import com.google.android.material.transition.MaterialContainerTransform
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
@@ -126,6 +128,13 @@ class point_action : Fragment() {
                 // TODO: Обработка результата запроса разрешения
             }
 
+            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE), 101);
+                // TODO: Обработка результата запроса разрешения
+            }
+
             // Location
             val REQUEST_CHECK_STATE = 12300 // any suitable ID
             val builder = LocationSettingsRequest.Builder()
@@ -141,7 +150,6 @@ class point_action : Fragment() {
     ): View? {
 
         val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
-
         viewPointModel = ViewModelProvider(this.requireActivity(),
             ViewPointAction.ViewPointsFactory(
                 this.requireActivity().application,
@@ -297,7 +305,7 @@ class point_action : Fragment() {
                     "com.example.ekotransservice_routemanager.fileprovider",
                     it
                 )
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
+                //takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
                 startActivityForResult(takePictureIntent,1)
             }
         }
@@ -325,6 +333,15 @@ class point_action : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         try {
         if (resultCode == Activity.RESULT_OK) {
+            val bitmap = data!!.extras!!.get("data") as Bitmap
+            val bos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,bos)
+
+            val fos = currentFile!!.outputStream()
+            fos.write(bos.toByteArray())
+            fos.flush()
+            fos.close()
+
             setGeoTag(currentFile!!)
             /*when (currentFileOrder) {
                 PhotoOrder.PHOTO_BEFORE -> fileBefore = currentFile
@@ -465,4 +482,5 @@ class point_action : Fragment() {
         }
     }
 }
+
 
