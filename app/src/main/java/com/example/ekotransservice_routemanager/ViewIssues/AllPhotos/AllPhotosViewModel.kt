@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager.ViewIssues.AllPhotos
 
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,8 +20,11 @@ class AllPhotosViewModel (private val activity: MainActivity) : ViewModel() {
         viewModelScope.launch {
 
             val result = routeRepository.getPointsWithFilesAsync()
-            if(result != null){
+            if(result != null && result.size > 0){
                 allPoints.value = result
+            }else{
+                Toast.makeText(activity,"Фотографий пока нет", Toast.LENGTH_LONG).show()
+                activity.onBackPressed()
             }
         }
 
