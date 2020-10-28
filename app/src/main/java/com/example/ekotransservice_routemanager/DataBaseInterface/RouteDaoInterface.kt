@@ -10,7 +10,19 @@ import com.example.ekotransservice_routemanager.DataClasses.Route
 interface RouteDaoInterface {
 
     @Query("SELECT * from pointList_table ORDER BY tripNumber, rowNumber")
-    fun getCurrentList(): MutableList<Point>
+    fun getAllPointList(): MutableList<Point>
+
+    @Query("SELECT * from pointList_table WHERE NOT done ORDER BY tripNumber, rowNumber")
+    fun getNotDonePointList(): MutableList<Point>
+
+    @Transaction
+    fun getCurrentList(doneOnly:Boolean): MutableList<Point>{
+        return if (doneOnly) {
+           getNotDonePointList()
+        }else{
+           getAllPointList()
+        }
+    }
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertPoint(point: Point)
