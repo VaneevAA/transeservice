@@ -96,15 +96,15 @@ class RouteRepository constructor(val context: Context) {
 
     // Загрузка списка точек
     // reload - требуется загрузка с  Postgres
-    suspend fun getPointList(reload: Boolean): MutableList<Point>? {
+    suspend fun getPointList(reload: Boolean, doneOnly: Boolean = false): MutableList<Point>? {
         return try {
             if (reload) {
                 val currentRoute = GlobalScope.async { getCurrentRoute() }
                 val dataLoaded = GlobalScope.async { loadTaskFromServer(currentRoute.await()) }
-                val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await()) }
+                val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await(),doneOnly) }
                 tracklist.await()
             } else {
-                val tracklist = GlobalScope.async { loadTrackListFromRoom(true) }
+                val tracklist = GlobalScope.async { loadTrackListFromRoom(true,doneOnly) }
                 tracklist.await()
             }
         }catch (e: java.lang.Exception){
@@ -206,10 +206,10 @@ class RouteRepository constructor(val context: Context) {
 
 
     // Получение списка точек из локальной базы
-    private fun loadTrackListFromRoom(dataLoaded: Boolean): MutableList<Point>? {
+    private fun loadTrackListFromRoom(dataLoaded: Boolean, doneOnly: Boolean): MutableList<Point>? {
         return if (dataLoaded) {
             try {
-                val data = mRoutesDao!!.getCurrentList()
+                val data = mRoutesDao!!.getCurrentList(doneOnly)
                 data
             } catch (e: Exception) {
                 errorArrayList.add(ErrorMessage(ErrorTypes.ROOM_ERROR, "Ошибка чтения данных",e))
@@ -235,7 +235,7 @@ class RouteRepository constructor(val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun uploadTrackListToServer(): UploadResult {
-        val trackList = loadTrackListFromRoom(true)
+        val trackList = loadTrackListFromRoom(true, false)
         return if (trackList != null) {
             val result = serverConnector.uploadTrackList(trackList as ArrayList<Point>)
             if (result.success) {
