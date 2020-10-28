@@ -192,7 +192,8 @@ class point_action : Fragment() {
             takePicture(PhotoOrder.PHOTO_BEFORE)
         }
         mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
-            if (viewPointModel!!.fileBeforeIsDone.value!!) {
+            if (viewPointModel!!.fileBeforeIsDone.value!!
+                && viewPointModel!!.currentPoint.value!!.getDone()) {
                 takePicture(PhotoOrder.PHOTO_AFTER)
             }else {
                 Toast.makeText(requireContext(),"Предыдущие действия не выполнены",Toast.LENGTH_LONG).show()
@@ -303,6 +304,7 @@ class point_action : Fragment() {
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     private fun createFile() : File?{
         val timeCreated = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
         val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
