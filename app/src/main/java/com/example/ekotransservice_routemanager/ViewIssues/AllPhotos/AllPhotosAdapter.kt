@@ -77,7 +77,11 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
 
         recycleView.isVerticalScrollBarEnabled = false
         recycleView.isNestedScrollingEnabled = false
-        val adapter = PointFilesAdapter(holder.itemView.context)
+        val adapter = pointList?.get(position)?.let {
+            PointFilesAdapter(holder.itemView.context,
+                it
+            )
+        }
         recycleView.adapter = adapter
 
         val observer = Observer<MutableList<PointFile>> {

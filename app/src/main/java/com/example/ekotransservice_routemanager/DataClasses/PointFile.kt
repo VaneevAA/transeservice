@@ -34,7 +34,7 @@ class PointFile(
     val filePath: String,
     val fileName: String,
     val fileExtension: String
-)  {
+) : Serializable {
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0L
 
