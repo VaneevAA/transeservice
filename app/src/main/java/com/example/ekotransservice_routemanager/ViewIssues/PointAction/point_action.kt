@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
 import android.location.Location
 import android.net.Uri
@@ -14,17 +15,20 @@ import android.os.Environment
 import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.core.view.children
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -35,12 +39,12 @@ import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 import com.google.android.gms.location.*
 import com.google.android.material.transition.MaterialContainerTransform
+import kotlinx.android.synthetic.main.fragment_point_action.view.*
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -121,17 +125,39 @@ class point_action : Fragment() {
             point  = it.getSerializable("point") as Point
             canDone = it.getBoolean("canDone")
 
-            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
-                requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION), 101);
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ), 101
+                );
                 // TODO: Обработка результата запроса разрешения
             }
 
-            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
-                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE), 101);
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    ), 101
+                );
                 // TODO: Обработка результата запроса разрешения
             }
 
@@ -150,7 +176,8 @@ class point_action : Fragment() {
     ): View? {
 
         val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
-        viewPointModel = ViewModelProvider(this.requireActivity(),
+        viewPointModel = ViewModelProvider(
+            this.requireActivity(),
             ViewPointAction.ViewPointsFactory(
                 this.requireActivity().application,
                 requireActivity() as MainActivity,
@@ -160,16 +187,14 @@ class point_action : Fragment() {
             .get(ViewPointAction::class.java)
 
 
-        val observerPoint = Observer<Point> {
-            pointValue -> (
+        val observerPoint = Observer<Point> { pointValue -> (
                 fillFragment(mainFragment)
                 )
         }
 
-        viewPointModel!!.currentPoint.observe(requireActivity(),observerPoint)
+        viewPointModel!!.currentPoint.observe(requireActivity(), observerPoint)
 
-        val observerBefore = Observer<Boolean> {
-                fileBeforeIsDone -> (
+        val observerBefore = Observer<Boolean> { fileBeforeIsDone -> (
                 if (fileBeforeIsDone != null && fileBeforeIsDone) {
                     mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility = View.VISIBLE
                 } else {
@@ -180,8 +205,7 @@ class point_action : Fragment() {
 
         viewPointModel!!.fileBeforeIsDone.observe(requireActivity(), observerBefore)
 
-        val observerAfter = Observer<Boolean> {
-                fileAfterIsDone -> (
+        val observerAfter = Observer<Boolean> { fileAfterIsDone -> (
                 if (fileAfterIsDone != null && fileAfterIsDone) {
                     mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility = View.VISIBLE
                 } else {
@@ -204,16 +228,25 @@ class point_action : Fragment() {
                 && viewPointModel!!.currentPoint.value!!.getDone()) {
                 takePicture(PhotoOrder.PHOTO_AFTER)
             }else {
-                Toast.makeText(requireContext(),"Предыдущие действия не выполнены",Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Предыдущие действия не выполнены",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
         mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
             if(viewPointModel!!.fileBeforeIsDone.value!!){
-                val dialog = FactDialog(requireParentFragment(),viewPointModel!!.currentPoint,this,mainFragment)
-                dialog.show(requireActivity().supportFragmentManager,"factDialog")
+                val dialog = FactDialog(
+                    requireParentFragment(),
+                    viewPointModel!!.currentPoint,
+                    this,
+                    mainFragment
+                )
+                dialog.show(requireActivity().supportFragmentManager, "factDialog")
             }else{
-                Toast.makeText(requireContext(),"Нет фото до",Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Нет фото до", Toast.LENGTH_LONG).show()
             }
 
         }
@@ -221,21 +254,47 @@ class point_action : Fragment() {
         mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).setOnClickListener {
             if(viewPointModel!!.fileBeforeIsDone.value!!){
                 val bundle = bundleOf("point" to point!!)
-                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles,bundle)
+                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles, bundle)
             }
         }
 
         mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).setOnClickListener {
             if(viewPointModel!!.fileBeforeIsDone.value!!){
                 val bundle = bundleOf("point" to point!!)
-                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles,bundle)
+                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles, bundle)
+            }
+        }
+
+        mainFragment.showRouteButton.setOnClickListener{
+
+            if (location != null && location!!.latitude != 0.0  && location!!.longitude != 0.0 ) {
+                val startlat = location!!.latitude
+                val startlon = location!!.longitude
+                val endlat = point!!.getAddressLat()
+                val endlon = point!!.getAddressLon()
+                val uri =
+                    Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
+                var intent = Intent(Intent.ACTION_VIEW, uri)
+                val packageManager: PackageManager = requireContext().packageManager
+                val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
+                val isIntentSafe: Boolean = activities.size > 0
+                if (isIntentSafe) {
+                    startActivity(intent)
+                } else {
+                    // Открываем страницу приложения Яндекс.Карты в Google Play.
+                    intent = Intent(Intent.ACTION_VIEW)
+                    intent.data = Uri.parse("market://details?id=ru.yandex.yandexmaps")
+                    startActivity(intent)
+                }
+            }else {
+                Toast.makeText(requireContext(),"Текущее местоположение не определено",Toast.LENGTH_LONG).show()
             }
         }
 
         return mainFragment
     }
 
-    private fun showButtons(mainFragment:View, listOfActions:ArrayList<PointActoins>){
+    private fun showButtons(mainFragment: View, listOfActions: ArrayList<PointActoins>){
         for(child in (mainFragment.findViewById<View>(R.id.buttonsToDo) as ConstraintLayout).children){
             child.visibility = View.GONE
         }
@@ -243,11 +302,14 @@ class point_action : Fragment() {
         for(action in listOfActions){
             when (action){
                 PointActoins.TAKE_PHOTO_BEFORE
-                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoBefore).visibility = View.VISIBLE
+                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoBefore).visibility =
+                    View.VISIBLE
                 PointActoins.TAKE_PHOTO_AFTER
-                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoAfter).visibility = View.VISIBLE
+                -> mainFragment.findViewById<View>(R.id.layoutTakePhotoAfter).visibility =
+                    View.VISIBLE
                 PointActoins.SET_VOLUME
-                -> mainFragment.findViewById<View>(R.id.layoutSetCountFact).visibility = View.VISIBLE
+                -> mainFragment.findViewById<View>(R.id.layoutSetCountFact).visibility =
+                    View.VISIBLE
             }
         }
     }
@@ -296,8 +358,9 @@ class point_action : Fragment() {
 
     private fun takePicture(fileOrder: PhotoOrder){
         currentFileOrder = fileOrder
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also {
-            takePictureIntent -> takePictureIntent.resolveActivity(requireActivity().packageManager)?.also {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent -> takePictureIntent.resolveActivity(
+            requireActivity().packageManager
+        )?.also {
             val pictureFile = createFile()
             pictureFile?.also {
                 val pictureUri: Uri = FileProvider.getUriForFile(
@@ -306,7 +369,7 @@ class point_action : Fragment() {
                     it
                 )
                 //takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
-                startActivityForResult(takePictureIntent,1)
+                startActivityForResult(takePictureIntent, 1)
             }
         }
         }
@@ -317,11 +380,15 @@ class point_action : Fragment() {
         val timeCreated = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
         val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         try {
-            currentFile = File.createTempFile("${point!!.getAddressName()}_($timeCreated)_${currentFileOrder.string}",".jpg",storage)
+            currentFile = File.createTempFile(
+                "${point!!.getAddressName()}_($timeCreated)_${currentFileOrder.string}",
+                ".jpg",
+                storage
+            )
                 .apply { currentFilePath = absolutePath }
             return currentFile
-        }catch (e : Exception){
-            Toast.makeText(requireContext(),"Неудалось записать файл",Toast.LENGTH_LONG).show()
+        }catch (e: Exception){
+            Toast.makeText(requireContext(), "Неудалось записать файл", Toast.LENGTH_LONG).show()
             //TODO create exception behavior
         }
 
@@ -335,7 +402,7 @@ class point_action : Fragment() {
         if (resultCode == Activity.RESULT_OK) {
             val bitmap = data!!.extras!!.get("data") as Bitmap
             val bos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG,100,bos)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
 
             val fos = currentFile!!.outputStream()
             fos.write(bos.toByteArray())
@@ -348,18 +415,18 @@ class point_action : Fragment() {
                 PhotoOrder.PHOTO_AFTER -> fileAfter = currentFile
             }*/
             if (currentFile != null) {
-               viewPointModel!!.saveFile(currentFile!!,point!!,currentFileOrder)
+               viewPointModel!!.saveFile(currentFile!!, point!!, currentFileOrder)
             }
             // Фотографию надо делать всегда не зависимо от возможности присвоения геометки
-        }} catch (e:java.lang.Exception) {
+        }} catch (e: java.lang.Exception) {
             Log.e("Ошибка фото", "Ошибка фото $e")
-            Toast.makeText(requireContext(),"Ошибка $e",Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Ошибка $e", Toast.LENGTH_LONG).show()
         }
 
     }
 
     @SuppressLint("MissingPermission")
-    private fun setGeoTag(file : File) : Boolean {
+    private fun setGeoTag(file: File) : Boolean {
         /*fusedLocationClient.lastLocation
             .addOnSuccessListener { location : Location? ->
                 val exifInterface = androidx.exifinterface.media.ExifInterface(currentFile!!.absoluteFile)
@@ -401,8 +468,8 @@ class point_action : Fragment() {
             }else{
                 false
             }
-        }catch (e:java.lang.Exception){
-            Toast.makeText(requireContext(),"Ошибка $e",Toast.LENGTH_LONG).show()
+        }catch (e: java.lang.Exception){
+            Toast.makeText(requireContext(), "Ошибка $e", Toast.LENGTH_LONG).show()
             return false
         }
 
@@ -444,9 +511,11 @@ class point_action : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
-        fusedLocationClient.requestLocationUpdates(locationRequest,
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
             locationUpdatesCallback,
-            Looper.getMainLooper())
+            Looper.getMainLooper()
+        )
     }
 
     override fun onPause() {
@@ -462,14 +531,19 @@ class point_action : Fragment() {
         when (requestCode) {
             101 -> {
                 if ((grantResults.isNotEmpty() &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                ) {
                     // Permission is granted. Continue the action or workflow
                     // in your app.
                 } else {
-                    Toast.makeText(requireContext(),"Требуется предоставить права на определение местоположения, работа с фотографиями не возможна",Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Требуется предоставить права на определение местоположения, работа с фотографиями не возможна",
+                        Toast.LENGTH_LONG
+                    ).show()
                     if (findNavController().popBackStack()) {
 
-                    }else{
+                    } else {
                         findNavController().navigate(R.id.start_frame_screen)
                     }
 
