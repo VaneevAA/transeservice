@@ -29,7 +29,7 @@ import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import kotlin.collections.mutableListOf as mutableListOf
 
 
-class PointFilesAdapter(val context: Context,val point : Point) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
+class PointFilesAdapter(val context: Context,val point : Point, val fromAllPhoto : Boolean) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
 
     class PointFilesHolder(itemView: View) : RecyclerView.ViewHolder(
         itemView
@@ -105,7 +105,11 @@ class PointFilesAdapter(val context: Context,val point : Point) : RecyclerView.A
              */
             val bundle = bundleOf("point" to point, "pointFileValue" to pointFile!!)
 
-            (context as MainActivity).navController.navigate(R.id.action_pointFiles_to_photo_show,bundle)
+            (context as MainActivity).navController.navigate(if(fromAllPhoto) {
+                R.id.action_allPhotos_to_photo_show
+            }else{
+                R.id.action_pointFiles_to_photo_show
+            },bundle)
 
         }
 

@@ -80,7 +80,7 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
         val adapter = pointList?.get(position)?.let {
             PointFilesAdapter(holder.itemView.context,
                 it
-            )
+            ,true)
         }
         recycleView.adapter = adapter
 
