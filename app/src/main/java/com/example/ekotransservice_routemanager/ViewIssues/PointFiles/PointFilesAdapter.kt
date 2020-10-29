@@ -16,10 +16,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
+import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 import java.io.*
@@ -27,7 +29,7 @@ import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import kotlin.collections.mutableListOf as mutableListOf
 
 
-class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
+class PointFilesAdapter(val context: Context, val point : Point, private val fromAllPhoto : Boolean) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
 
     class PointFilesHolder(itemView: View) : RecyclerView.ViewHolder(
         itemView
@@ -78,7 +80,7 @@ class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesA
 
         holder.listElement.setOnClickListener {
 
-            val openImage = Intent(Intent.ACTION_VIEW).apply {
+            /*val openImage = Intent(Intent.ACTION_VIEW).apply {
                 putExtra(Intent.EXTRA_STREAM,Uri.parse(pointFile.filePath))
                 type = "image/*"
                 flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -96,7 +98,33 @@ class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesA
                     "Нет приложения для отображения данного типа файла",
                     Toast.LENGTH_LONG
                 ).show()
+            }*/
+
+             */
+
+             */
+            if(selectedViewModel.selectedListFilled.value!! or selectedViewModel.upperSelected){
+                holder.isSelected = !holder.isSelected
+
+                if(holder.isSelected){
+                    holder.listElement.background = context.getDrawable(R.drawable.pictures_back)
+                    selectedViewModel.addFile(pointFile)
+
+                }else{
+                    holder.listElement.background = context.getDrawable(R.drawable.point_back)
+                    selectedViewModel.removeFile(pointFile)
+                }
+            }else{
+                val bundle = bundleOf("point" to point, "pointFileValue" to pointFile!!)
+
+                (context as MainActivity).navController.navigate(if(fromAllPhoto) {
+                    R.id.action_allPhotos_to_photo_show
+                }else{
+                    R.id.action_pointFiles_to_photo_show
+                },bundle)
             }
+
+
         }
 
         holder.listElement.isLongClickable = true
@@ -111,7 +139,6 @@ class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesA
                 holder.listElement.background = context.getDrawable(R.drawable.point_back)
                 selectedViewModel.removeFile(pointFile)
             }
-
             return@setOnLongClickListener true
         }
         //holder.pointFile.setImageURI(Uri.parse(pointFile.filePath))
@@ -152,7 +179,7 @@ class PointFilesAdapter(val context: Context) : RecyclerView.Adapter<PointFilesA
 
         var selectedList : MutableList<PointFile> = mutableListOf()
         var selectedListFilled : MutableLiveData<Boolean> = MutableLiveData(false)
-
+        var upperSelected : Boolean = false
 
 
         fun getList () : MutableLiveData<Boolean>{

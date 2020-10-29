@@ -39,7 +39,7 @@ class PointFiles : Fragment() {
 
         val countOfImages = (graphicPoint.x / 300).toInt()
         recycleView.layoutManager = GridLayoutManager(requireContext(),countOfImages)
-        val adapter = PointFilesAdapter(view.context)
+        val adapter = PointFilesAdapter(view.context,point!!,false)
         recycleView.adapter = adapter
 
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.touchscreenBlocksFocus = true

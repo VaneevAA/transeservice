@@ -79,11 +79,31 @@
         <argument
             android:name="point"
             app:argType="com.example.ekotransservice_routemanager.DataClasses.Point" />
+        <action
+            android:id="@+id/action_pointFiles_to_photo_show"
+            app:destination="@id/photo_show" />
     </fragment>
     <fragment
         android:id="@+id/allPhotos"
         android:name="com.example.ekotransservice_routemanager.ViewIssues.AllPhotos.AllPhotos"
         android:label="all_photos_fragment"
-        tools:layout="@layout/all_photos_fragment" />
+        tools:layout="@layout/all_photos_fragment" >
+        <action
+            android:id="@+id/action_allPhotos_to_photo_show"
+            app:destination="@id/photo_show" />
+    </fragment>
+    <fragment
+        android:id="@+id/photo_show"
+        android:name="com.example.ekotransservice_routemanager.ViewIssues.PhotoShowFragment.photo_show"
+        android:label="photo_show_fragment"
+        tools:layout="@layout/photo_show_fragment" >
+        <argument
+            android:name="pointFile"
+            app:argType="com.example.ekotransservice_routemanager.DataClasses.PointFile" />
+        <argument
+            android:name="point"
+            app:argType="com.example.ekotransservice_routemanager.DataClasses.Point"
+            app:nullable="true" />
+    </fragment>
 
 </navigation>
