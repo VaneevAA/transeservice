@@ -47,5 +47,6 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="point_name">point name</string>
     <string name="send_files">Отправить файлы</string>
+    <string name="showRouteText">Построить маршрут</string>
 
 </resources>
