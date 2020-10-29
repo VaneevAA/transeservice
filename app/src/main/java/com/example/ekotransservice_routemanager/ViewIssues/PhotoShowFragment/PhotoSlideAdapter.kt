@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 import com.google.android.material.slider.Slider
@@ -35,7 +36,17 @@ class PhotoSlideAdapter(val activity : MainActivity, val mViewModel : PhotoShowV
         mViewModel.setNextPhoto(position)
         val currentFile = mViewModel.mData.value
         holder.imageView.setImageURI(Uri.parse(currentFile!!.filePath))
-        holder.description.text = currentFile.photoOrder.string
+        holder.description.text = when (currentFile.photoOrder) {
+            PhotoOrder.PHOTO_BEFORE -> {
+                "До вывоза"
+            }
+            PhotoOrder.PHOTO_AFTER -> {
+                "После вывоза"
+            }
+            else -> {
+                ""
+            }
+        }
 
     }
 

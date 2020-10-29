@@ -29,7 +29,7 @@ import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import kotlin.collections.mutableListOf as mutableListOf
 
 
-class PointFilesAdapter(val context: Context,val point : Point, val fromAllPhoto : Boolean) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
+class PointFilesAdapter(val context: Context, val point : Point, private val fromAllPhoto : Boolean) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
 
     class PointFilesHolder(itemView: View) : RecyclerView.ViewHolder(
         itemView
@@ -103,13 +103,27 @@ class PointFilesAdapter(val context: Context,val point : Point, val fromAllPhoto
              */
 
              */
-            val bundle = bundleOf("point" to point, "pointFileValue" to pointFile!!)
+            if(selectedViewModel.selectedListFilled.value!! or selectedViewModel.upperSelected){
+                holder.isSelected = !holder.isSelected
 
-            (context as MainActivity).navController.navigate(if(fromAllPhoto) {
-                R.id.action_allPhotos_to_photo_show
+                if(holder.isSelected){
+                    holder.listElement.background = context.getDrawable(R.drawable.pictures_back)
+                    selectedViewModel.addFile(pointFile)
+
+                }else{
+                    holder.listElement.background = context.getDrawable(R.drawable.point_back)
+                    selectedViewModel.removeFile(pointFile)
+                }
             }else{
-                R.id.action_pointFiles_to_photo_show
-            },bundle)
+                val bundle = bundleOf("point" to point, "pointFileValue" to pointFile!!)
+
+                (context as MainActivity).navController.navigate(if(fromAllPhoto) {
+                    R.id.action_allPhotos_to_photo_show
+                }else{
+                    R.id.action_pointFiles_to_photo_show
+                },bundle)
+            }
+
 
         }
 
@@ -125,7 +139,6 @@ class PointFilesAdapter(val context: Context,val point : Point, val fromAllPhoto
                 holder.listElement.background = context.getDrawable(R.drawable.point_back)
                 selectedViewModel.removeFile(pointFile)
             }
-
             return@setOnLongClickListener true
         }
         //holder.pointFile.setImageURI(Uri.parse(pointFile.filePath))
@@ -166,7 +179,7 @@ class PointFilesAdapter(val context: Context,val point : Point, val fromAllPhoto
 
         var selectedList : MutableList<PointFile> = mutableListOf()
         var selectedListFilled : MutableLiveData<Boolean> = MutableLiveData(false)
-
+        var upperSelected : Boolean = false
 
 
         fun getList () : MutableLiveData<Boolean>{

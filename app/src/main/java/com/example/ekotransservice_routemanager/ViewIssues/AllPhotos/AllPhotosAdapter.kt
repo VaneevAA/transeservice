@@ -115,14 +115,20 @@ class AllPhotosAdapter(val context: Context, val activity: MainActivity, val par
         var hasSelected : MutableLiveData<Boolean> = MutableLiveData(false)
 
         fun setSelected (){
+            var thereIsSelected = false
+
             for(viewModel in viewModelList){
                 if (viewModel.selectedListFilled.value == true) {
-                    hasSelected.value = true
-                    return
+                    thereIsSelected = true
+                    break
                 }
 
             }
-            hasSelected.value = false
+            hasSelected.value = thereIsSelected
+
+            for (viewModel in viewModelList){
+                viewModel.upperSelected = hasSelected.value!!
+            }
         }
 
         fun getOnClickListener () : View.OnClickListener{
