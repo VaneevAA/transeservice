@@ -108,7 +108,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomButtons"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
         <ImageButton
             android:id="@+id/cancel"

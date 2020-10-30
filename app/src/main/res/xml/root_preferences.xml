@@ -10,10 +10,10 @@
             android:singleLine="true"
             android:summary="@string/URLName_Description"
             android:title="@string/serverAddress"
-            app:defaultValue="192.168.106.248"
+            app:defaultValue="192.168.105.15"
             app:useSimpleSummaryProvider="true" />
         <androidx.preference.EditTextPreference
-            android:defaultValue="3000"
+            android:defaultValue="443"
             android:inputType="number"
             android:key="URL_PORT"
             android:selectAllOnFocus="true"
@@ -21,7 +21,7 @@
             android:title="@string/PortText"
             app:useSimpleSummaryProvider="true" />
         <androidx.preference.EditTextPreference
-            android:defaultValue="Default value"
+            android:defaultValue="z5FYg733jGUwjmabuGdmZvfAkDHnh2Wj"
             android:inputType="textPassword"
             android:key="URL_AUTHPASS"
             android:selectAllOnFocus="true"
