@@ -3,10 +3,12 @@ package com.example.ekotransservice_routemanager.ViewIssues.PointAction
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ClipData
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.net.Uri
 import android.os.Build
@@ -368,7 +370,10 @@ class point_action : Fragment() {
                     "com.example.ekotransservice_routemanager.fileprovider",
                     it
                 )
-                //takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
+                takePictureIntent.clipData = ClipData.newRawUri(null,pictureUri)
+                takePictureIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                takePictureIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 startActivityForResult(takePictureIntent, 1)
             }
         }
@@ -400,15 +405,17 @@ class point_action : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         try {
         if (resultCode == Activity.RESULT_OK) {
-            val bitmap = data!!.extras!!.get("data") as Bitmap
+            /*requireContext().contentResolver.notifyChange(Uri.parse(currentFile!!.path),null)
+            val cr = requireActivity().contentResolver
+            val bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, Uri.parse(currentFile!!.path))
+            /*val bitmap = data!!.extras!!.get("data") as Bitmap*/
             val bos = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
 
             val fos = currentFile!!.outputStream()
             fos.write(bos.toByteArray())
             fos.flush()
-            fos.close()
-
+            fos.close()*/
             setGeoTag(currentFile!!)
             /*when (currentFileOrder) {
                 PhotoOrder.PHOTO_BEFORE -> fileBefore = currentFile
