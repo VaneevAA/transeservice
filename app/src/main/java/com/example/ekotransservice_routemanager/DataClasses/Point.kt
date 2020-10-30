@@ -39,7 +39,7 @@ class Point : Serializable{
     private var agentName: String   = ""
 
     private var countPlan: Double      = 0.0
-    private var countFact: Double      = 0.0
+    private var countFact: Double      = -1.0
     private var countOver: Double      = 0.0
     private var status : PointStatuses = PointStatuses.NOT_VISITED
 

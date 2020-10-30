@@ -16,15 +16,12 @@
             android:id="@+id/showRouteButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="150dp"
+            android:layout_marginTop="50dp"
             android:text="@string/showRouteText"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonsToDo"
-            app:layout_constraintVertical_bias="0.548" />
+            app:layout_constraintTop_toBottomOf="@+id/buttonsToDo" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/pointInfo"
@@ -223,8 +220,8 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="8dp"
-                    android:text="@string/takePhotoAfter"
                     android:background="@drawable/pictures_back"
+                    android:text="@string/takePhotoAfter"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/guidelineTakePhotoAfter"
                     app:layout_constraintStart_toStartOf="parent"

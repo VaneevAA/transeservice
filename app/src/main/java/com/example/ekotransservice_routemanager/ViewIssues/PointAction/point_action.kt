@@ -18,10 +18,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
@@ -167,6 +164,7 @@ class point_action : Fragment() {
                 .addLocationRequest(locationRequest)
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         }
+        startLocationUpdates()
     }
 
     @SuppressLint("ObjectAnimatorBinding")
@@ -225,7 +223,7 @@ class point_action : Fragment() {
         }
         mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
             if (viewPointModel!!.fileBeforeIsDone.value!!
-                && viewPointModel!!.currentPoint.value!!.getDone()) {
+                && viewPointModel!!.currentPoint.value!!.getCountFact()!=-1.0) {
                 takePicture(PhotoOrder.PHOTO_AFTER)
             }else {
                 Toast.makeText(
@@ -273,7 +271,7 @@ class point_action : Fragment() {
                 val endlat = point!!.getAddressLat()
                 val endlon = point!!.getAddressLon()
                 val uri =
-                    Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
+                    Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto&apikey=14e02c01-44b0-4837-8494-3f947e456472")
                 var intent = Intent(Intent.ACTION_VIEW, uri)
                 val packageManager: PackageManager = requireContext().packageManager
                 val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
@@ -287,7 +285,11 @@ class point_action : Fragment() {
                     startActivity(intent)
                 }
             }else {
-                Toast.makeText(requireContext(),"Текущее местоположение не определено",Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Текущее местоположение не определено",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
@@ -333,7 +335,8 @@ class point_action : Fragment() {
         contCountText.text = viewPointModel!!.getPoint().value!!.getContCount().toString()
 
         val textSetCountFact = mainFragment.findViewById<TextView>(R.id.textSetCountFact)
-        textSetCountFact.text = viewPointModel!!.getPoint().value!!.getCountFact().toString()
+        val countFact = viewPointModel!!.getPoint().value!!.getCountFact()
+        textSetCountFact.text = if (countFact==-1.0) {"0.0"} else {countFact.toString()}
 
         var listOfActions: ArrayList<PointActoins> = if(canDone){
             viewPointModel!!.getPoint().value!!.getPointActionsArray()
@@ -410,12 +413,13 @@ class point_action : Fragment() {
             fos.close()
 
             setGeoTag(currentFile!!)
-            /*when (currentFileOrder) {
-                PhotoOrder.PHOTO_BEFORE -> fileBefore = currentFile
-                PhotoOrder.PHOTO_AFTER -> fileAfter = currentFile
-            }*/
+
             if (currentFile != null) {
                viewPointModel!!.saveFile(currentFile!!, point!!, currentFileOrder)
+                if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
+                    point!!.setDone(true)
+                    Toast.makeText(requireContext(), "Точка выполнена!", Toast.LENGTH_LONG).show()
+                }
             }
             // Фотографию надо делать всегда не зависимо от возможности присвоения геометки
         }} catch (e: java.lang.Exception) {
@@ -503,6 +507,41 @@ class point_action : Fragment() {
             }
         }
     }*/
+
+    // Обработка результат ввода факта
+    fun okFactDialogClicked(factText: String) {
+        try {
+            val fact = factText.toDouble()
+            val pointValue = viewPointModel!!.currentPoint.value!!
+            pointValue.setCountFact(fact)
+            // Отметим выполнение точки.
+            // Если количество равно 0, то считаем точку выполненной, даже если не сделано фото после
+            // Если количество не равно 0, то считаем точку выполненной только при начлии фото после
+            if (fact==0.0) {
+                pointValue.setDone(true)
+                Toast.makeText(activity,"Точка выполнена",Toast.LENGTH_LONG).show()
+            }else{
+                val valueBefore = pointValue.getDone()
+                pointValue.setDone(viewPointModel!!.fileAfterIsDone.value!!)
+                if (valueBefore!=pointValue.getDone()){
+                    if (valueBefore) {
+                        Toast.makeText(activity,"Снято выполнение с точки, для установки выполнения сделайте фото после",Toast.LENGTH_LONG).show()
+                        //TODO Заменить Toast на окно с диалогом, продумать текст
+                    }else{
+                        Toast.makeText(activity,"Точка выполнена",Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            pointValue.setCountOverFromPlanAndFact()
+            pointValue.setTimestamp(Date())
+            viewPointModel!!.getRepository().updatePointAsync(pointValue)
+            viewPointModel!!.currentPoint.value = pointValue
+
+        }catch (e: Exception){
+            Toast.makeText(activity, "Число введено неправильно", Toast.LENGTH_LONG).show()
+        }
+
+    }
 
     override fun onResume() {
         super.onResume()
