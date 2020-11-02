@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
-import com.google.android.material.transition.Hold
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.transition.MaterialElevationScale
 import com.example.ekotransservice_routemanager.DataClasses.Point as Point
 
@@ -46,6 +46,12 @@ class route_list : Fragment() {
         val view : View = inflater.inflate(R.layout.fragment_route_list, container, false)
         recycleView = view.findViewById(R.id.recyclerview)
 
+        //bottom sheet
+        val bts = view.findViewById<View>(R.id.bottomSheetRoute)
+        val upperPart = view.findViewById<View>(R.id.upperComponentOfBottomSheet)
+        val standartBehavior = BottomSheetBehavior.from(bts)
+
+
         (recycleView!!.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = true
         val adapter = PointListAdapter(view.context)
         recycleView!!.adapter = adapter
@@ -55,6 +61,11 @@ class route_list : Fragment() {
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = true
         setNewViewModel()
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
+
+
+
+
+
         return view
     }
 
