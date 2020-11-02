@@ -3,12 +3,12 @@ package com.example.ekotransservice_routemanager.ViewIssues.PointAction
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ClipData
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.content.res.Resources
+import android.graphics.*
+import android.location.Geocoder
 import android.location.Location
 import android.net.Uri
 import android.os.Build
@@ -17,16 +17,22 @@ import android.os.Environment
 import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.core.view.children
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -39,16 +45,15 @@ import com.example.ekotransservice_routemanager.R
 import com.google.android.gms.location.*
 import com.google.android.material.transition.MaterialContainerTransform
 import kotlinx.android.synthetic.main.fragment_point_action.view.*
-import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+import kotlin.collections.ArrayList
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * A simple [Fragment] subclass.
@@ -63,15 +68,6 @@ class point_action : Fragment() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment point_action.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(point: Point, canDone: Boolean) =
             point_action().apply {
@@ -82,23 +78,21 @@ class point_action : Fragment() {
             }
     }
 
-    //var fileBefore : File? = null
-    //var fileAfter : File? = null
-    var currentFile: File? = null
-    var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
-    var currentFilePath: String =""
+    private var currentFile: File? = null
+    private var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
+    private var currentFilePath: String =""
     private var location: Location? = null
 
     // Настройки обновления местоположения
-    val locationRequest  = LocationRequest.create().apply {
-        fastestInterval = 10000
-        interval = 10000
+    private val locationRequest  = LocationRequest.create().apply {
+        fastestInterval = 2000
+        interval = 2000
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         smallestDisplacement = 1.0f
     }
 
     //
-    val locationUpdatesCallback = object : LocationCallback() {
+    private val locationUpdatesCallback = object : LocationCallback() {
         override fun onLocationResult(lr: LocationResult) {
             try {
                 location = lr.locations.last()
@@ -111,10 +105,6 @@ class point_action : Fragment() {
                 //TODO обработка ошибки получения координат
             }
         }
-    }
-
-    fun getViewModel(): ViewPointAction {
-        return viewPointModel!!
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -156,14 +146,10 @@ class point_action : Fragment() {
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_EXTERNAL_STORAGE
                     ), 101
-                );
+                )
                 // TODO: Обработка результата запроса разрешения
             }
 
-            // Location
-            val REQUEST_CHECK_STATE = 12300 // any suitable ID
-            val builder = LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest)
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         }
         startLocationUpdates()
@@ -273,11 +259,11 @@ class point_action : Fragment() {
                 val endlat = point!!.getAddressLat()
                 val endlon = point!!.getAddressLon()
                 val uri =
-                    Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto&apikey=14e02c01-44b0-4837-8494-3f947e456472")
+                    Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
                 var intent = Intent(Intent.ACTION_VIEW, uri)
                 val packageManager: PackageManager = requireContext().packageManager
                 val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
-                val isIntentSafe: Boolean = activities.size > 0
+                val isIntentSafe: Boolean = activities.isNotEmpty()
                 if (isIntentSafe) {
                     startActivity(intent)
                 } else {
@@ -318,9 +304,9 @@ class point_action : Fragment() {
         }
     }
 
-    fun endOfDialog(mainFragment: View){
+    /*fun endOfDialog(mainFragment: View){
         fillFragment(mainFragment)
-    }
+    }*/
 
     private fun fillFragment(mainFragment: View){
 
@@ -340,23 +326,11 @@ class point_action : Fragment() {
         val countFact = viewPointModel!!.getPoint().value!!.getCountFact()
         textSetCountFact.text = if (countFact==-1.0) {"0.0"} else {countFact.toString()}
 
-        var listOfActions: ArrayList<PointActoins> = if(canDone){
+        val listOfActions: ArrayList<PointActoins> = if(canDone){
             viewPointModel!!.getPoint().value!!.getPointActionsArray()
         }else{
             viewPointModel!!.getPoint().value!!.getPointActionsCancelArray()
         }
-
-        /*if (viewPointModel!!.fileAfterIsDone.value != null && viewPointModel!!.fileAfterIsDone.value!!) {
-            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility = View.VISIBLE
-        } else {
-            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility  = View.INVISIBLE
-        }
-
-        if (viewPointModel!!.fileBeforeIsDone.value != null && viewPointModel!!.fileBeforeIsDone.value!!) {
-            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility = View.VISIBLE
-        } else {
-            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility  = View.INVISIBLE
-        }*/
 
         showButtons(mainFragment, listOfActions)
     }
@@ -373,10 +347,10 @@ class point_action : Fragment() {
                     "com.example.ekotransservice_routemanager.fileprovider",
                     it
                 )
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri)
-                takePictureIntent.clipData = ClipData.newRawUri(null,pictureUri)
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri)
+                /*takePictureIntent.clipData = ClipData.newRawUri(null, pictureUri)
                 takePictureIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                takePictureIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                takePictureIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)*/
                 startActivityForResult(takePictureIntent, 1)
             }
         }
@@ -403,89 +377,288 @@ class point_action : Fragment() {
         return null
     }
 
+    @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        try {
-        if (resultCode == Activity.RESULT_OK) {
-            /*requireContext().contentResolver.notifyChange(Uri.parse(currentFile!!.path),null)
-            val cr = requireActivity().contentResolver
-            val bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, Uri.parse(currentFile!!.path))
-            /*val bitmap = data!!.extras!!.get("data") as Bitmap*/
-            val bos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
-
-            val fos = currentFile!!.outputStream()
-            fos.write(bos.toByteArray())
-            fos.flush()
-            fos.close()*/
-            setGeoTag(currentFile!!)
-
-            if (currentFile != null) {
-               viewPointModel!!.saveFile(currentFile!!, point!!, currentFileOrder)
-                if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
-                    point!!.setDone(true)
-                    Toast.makeText(requireContext(), "Точка выполнена!", Toast.LENGTH_LONG).show()
+        //try {
+            if (resultCode == Activity.RESULT_OK) {
+                if (currentFile==null || currentFile?.length() == 0L) {
+                    Toast.makeText(
+                        activity,
+                        "Ошибка работы камеры, вернулся пустой файл",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return
                 }
+
+                if (location == null || location!!.latitude == 0.0 || location!!.longitude == 0.0) {
+                    fusedLocationClient.lastLocation
+                        .addOnSuccessListener { location: Location? ->
+                            this.location = location
+
+                        }
+
+                    if (location == null) {
+                        Toast.makeText(
+                            activity,
+                            "Ошибка работы камеры, местоположение не определено",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            activity,
+                            "По последнему местоположению",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    //return
+                }
+
+                createResultImageFile()
+                setGeoTag()
+
+                if (currentFile != null) {
+                    viewPointModel!!.saveFile(currentFile!!, point!!, currentFileOrder)
+                    if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
+                        point!!.setDone(true)
+                        Toast.makeText(requireContext(), "Точка выполнена!", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                }
+                // Фотографию надо делать всегда не зависимо от возможности присвоения геометки
             }
-            // Фотографию надо делать всегда не зависимо от возможности присвоения геометки
-        }} catch (e: java.lang.Exception) {
+        /*} catch (e: java.lang.Exception) {
             Log.e("Ошибка фото", "Ошибка фото $e")
             Toast.makeText(requireContext(), "Ошибка $e", Toast.LENGTH_LONG).show()
+        }*/
+
+    }
+
+    private fun getAddressNameFromLocation(location: Location): String {
+
+            val geocoder = Geocoder(requireContext(), Locale("ru"))
+            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+            return addresses[0].getAddressLine(0) // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+
+        /*val city: String = addresses.get(0).getLocality()
+        val state: String = addresses.get(0).getAdminArea()
+        val country: String = addresses.get(0).getCountryName()
+        val postalCode: String = addresses.get(0).getPostalCode()
+        val knownName: String = addresses.get(0).getFeatureName()*/
+
+    }
+
+    @SuppressLint("InflateParams")
+    private fun createResultImageFile() {
+
+        // Основное изображение
+        var originalBitmap: Bitmap = BitmapFactory.decodeFile(currentFile!!.absolutePath)
+        val degree = getRotateDegreeFromExif(currentFile!!.absolutePath)
+        //Если угол не нулевой, то сначала повернем картинку
+        if (degree != 0) {
+            //Получим ориентацию картинки и определим матрицу трансформаци
+            val matrix = Matrix()
+            matrix.postRotate(degree.toFloat())
+            val rotatedBitmap = Bitmap.createBitmap(
+                originalBitmap,
+                0, 0,
+                originalBitmap.width, originalBitmap.height,
+                matrix, true
+            )
+            originalBitmap = rotatedBitmap
+        }
+        // Итоговая картинка (результат)
+        val overlayBitmap =
+            Bitmap.createBitmap(
+                originalBitmap.width,
+                originalBitmap.height,
+                originalBitmap.config
+            )
+        /*
+        // Изображение из макета photo_data
+        val inflater = activity?.layoutInflater
+        val photoDataView: View? = inflater?.inflate(R.layout.photo_data, null)
+        photoDataView!!.findViewById<TextView>(R.id.addressTextView).text = getAddressNameFromLocation(
+            location!!
+        )
+        photoDataView.findViewById<TextView>(R.id.latTextView).text =
+            location!!.latitude.toString()
+        photoDataView.findViewById<TextView>(R.id.lonTextView).text =
+            location!!.longitude.toString()
+        photoDataView.findViewById<TextView>(R.id.dateTextView).text = SimpleDateFormat(
+            "yyyy-MM-dd (EEE) HH:mm:ss",
+            Locale("ru")
+        ).format(Date())
+
+        val widthSpec =
+            View.MeasureSpec.makeMeasureSpec(originalBitmap.width, View.MeasureSpec.AT_MOST)
+        val heightSpec =
+            View.MeasureSpec.makeMeasureSpec(
+                originalBitmap.height / 4,
+                View.MeasureSpec.AT_MOST
+            )
+        photoDataView.measure(widthSpec, heightSpec)
+        photoDataView.layout(
+            0,
+            0,
+            photoDataView.measuredWidth,
+            photoDataView.measuredHeight
+        )*/
+
+        // Вывод в холст
+        val canvas = Canvas(overlayBitmap)
+        val paint = Paint()
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER) // Text Overlapping Pattern
+        canvas.drawBitmap(originalBitmap, 0F, 0F, paint)
+
+        /*canvas.save()
+        //TODO Маштабирование макета при выводе на холст
+        canvas.translate(
+            0F,
+            (originalBitmap.height - photoDataView.measuredHeight).toFloat()
+        )
+        photoDataView.draw(canvas)
+        canvas.restore()*/
+
+        val rt = Rect(
+            0,
+            originalBitmap.height,
+            originalBitmap.width,
+            originalBitmap.height - originalBitmap.height / 4
+        )
+        paint.style = Paint.Style.FILL
+        paint.color = ContextCompat.getColor(requireContext(), R.color.colorGrayBack)
+        canvas.drawRect(rt, paint)
+
+        paint.color = Color.WHITE
+        paint.textSize = originalBitmap.height / 30F
+
+        //Вывод адреса
+        var addressText = ""
+        var latText = ""
+        var lonText = ""
+
+        if (location == null || location!!.latitude == 0.0 || location!!.longitude == 0.0) {
+            addressText = point!!.getAddressName()
+        } else {
+            addressText = getAddressNameFromLocation(location!!)
+            latText = location!!.latitude.toString()
+            lonText = location!!.latitude.toString()
         }
 
+        printText(addressText, rt.width()-40, 10,rt.bottom + 20,paint, canvas)
+
+        // Вывод координат и даты
+        val textWidth = rt.width()/3-40
+        val textLine = originalBitmap.height - abs(rt.height()/2) +20
+        //Долгота
+        printText(latText, textWidth, 10,textLine,paint, canvas)
+
+        //Широта
+        printText(lonText, textWidth, 10 + textWidth,textLine,paint, canvas)
+
+        //Дата время
+        printText(SimpleDateFormat(
+            "yyyy-MM-dd (EEE) HH:mm:ss",
+            Locale("ru")
+        ).format(Date()), textWidth, 10 + 2*textWidth,textLine,paint, canvas)
+
+        //Сохранение в файл
+        currentFile!!.delete()
+        val out = FileOutputStream(currentFile)
+        overlayBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        out.flush()
+        out.close()
+
+    }
+
+    private fun printText(currentText:String, textWidth:Int, startPointX:Int, startPointY: Int, paint: Paint, canvas: Canvas) {
+        val rectText = Rect()
+        paint.getTextBounds(currentText,0,currentText.length,rectText)
+        val textHeight = rectText.height()
+
+        val stringArray = stringArray(currentText,textWidth.toFloat(),paint)
+        var stringLineY = (startPointY + textHeight).toFloat()
+
+        stringArray.forEach {
+            canvas.drawText(
+                it, startPointX.toFloat(),
+                stringLineY,
+                paint
+            )
+            stringLineY += textHeight
+        }
+    }
+
+    private fun stringArray(originalString: String, width:Float, paint: Paint): ArrayList<String>{
+        var currentString = originalString
+        val stringArrayList: ArrayList<String> = ArrayList()
+        var doLoop = true
+        do {
+            val measuredWidth = FloatArray(1)
+            val cntSymbols = paint.breakText(currentString, true, width, measuredWidth)
+            if (cntSymbols < currentString.length) {
+                stringArrayList.add(currentString.substring(0,cntSymbols))
+                currentString = currentString.substring(cntSymbols,currentString.length)
+            }else{
+                stringArrayList.add(currentString.substring(0,cntSymbols))
+                doLoop = false
+            }
+        } while (doLoop)
+        return stringArrayList
     }
 
     @SuppressLint("MissingPermission")
-    private fun setGeoTag(file: File) : Boolean {
-        /*fusedLocationClient.lastLocation
-            .addOnSuccessListener { location : Location? ->
-                val exifInterface = androidx.exifinterface.media.ExifInterface(currentFile!!.absoluteFile)
-                exifInterface.setGpsInfo(location)
-                exifInterface.saveAttributes()
-            }*/
-        try {
-            return if (location != null && location!!.latitude != 0.0  && location!!.longitude != 0.0 ) {
-                val exifInterface = androidx.exifinterface.media.ExifInterface(currentFile!!.absoluteFile)
-                exifInterface.setGpsInfo(location)
-                exifInterface.saveAttributes()
-                true
-                /*exifInterface.setAttribute(
-                    androidx.exifinterface.media.ExifInterface.TAG_GPS_LATITUDE,
-                    Location.convert(location.latitude, Location.FORMAT_SECONDS)
-                )
-                exifInterface.setAttribute(
-                    androidx.exifinterface.media.ExifInterface.TAG_GPS_LONGITUDE,
-                    Location.convert(location!!.longitude, Location.FORMAT_SECONDS)
-                )
-                exifInterface.setAttribute(
-                    androidx.exifinterface.media.ExifInterface.TAG_GPS_LATITUDE_REF,
-                    if (location.latitude > 0.0) {
-                        "N"
-                    } else {
-                        "S"
-                    }
-                )
-                exifInterface.setAttribute(
-                    androidx.exifinterface.media.ExifInterface.TAG_GPS_LONGITUDE_REF,
-                    if (location.longitude > 0.0) {
-                        "E"
-                    } else {
-                        "W"
-                    }
-                )
-                exifInterface.latLong
-                exifInterface.saveAttributes()*/
-            }else{
-                false
-            }
-        }catch (e: java.lang.Exception){
-            Toast.makeText(requireContext(), "Ошибка $e", Toast.LENGTH_LONG).show()
-            return false
-        }
+    private fun setGeoTag() : Boolean {
 
+        val exifInterface =
+            ExifInterface(currentFile!!.absoluteFile)
+        exifInterface.setGpsInfo(location)
+        exifInterface.saveAttributes()
+        return true
     }
 
+
+    private fun getRotateDegreeFromExif(filePath: String): Int {
+        var degree = 0
+        try {
+            val exifInterface = ExifInterface(filePath)
+            val orientation: Int = exifInterface.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED
+            )
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> {
+                    degree = 90
+                }
+                ExifInterface.ORIENTATION_ROTATE_180 -> {
+                    degree = 180
+                }
+                ExifInterface.ORIENTATION_ROTATE_270 -> {
+                    degree = 270
+                }
+            }
+            if (degree != 0) {
+                exifInterface.setAttribute(
+                    ExifInterface.TAG_ORIENTATION,
+                    "0"
+                )
+                exifInterface.saveAttributes()
+            }
+        } catch (e: IOException) {
+            degree = -1
+            e.printStackTrace()
+        }
+        return degree
+    }
+
+    private fun convertDpToPixels(dp: Float): Int {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dp, Resources.getSystem().displayMetrics
+        ).roundToInt()
+    }
    /* fun showEnableLocationSetting() {
         activity?.let {
             val locationRequest = LocationRequest.create()
@@ -526,16 +699,20 @@ class point_action : Fragment() {
             // Если количество не равно 0, то считаем точку выполненной только при начлии фото после
             if (fact==0.0) {
                 pointValue.setDone(true)
-                Toast.makeText(activity,"Точка выполнена",Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, "Точка выполнена", Toast.LENGTH_LONG).show()
             }else{
                 val valueBefore = pointValue.getDone()
                 pointValue.setDone(viewPointModel!!.fileAfterIsDone.value!!)
                 if (valueBefore!=pointValue.getDone()){
                     if (valueBefore) {
-                        Toast.makeText(activity,"Снято выполнение с точки, для установки выполнения сделайте фото после",Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            activity,
+                            "Снято выполнение с точки, для установки выполнения сделайте фото после",
+                            Toast.LENGTH_LONG
+                        ).show()
                         //TODO Заменить Toast на окно с диалогом, продумать текст
                     }else{
-                        Toast.makeText(activity,"Точка выполнена",Toast.LENGTH_LONG).show()
+                        Toast.makeText(activity, "Точка выполнена", Toast.LENGTH_LONG).show()
                     }
                 }
             }
