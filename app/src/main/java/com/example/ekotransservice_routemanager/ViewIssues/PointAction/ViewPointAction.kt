@@ -85,7 +85,17 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
     fun saveFile(file: File, point: Point, fileOrder: PhotoOrder) {
         val exifInterface = androidx.exifinterface.media.ExifInterface(file.absoluteFile)
         val latLon = exifInterface.latLong
-        val pointFile: PointFile = PointFile(point.getDocUID(),point.getLineUID(),Date(file.lastModified()), fileOrder, latLon!!.get(0), latLon.get(1),file.absolutePath,file.name,file.extension)
+        var lat = 0.0
+        var lon = 0.0
+        if (latLon!=null && latLon.size>0) {
+            lat = latLon[0]
+            lon = latLon[1]
+        }
+        val pointFile = PointFile(
+            point.getDocUID(), point.getLineUID(), Date(file.lastModified()), fileOrder,
+            lat,
+            lon,
+            file.absolutePath, file.name, file.extension)
         viewModelScope.launch {
             val result = routeRepository.saveFileIntoDBAsync(pointFile)
             if (pointFile.photoOrder == PhotoOrder.PHOTO_BEFORE) {
