@@ -269,7 +269,6 @@ class point_action : Fragment() {
                 }
             }
 
-
             val reasonArray = mutableListOf<String>(
                 NO_GARBEGE,
                 CARS_ON_POINT,

@@ -203,7 +203,7 @@ class route_list : Fragment() {
             val endlat = point.getAddressLat()
             val endlon = point.getAddressLon()
             val uri =
-                Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
+                Uri.parse("yandexnavi://navi.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
             var intent = Intent(Intent.ACTION_VIEW, uri)
             val packageManager: PackageManager = requireContext().packageManager
             val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
