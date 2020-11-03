@@ -17,6 +17,9 @@
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popUpTo="@id/point_action"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_route_list_to_pointFiles"
+            app:destination="@id/pointFiles" />
     </fragment>
     <fragment
         android:id="@+id/point_action"

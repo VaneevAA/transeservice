@@ -12,11 +12,14 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 
 
@@ -35,6 +38,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
 
     private var mLayout : LayoutInflater = LayoutInflater.from(context)
     private var pointList : MutableList<Point>? = null
+    var mCurrentPointViewModel : viewModelCurrentPoint = viewModelCurrentPoint(null)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointViewHolder {
         val itemView : View = mLayout.inflate(R.layout.recycleview_item,parent,false)
@@ -52,6 +56,9 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: PointViewHolder, position: Int) = if (pointList != null){
         val point : Point = pointList!![position]
+        if(mCurrentPointViewModel.currentPoint.value == null ){
+            mCurrentPointViewModel.currentPoint.value = point
+        }
         holder.pointItemView.text = point.getAddressName()
         holder.contCountType.text = point.getContType()
         holder.contCountView.text = point.getContCount().toString()
@@ -63,10 +70,11 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         //при нажатии определяется пока только точка
 
         holder.itemView.setOnClickListener {
-            holder.viewClosed = !holder.viewClosed
-            bind(holder)
+            /*holder.viewClosed = !holder.viewClosed
+            bind(holder)*/
+            mCurrentPointViewModel.setCurrentPoint(point)
         }
-        holder.itemView.findViewById<Button>(R.id.doneButton).setOnClickListener {
+        /*holder.itemView.findViewById<Button>(R.id.doneButton).setOnClickListener {
 
             val bundle = bundleOf("point" to point, "canDone" to true)
             holder.itemView.findNavController()
@@ -81,7 +89,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
             holder.itemView.findNavController()
                 .navigate(R.id.action_route_list_to_point_action, bundle)
 
-        }
+        }*/
 
     }else{
         holder.pointItemView.text = "no points"
@@ -100,6 +108,29 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         notifyDataSetChanged()
     }
 
+    class viewModelCurrentPoint (startPoint : Point?) : ViewModel() {
+        val currentPoint : MutableLiveData<Point> = MutableLiveData(startPoint)
+        val bottomSheetOpen : MutableLiveData<Boolean> = MutableLiveData(false)
+
+
+
+        fun setCurrentPoint (point : Point){
+            currentPoint.value = point
+            bottomSheetOpen.value = true
+        }
+
+        fun setSheetClose(){
+            bottomSheetOpen.value = false
+        }
+
+        fun setSheetOpen(){
+            bottomSheetOpen.value = true
+        }
+
+        fun setSheetOpposite(){
+            bottomSheetOpen.value = !bottomSheetOpen.value!!
+        }
+    }
 
 
 }
