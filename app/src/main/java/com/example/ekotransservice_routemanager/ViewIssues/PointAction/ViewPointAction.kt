@@ -1,6 +1,7 @@
 package com.example.ekotransservice_routemanager.ViewIssues.PointAction
 
 import android.app.Application
+import android.location.Location
 import androidx.lifecycle.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
@@ -20,6 +21,7 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
 
     val fileBeforeIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
     val fileAfterIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
+    var geoIsRequired: Boolean = false
 
     /*init {
         currentPoint.value = point
@@ -31,13 +33,15 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
         }
     }*/
 
-    fun setViewData(point: Point){
+    fun setViewData(point: Point,canDone: Boolean){
         currentPoint.value = point
         viewModelScope.launch {
             var data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_AFTER)
             fileAfterIsDone.value = data!!.size > 0
-            data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_BEFORE)
+            data = routeRepository.getFilesFromDBAsync(currentPoint.value!!,if (canDone) {PhotoOrder.PHOTO_BEFORE} else {PhotoOrder.PHOTO_CANTDONE})
             fileBeforeIsDone.value = data!!.size > 0
+            data = routeRepository.getFilesFromDBAsync(currentPoint.value!!,null,true)
+            geoIsRequired = data!!.size > 0
         }
     }
 
@@ -82,12 +86,12 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
     }
 
 
-    fun saveFile(file: File, point: Point, fileOrder: PhotoOrder) {
+    fun saveFile(file: File, point: Point, fileOrder: PhotoOrder): PointFile {
         val exifInterface = androidx.exifinterface.media.ExifInterface(file.absoluteFile)
         val latLon = exifInterface.latLong
         var lat = 0.0
         var lon = 0.0
-        if (latLon!=null && latLon.size>0) {
+        if (latLon!=null) {
             lat = latLon[0]
             lon = latLon[1]
         }
@@ -98,13 +102,34 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
             file.absolutePath, file.name, file.extension)
         viewModelScope.launch {
             val result = routeRepository.saveFileIntoDBAsync(pointFile)
-            if (pointFile.photoOrder == PhotoOrder.PHOTO_BEFORE) {
+            if (pointFile.photoOrder == PhotoOrder.PHOTO_BEFORE || pointFile.photoOrder == PhotoOrder.PHOTO_CANTDONE) {
                 fileBeforeIsDone.value = result
             } else {
                 fileAfterIsDone.value = result
             }
         }
 
+        return pointFile
+    }
+
+    fun setPointFilesGeodata(location: Location) {
+        viewModelScope.launch {
+            val result = routeRepository.getFilesFromDBAsync(currentPoint.value!!,null,true)
+            result?.forEach {
+                setDataInfoOnFile(it,location)
+            }
+            geoIsRequired = true
+        }
+    }
+
+    fun setDataInfoOnFile(pointFile: PointFile, location: Location?) {
+        val lon = location?.longitude ?: pointFile.lon
+        val lat = location?.latitude ?: pointFile.lat
+        pointFile.createResultImageFile(lat,lon,currentPoint.value!!,getApplication())
+        if (location != null) {
+            pointFile.setGeoTag(location)
+        }
+        routeRepository.updatePointFileLocationAsync(pointFile, lat, lon)
     }
 
 }

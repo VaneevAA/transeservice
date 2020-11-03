@@ -20,6 +20,7 @@ class Route {
    //private var vehicleUID: String = ""
     private var regionName: String = ""
     private var routeDate: Date = Date()
+    private var routeName: String = ""
 
     @Embedded
     private var vehicle:Vehicle? = null
@@ -37,6 +38,7 @@ class Route {
     fun getRouteDate(): Date { return this.routeDate}
     fun getCountPoint(): Int { return this.countPoint}
     fun getCountPointDone(): Int { return this.countPointDone}
+    fun getRouteName(): String {return this.routeName}
 
     //endregion
 
@@ -50,6 +52,7 @@ class Route {
     fun setCountPoint(countPoint: Int) { this.countPoint = countPoint}
     fun setCountPointDone(countPointDone: Int) { this.countPointDone = countPointDone}
     fun setDocUid(docUid: String) { this.docUid = docUid}
+    fun setRouteName(routeName: String) {this.routeName = routeName}
 
     //endregion
 

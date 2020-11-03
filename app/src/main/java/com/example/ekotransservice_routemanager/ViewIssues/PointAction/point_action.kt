@@ -6,8 +6,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.content.res.Resources
-import android.graphics.*
 import android.location.Geocoder
 import android.location.Location
 import android.net.Uri
@@ -25,7 +23,6 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.core.view.children
@@ -45,14 +42,11 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialContainerTransform
 import kotlinx.android.synthetic.main.fragment_point_action.view.*
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.math.abs
-import kotlin.math.roundToInt
+
 
 /**
  * A simple [Fragment] subclass.
@@ -108,6 +102,9 @@ class point_action : Fragment() {
         override fun onLocationResult(lr: LocationResult) {
             try {
                 location = lr.locations.last()
+                if (location!=null && viewPointModel!!.geoIsRequired) {
+                    viewPointModel!!.setPointFilesGeodata(location!!)
+                }
             } catch (e: java.lang.Exception) {
                 Toast.makeText(
                     requireContext(),
@@ -214,24 +211,26 @@ class point_action : Fragment() {
 
             viewPointModel!!.fileAfterIsDone.observe(requireActivity(), observerAfter)
 
-            viewPointModel!!.setViewData(point!!)
+
+        viewPointModel!!.setViewData(point!!,canDone)
+
 
             fillFragment(mainFragment)
 
-            mainFragment.findViewById<Button>(R.id.takePhotoBefore)!!.setOnClickListener {
-                takePicture(PhotoOrder.PHOTO_BEFORE)
-            }
-            mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
-                if (viewPointModel!!.fileBeforeIsDone.value!!
-                    && viewPointModel!!.currentPoint.value!!.getCountFact()!=-1.0) {
-                    takePicture(PhotoOrder.PHOTO_AFTER)
-                }else {
-                    Toast.makeText(
-                        requireContext(),
-                        "Предыдущие действия не выполнены",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+
+        mainFragment.findViewById<Button>(R.id.takePhotoBefore)!!.setOnClickListener {
+            takePicture(if (canDone) {PhotoOrder.PHOTO_BEFORE} else {PhotoOrder.PHOTO_CANTDONE})
+        }
+        mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
+            if (viewPointModel!!.fileBeforeIsDone.value!!
+                && viewPointModel!!.currentPoint.value!!.getCountFact()!=-1.0) {
+                takePicture(PhotoOrder.PHOTO_AFTER)
+            }else {
+                Toast.makeText(
+                    requireContext(),
+                    "Предыдущие действия не выполнены",
+                    Toast.LENGTH_LONG
+                ).show()
             }
 
             mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
@@ -425,11 +424,11 @@ class point_action : Fragment() {
 
     @SuppressLint("SimpleDateFormat")
     private fun createFile() : File?{
-        val timeCreated = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
         val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val fileName = generateFileName(point!!)
         try {
             currentFile = File.createTempFile(
-                "${point!!.getAddressName()}_($timeCreated)_${currentFileOrder.string}",
+                fileName,
                 ".jpg",
                 storage
             )
@@ -439,8 +438,12 @@ class point_action : Fragment() {
             Toast.makeText(requireContext(), "Неудалось записать файл", Toast.LENGTH_LONG).show()
             //TODO create exception behavior
         }
-
         return null
+    }
+
+    private fun generateFileName(point: Point): String {
+        val timeCreated = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        return "${point.getRouteName()}__{$timeCreated}__${point.getAddressName()}_${currentFileOrder.string}"
     }
 
     @SuppressLint("MissingPermission")
@@ -458,8 +461,13 @@ class point_action : Fragment() {
                     return
                 }
 
-                if (location == null || location!!.latitude == 0.0 || location!!.longitude == 0.0) {
-                    fusedLocationClient.lastLocation
+                if (location == null) {
+                    Toast.makeText(
+                        activity,
+                        "Предупреждение, местоположение не определено",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    /*fusedLocationClient.lastLocation
                         .addOnSuccessListener { location: Location? ->
                             this.location = location
 
@@ -477,22 +485,27 @@ class point_action : Fragment() {
                             "По последнему местоположению",
                             Toast.LENGTH_LONG
                         ).show()
-                    }
+                    }*/
                     //return
                 }
 
-                createResultImageFile()
-                setGeoTag()
-
                 if (currentFile != null) {
-                    viewPointModel!!.saveFile(currentFile!!, point!!, currentFileOrder)
+                    setGeoTag()
+                    val pointFile = viewPointModel!!.saveFile(currentFile!!, point!!, currentFileOrder)
                     if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
                         point!!.setDone(true)
+                        viewPointModel!!.getRepository().updatePointAsync(point!!)
                         Toast.makeText(requireContext(), "Точка выполнена!", Toast.LENGTH_LONG)
                             .show()
                     }
+
+                    if (location != null || (pointFile.lat != 0.0 && pointFile.lon != 0.0)) {
+                        viewPointModel!!.setDataInfoOnFile(pointFile, location)
+                    } else {
+                        viewPointModel!!.geoIsRequired = true
+                    }
                 }
-                // Фотографию надо делать всегда не зависимо от возможности присвоения геометки
+
             }
         /*} catch (e: java.lang.Exception) {
             Log.e("Ошибка фото", "Ошибка фото $e")
@@ -503,9 +516,9 @@ class point_action : Fragment() {
 
     private fun getAddressNameFromLocation(location: Location): String {
 
-            val geocoder = Geocoder(requireContext(), Locale("ru"))
-            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-            return addresses[0].getAddressLine(0) // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+        val geocoder = Geocoder(requireContext(), Locale("ru"))
+        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+        return addresses[0].getAddressLine(0) // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
 
         /*val city: String = addresses.get(0).getLocality()
         val state: String = addresses.get(0).getAdminArea()
@@ -684,6 +697,7 @@ class point_action : Fragment() {
         return stringArrayList
     }
 
+
     @SuppressLint("MissingPermission")
     private fun setGeoTag() : Boolean {
 
@@ -694,46 +708,6 @@ class point_action : Fragment() {
         return true
     }
 
-
-    private fun getRotateDegreeFromExif(filePath: String): Int {
-        var degree = 0
-        try {
-            val exifInterface = ExifInterface(filePath)
-            val orientation: Int = exifInterface.getAttributeInt(
-                ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_UNDEFINED
-            )
-            when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> {
-                    degree = 90
-                }
-                ExifInterface.ORIENTATION_ROTATE_180 -> {
-                    degree = 180
-                }
-                ExifInterface.ORIENTATION_ROTATE_270 -> {
-                    degree = 270
-                }
-            }
-            if (degree != 0) {
-                exifInterface.setAttribute(
-                    ExifInterface.TAG_ORIENTATION,
-                    "0"
-                )
-                exifInterface.saveAttributes()
-            }
-        } catch (e: IOException) {
-            degree = -1
-            e.printStackTrace()
-        }
-        return degree
-    }
-
-    private fun convertDpToPixels(dp: Float): Int {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp, Resources.getSystem().displayMetrics
-        ).roundToInt()
-    }
    /* fun showEnableLocationSetting() {
         activity?.let {
             val locationRequest = LocationRequest.create()

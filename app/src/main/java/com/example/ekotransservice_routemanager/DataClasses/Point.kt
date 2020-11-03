@@ -47,6 +47,7 @@ class Point : Serializable{
     private var tripNumber: Int = 0
     private var polygon: Boolean = false
     private var timestamp: Date? = null
+    private var routeName: String = ""
 
 
     @Ignore
@@ -109,6 +110,7 @@ class Point : Serializable{
             this.rowNumber = properties.getInt("rowNumber")
             this.tripNumber = properties.getInt("tripNumber")
             this.polygon = properties.getBoolean("polygon")
+            this.routeName = properties.getString("routeName").trim { it <= ' ' }
 
         } catch (e: Exception) {
             //TODO error parsing JSON
@@ -147,6 +149,7 @@ class Point : Serializable{
     fun getPointActionsArray(): ArrayList<PointActoins>{ return this.pointActionsArray }
     fun getPointActionsCancelArray() : ArrayList<PointActoins>{ return this.pointActionsCancelArray }
     fun getTimestamp() : Date? { return this.timestamp}
+    fun getRouteName() : String { return this.routeName}
 
     //endregion
 
@@ -177,6 +180,8 @@ class Point : Serializable{
     fun setDone(done: Boolean){ this.done = done }
     fun setPolygon(polygon: Boolean){ this.polygon = polygon }
     fun setTimestamp(timestamp: Date?) { this.timestamp = timestamp}
+    fun setRouteName(name: String) { this.routeName = name}
+
     //endregion
 
     fun getContCount (): Double{
@@ -190,6 +195,8 @@ class Point : Serializable{
     fun setCountOverFromPlanAndFact(){
         this.countOver = max(0.0, this.countFact - this.countPlan)
     }
+
+
 
 }
 
