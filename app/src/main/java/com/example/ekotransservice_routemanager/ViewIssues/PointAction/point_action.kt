@@ -292,6 +292,7 @@ class point_action : Fragment() {
                 }
             }
 
+
         val reasonArray = mutableListOf<String>(
             NO_GARBEGE,
             CARS_ON_POINT,
@@ -342,6 +343,7 @@ class point_action : Fragment() {
             val commentText = it.toString()
             // здесь можно писать в точку
         }
+
         return mainFragment
     }
 

@@ -59,7 +59,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         if(mCurrentPointViewModel.currentPoint.value == null ){
             mCurrentPointViewModel.currentPoint.value = point
         }
-        holder.pointItemView.text = point.getAddressName()
+        holder.pointItemView.text = "${point.getRowNumber()}. ${point.getAddressName()}"
         holder.contCountType.text = point.getContType()
         holder.contCountView.text = point.getContCount().toString()
         holder.itemView.clipToOutline = true
@@ -111,7 +111,6 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     class viewModelCurrentPoint (startPoint : Point?) : ViewModel() {
         val currentPoint : MutableLiveData<Point> = MutableLiveData(startPoint)
         val bottomSheetOpen : MutableLiveData<Boolean> = MutableLiveData(false)
-
 
 
         fun setCurrentPoint (point : Point){
