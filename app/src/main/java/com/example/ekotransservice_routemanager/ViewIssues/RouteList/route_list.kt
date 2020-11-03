@@ -155,7 +155,7 @@ class route_list : Fragment() {
         route.setOnClickListener {
             val curPoint = (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel.currentPoint.value
             if (curPoint!=null) {
-                buildRoute(curPoint)
+                buildRoute(curPoint,"2gis")
             }else{
                 Toast.makeText(activity,"Точка не выбрана",Toast.LENGTH_LONG).show()
             }
@@ -211,33 +211,55 @@ class route_list : Fragment() {
 
     }
 
-    private fun buildRoute(point: Point) {
+    private fun buildRoute(point: Point, naviApp: String) {
         //if (location != null && location!!.latitude != 0.0 && location!!.longitude != 0.0) {
-           // val startlat = location!!.latitude
-           // val startlon = location!!.longitude
-            val endlat = point.getAddressLat()
-            val endlon = point.getAddressLon()
-            if (endlat==0.0 || endlon == 0.0) {
-                Toast.makeText(activity,"Отмена.Для данной точки не заданы координаты", Toast.LENGTH_LONG).show()
-                return
+        // val startlat = location!!.latitude
+        // val startlon = location!!.longitude
+        val endlat = point.getAddressLat()
+        val endlon = point.getAddressLon()
+        if (endlat == 0.0 || endlon == 0.0) {
+            Toast.makeText(
+                activity,
+                "Отмена.Для данной точки не заданы координаты",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        var uriString = ""
+        var packageName = ""
+
+        when (naviApp) {
+            "yandex" -> {
+                uriString = "yandexnavi://build_route_on_map?lat_to=$endlat&lon_to=$endlon"
+                packageName = "ru.yandex.yandexnavi"
             }
-            val uri = Uri.parse("yandexnavi://build_route_on_map?lat_to=$endlat&lon_to=$endlon")
-            var intent = Intent(Intent.ACTION_VIEW, uri)
-            intent.setPackage("ru.yandex.yandexnavi")
-            /*val uri =
-                Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
-            var intent = Intent(Intent.ACTION_VIEW, uri)*/
-            val packageManager: PackageManager = requireContext().packageManager
-            val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
-            val isIntentSafe: Boolean = activities.isNotEmpty()
-            if (isIntentSafe) {
-                startActivity(intent)
-            } else {
-                // Открываем страницу приложения Яндекс.Карты в Google Play.
-                intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse("market://details?id=ru.yandex.yandexnavi")
-                startActivity(intent)
+            "2gis" -> {
+                uriString = "dgis://2gis.ru/routeSearch/rsType/car/to/$endlon,$endlat"
+                packageName = "ru.dublgis.dgismobile"
             }
+        }
+
+        if (uriString.isEmpty() || packageName.isEmpty()) {
+            Toast.makeText(activity,"Отмена. Неизвестное приложение навигации", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val uri = Uri.parse(uriString)
+        var intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage(packageName)
+        val packageManager: PackageManager = requireContext().packageManager
+        val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
+        val isIntentSafe: Boolean = activities.isNotEmpty()
+        if (isIntentSafe) {
+            startActivity(intent)
+        } else {
+            // Открываем страницу приложения Яндекс.Карты в Google Play.
+            intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("market://details?id=$packageName")
+            startActivity(intent)
+        }
+
         /*} else {
             Toast.makeText(
                 requireContext(),
