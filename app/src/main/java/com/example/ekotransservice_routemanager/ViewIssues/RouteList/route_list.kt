@@ -5,8 +5,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
+import android.widget.ImageButton
+import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
+import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -48,22 +54,95 @@ class route_list : Fragment() {
 
         //bottom sheet
         val bts = view.findViewById<View>(R.id.bottomSheetRoute)
-        val upperPart = view.findViewById<View>(R.id.upperComponentOfBottomSheet)
         val standartBehavior = BottomSheetBehavior.from(bts)
+        val currentPointNameText : TextView = bts.findViewById(R.id.currentPointNameText)
 
 
         (recycleView!!.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = true
         val adapter = PointListAdapter(view.context)
         recycleView!!.adapter = adapter
         recycleView!!.layoutManager = LinearLayoutManager(view.context)
-
+        setNewViewModel()
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.touchscreenBlocksFocus = true
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = true
-        setNewViewModel()
+
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
 
+        //current point observe
 
+        (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
+            .currentPoint.removeObservers(viewLifecycleOwner)
+        (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
+            .bottomSheetOpen.removeObservers(viewLifecycleOwner)
 
+        val currentPointObserver = Observer<Point> {
+            if(it != null){
+                currentPointNameText.text = it.getAddressName()
+                view.refreshDrawableState()
+           // }else{
+           //     currentPointNameText.text = ""
+            }
+
+        }
+        (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
+            .currentPoint.observe(viewLifecycleOwner,currentPointObserver)
+
+        val openCloseBottomSheetObserver = Observer<Boolean> {
+            if(it){
+                standartBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            }else{
+                standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            }
+        }
+        (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
+            .bottomSheetOpen.observe(viewLifecycleOwner,openCloseBottomSheetObserver)
+
+        //bottom sheet click listeners
+        val pointDone = bts.findViewById<ImageButton>(R.id.canDoneImageButton)
+        pointDone.setOnClickListener {
+            val bundle = bundleOf("point" to  (recycleView!!.adapter as PointListAdapter)
+                .mCurrentPointViewModel.currentPoint.value, "canDone" to true)
+            view.findNavController()
+                .navigate(R.id.action_route_list_to_point_action, bundle)
+            standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        val pointCantDone = bts.findViewById<ImageButton>(R.id.cannotDoneImageButton)
+        pointCantDone.setOnClickListener {
+            val bundle = bundleOf("point" to  (recycleView!!.adapter as PointListAdapter)
+                .mCurrentPointViewModel.currentPoint.value, "canDone" to false)
+            view.findNavController()
+                .navigate(R.id.action_route_list_to_point_action, bundle)
+            standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        val photoPoint = bts.findViewById<ImageButton>(R.id.pointPhotos)
+        photoPoint.setOnClickListener {
+            val bundle = bundleOf("point" to  (recycleView!!.adapter as PointListAdapter)
+                .mCurrentPointViewModel.currentPoint.value)
+            view.findNavController()
+                .navigate(R.id.action_route_list_to_pointFiles, bundle)
+            standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        val home = bts.findViewById<ImageButton>(R.id.home)
+        home.setOnClickListener {
+            view.findNavController()
+                .navigate(R.id.start_frame_screen)
+            standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        val switch = bts.findViewById<SwitchCompat>(R.id.listSwitcher)
+        switch.setOnCheckedChangeListener() { compoundButton: CompoundButton, b: Boolean ->
+            mViewList!!.loadFullList = b
+            mViewList!!.loadDataFromDB()
+            standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        val currentPointHeader = bts.findViewById<View>(R.id.upperComponentOfBottomSheet)
+        currentPointHeader.setOnClickListener {
+            (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel.setSheetOpposite()
+        }
 
 
         return view

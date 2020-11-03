@@ -11,6 +11,7 @@ import java.lang.IllegalArgumentException
 
 class ViewPointList(application: Application, val activity: MainActivity):AndroidViewModel(application) {
     var pointsList = MutableLiveData<MutableList<Point>>()
+    var loadFullList : Boolean = false
     /*private val result : LiveData<MutableList<Point>> = liveData {
         activity.mSwipeRefreshLayout!!.isRefreshing = true
         emit(loadDataFromDB())
@@ -35,7 +36,7 @@ class ViewPointList(application: Application, val activity: MainActivity):Androi
         return trackList.await() ?: mutableListOf()*/
         viewModelScope.launch {
             try {
-                val trackList = routeRepository.getPointList(false)
+                val trackList = routeRepository.getPointList(false,!loadFullList)
                 pointsList.value =  trackList
             }catch (e:Exception){
                 Toast.makeText(activity,"Маршрут ещё не загружен",Toast.LENGTH_LONG).show()

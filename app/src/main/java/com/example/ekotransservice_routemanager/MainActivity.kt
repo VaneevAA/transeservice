@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "CutPasteId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -97,12 +97,12 @@ class MainActivity : AppCompatActivity() {
 
 
             when (destanation.id) {
-                R.id.route_list -> {
+                /*R.id.route_list -> {
                     bottomMenu.menu.findItem(R.id.list).isChecked = true
                     val animateView = AnimateView(guideLine, this, true)
                     animateView.showHeight()
                     return@addOnDestinationChangedListener
-                }
+                }*/
                 R.id.start_frame_screen -> {
                     bottomMenu.menu.findItem(R.id.home).isChecked = true
                     val animateView = AnimateView(guideLine, this, true)
