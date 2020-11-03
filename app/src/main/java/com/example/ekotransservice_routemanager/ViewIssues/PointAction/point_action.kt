@@ -233,92 +233,92 @@ class point_action : Fragment() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-
-            mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
-                if (viewPointModel!!.fileBeforeIsDone.value!!) {
-                    val dialog = FactDialog(
-                        requireParentFragment(),
-                        viewPointModel!!.currentPoint,
-                        this,
-                        mainFragment
-                    )
-                    dialog.show(requireActivity().supportFragmentManager, "factDialog")
-                } else {
-                    Toast.makeText(requireContext(), "Нет фото до", Toast.LENGTH_LONG).show()
-                }
-
+        }
+        mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
+            if (viewPointModel!!.fileBeforeIsDone.value!!) {
+                val dialog = FactDialog(
+                    requireParentFragment(),
+                    viewPointModel!!.currentPoint,
+                    this,
+                    mainFragment
+                )
+                dialog.show(requireActivity().supportFragmentManager, "factDialog")
+            } else {
+                Toast.makeText(requireContext(), "Нет фото до", Toast.LENGTH_LONG).show()
             }
 
-            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).setOnClickListener {
-                if (viewPointModel!!.fileBeforeIsDone.value!!) {
-                    val bundle = bundleOf("point" to point!!)
-                    (requireActivity() as MainActivity).navController.navigate(
-                        R.id.pointFiles,
-                        bundle
-                    )
-                }
-            }
+        }
 
-            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).setOnClickListener {
-                if (viewPointModel!!.fileBeforeIsDone.value!!) {
-                    val bundle = bundleOf("point" to point!!)
-                    (requireActivity() as MainActivity).navController.navigate(
-                        R.id.pointFiles,
-                        bundle
-                    )
-                }
-            }
-
-            val reasonArray = mutableListOf<String>(
-                NO_GARBEGE,
-                CARS_ON_POINT,
-                ROAD_REPAER,
-                DOORS_CLOSED,
-                CLIENT_DENIAL,
-                NO_EQUIPMENT,
-                EQUIPMENT_LOCKED,
-                OTHER
-            )
-            val spinner = mainFragment.findViewById<Spinner>(R.id.reasonSpinner)
-            val arrayAdapter = ArrayAdapter<String>(
-                requireContext(),
-                android.R.layout.simple_spinner_item,
-                reasonArray
-            )
-            arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            val comment = mainFragment.findViewById<TextInputEditText>(R.id.reasonInput)
-            arrayAdapter.setNotifyOnChange(true)
-            spinner.adapter = arrayAdapter
-            val itemSelectedListener: AdapterView.OnItemSelectedListener = object :
-                AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-
-                    // Получаем выбранный объект
-                    val item = parent.getItemAtPosition(position) as String
-                    point!!.setReasonComment(item)
-                    if (item == OTHER) {
-                        comment.visibility = ViewGroup.VISIBLE
-                    } else {
-                        comment.visibility = ViewGroup.GONE
-                        comment.text?.clear()
-                    }
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
-            spinner.onItemSelectedListener = itemSelectedListener
-
-            comment.addTextChangedListener {
-                val commentText = it.toString()
-                point!!.setReasonComment(commentText)
-                // здесь можно писать в точку
+        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).setOnClickListener {
+            if (viewPointModel!!.fileBeforeIsDone.value!!) {
+                val bundle = bundleOf("point" to point!!)
+                (requireActivity() as MainActivity).navController.navigate(
+                    R.id.pointFiles,
+                    bundle
+                )
             }
         }
+
+        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).setOnClickListener {
+            if (viewPointModel!!.fileBeforeIsDone.value!!) {
+                val bundle = bundleOf("point" to point!!)
+                (requireActivity() as MainActivity).navController.navigate(
+                    R.id.pointFiles,
+                    bundle
+                )
+            }
+        }
+
+        val reasonArray = mutableListOf<String>(
+            NO_GARBEGE,
+            CARS_ON_POINT,
+            ROAD_REPAER,
+            DOORS_CLOSED,
+            CLIENT_DENIAL,
+            NO_EQUIPMENT,
+            EQUIPMENT_LOCKED,
+            OTHER
+        )
+        val spinner = mainFragment.findViewById<Spinner>(R.id.reasonSpinner)
+        val arrayAdapter = ArrayAdapter<String>(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            reasonArray
+        )
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val comment = mainFragment.findViewById<TextInputEditText>(R.id.reasonInput)
+        arrayAdapter.setNotifyOnChange(true)
+        spinner.adapter = arrayAdapter
+        val itemSelectedListener: AdapterView.OnItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+
+                // Получаем выбранный объект
+                val item = parent.getItemAtPosition(position) as String
+                point!!.setReasonComment(item)
+                if (item == OTHER) {
+                    comment.visibility = ViewGroup.VISIBLE
+                } else {
+                    comment.visibility = ViewGroup.GONE
+                    comment.text?.clear()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+        spinner.onItemSelectedListener = itemSelectedListener
+
+        comment.addTextChangedListener {
+            val commentText = it.toString()
+            point!!.setReasonComment(commentText)
+            // здесь можно писать в точку
+        }
+
         return mainFragment
     }
 
