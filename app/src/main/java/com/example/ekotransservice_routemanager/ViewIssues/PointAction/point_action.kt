@@ -14,19 +14,19 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Looper
 import android.provider.MediaStore
+import android.text.Editable
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.core.view.children
+import androidx.core.widget.addTextChangedListener
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -38,6 +38,7 @@ import com.example.ekotransservice_routemanager.DataClasses.PointActoins
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 import com.google.android.gms.location.*
+import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialContainerTransform
 import kotlinx.android.synthetic.main.fragment_point_action.view.*
 import java.io.File
@@ -53,6 +54,19 @@ import kotlin.collections.ArrayList
  * create an instance of this fragment.
  */
 class point_action : Fragment() {
+
+    /*
+        значения для списка невозможности вывоза
+    */
+
+    private final val NO_GARBEGE = "нет ТКО"
+    private final val CARS_ON_POINT = "нет проезда к КП (заставлено автомашинами)"
+    private final val ROAD_REPAER = "нет проезда (ремонт дороги)"
+    private final val DOORS_CLOSED = "не открывают ворота (шлагбаум)"
+    private final val CLIENT_DENIAL = "отказ Потребителя от вывоза ТКО"
+    private final val NO_EQUIPMENT = "нет контейнерного оборудования"
+    private final val EQUIPMENT_LOCKED = "контейнер(а) на замке"
+    private final val OTHER = "другое"
 
     private var point: Point? = null
     private var canDone: Boolean = true
@@ -150,56 +164,59 @@ class point_action : Fragment() {
         startLocationUpdates()
     }
 
-    @SuppressLint("ObjectAnimatorBinding")
+    @SuppressLint("ObjectAnimatorBinding", "ResourceType")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+        ): View? {
 
-        val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
-        viewPointModel = ViewModelProvider(
-            this.requireActivity(),
-            ViewPointAction.ViewPointsFactory(
-                this.requireActivity().application,
-                requireActivity() as MainActivity,
-                point!!
+            val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
+            viewPointModel = ViewModelProvider(
+                this.requireActivity(),
+                ViewPointAction.ViewPointsFactory(
+                    this.requireActivity().application,
+                    requireActivity() as MainActivity,
+                    point!!
+                )
             )
-        )
-            .get(ViewPointAction::class.java)
+                .get(ViewPointAction::class.java)
 
 
-        val observerPoint = Observer<Point> { pointValue -> (
-                fillFragment(mainFragment)
-                )
-        }
+            val observerPoint = Observer<Point> { pointValue -> (
+                    fillFragment(mainFragment)
+                    )
+            }
 
-        viewPointModel!!.currentPoint.observe(requireActivity(), observerPoint)
+            viewPointModel!!.currentPoint.observe(requireActivity(), observerPoint)
 
-        val observerBefore = Observer<Boolean> { fileBeforeIsDone -> (
-                if (fileBeforeIsDone != null && fileBeforeIsDone) {
-                    mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility = View.VISIBLE
-                } else {
-                    mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility  = View.INVISIBLE
-                }
-                )
-        }
+            val observerBefore = Observer<Boolean> { fileBeforeIsDone -> (
+                    if (fileBeforeIsDone != null && fileBeforeIsDone) {
+                        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility = View.VISIBLE
+                    } else {
+                        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).visibility  = View.INVISIBLE
+                    }
+                    )
+            }
 
-        viewPointModel!!.fileBeforeIsDone.observe(requireActivity(), observerBefore)
+            viewPointModel!!.fileBeforeIsDone.observe(requireActivity(), observerBefore)
 
-        val observerAfter = Observer<Boolean> { fileAfterIsDone -> (
-                if (fileAfterIsDone != null && fileAfterIsDone) {
-                    mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility = View.VISIBLE
-                } else {
-                    mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility  = View.INVISIBLE
-                }
-                )
-        }
+            val observerAfter = Observer<Boolean> { fileAfterIsDone -> (
+                    if (fileAfterIsDone != null && fileAfterIsDone) {
+                        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility = View.VISIBLE
+                    } else {
+                        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).visibility  = View.INVISIBLE
+                    }
+                    )
+            }
 
-        viewPointModel!!.fileAfterIsDone.observe(requireActivity(), observerAfter)
+            viewPointModel!!.fileAfterIsDone.observe(requireActivity(), observerAfter)
+
 
         viewPointModel!!.setViewData(point!!,canDone)
 
-        fillFragment(mainFragment)
+
+            fillFragment(mainFragment)
+
 
         mainFragment.findViewById<Button>(R.id.takePhotoBefore)!!.setOnClickListener {
             takePicture(if (canDone) {PhotoOrder.PHOTO_BEFORE} else {PhotoOrder.PHOTO_CANTDONE})
@@ -215,39 +232,121 @@ class point_action : Fragment() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-        }
 
-        mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
-            if(viewPointModel!!.fileBeforeIsDone.value!!){
-                val dialog = FactDialog(
-                    requireParentFragment(),
-                    viewPointModel!!.currentPoint,
-                    this,
-                    mainFragment
-                )
-                dialog.show(requireActivity().supportFragmentManager, "factDialog")
-            }else{
-                Toast.makeText(requireContext(), "Нет фото до", Toast.LENGTH_LONG).show()
+            mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
+                if(viewPointModel!!.fileBeforeIsDone.value!!){
+                    val dialog = FactDialog(
+                        requireParentFragment(),
+                        viewPointModel!!.currentPoint,
+                        this,
+                        mainFragment
+                    )
+                    dialog.show(requireActivity().supportFragmentManager, "factDialog")
+                }else{
+                    Toast.makeText(requireContext(), "Нет фото до", Toast.LENGTH_LONG).show()
+                }
+
             }
 
-        }
-
-        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).setOnClickListener {
-            if(viewPointModel!!.fileBeforeIsDone.value!!){
-                val bundle = bundleOf("point" to point!!)
-                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles, bundle)
+            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).setOnClickListener {
+                if(viewPointModel!!.fileBeforeIsDone.value!!){
+                    val bundle = bundleOf("point" to point!!)
+                    (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles, bundle)
+                }
             }
-        }
 
-        mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).setOnClickListener {
-            if(viewPointModel!!.fileBeforeIsDone.value!!){
-                val bundle = bundleOf("point" to point!!)
-                (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles, bundle)
+            mainFragment.findViewById<ImageView>(R.id.doneTakePhotoAfter).setOnClickListener {
+                if(viewPointModel!!.fileBeforeIsDone.value!!){
+                    val bundle = bundleOf("point" to point!!)
+                    (requireActivity() as MainActivity).navController.navigate(R.id.pointFiles, bundle)
+                }
             }
+
+            mainFragment.showRouteButton.setOnClickListener{
+
+                if (location != null && location!!.latitude != 0.0  && location!!.longitude != 0.0 ) {
+                    val startlat = location!!.latitude
+                    val startlon = location!!.longitude
+                    val endlat = point!!.getAddressLat()
+                    val endlon = point!!.getAddressLon()
+                    val uri =
+                        Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
+                    var intent = Intent(Intent.ACTION_VIEW, uri)
+                    val packageManager: PackageManager = requireContext().packageManager
+                    val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
+                    val isIntentSafe: Boolean = activities.isNotEmpty()
+                    if (isIntentSafe) {
+                        startActivity(intent)
+                    } else {
+                        // Открываем страницу приложения Яндекс.Карты в Google Play.
+                        intent = Intent(Intent.ACTION_VIEW)
+                        intent.data = Uri.parse("market://details?id=ru.yandex.yandexmaps")
+                        startActivity(intent)
+                    }
+                }else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Текущее местоположение не определено",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+
+
+        val reasonArray = mutableListOf<String>(
+            NO_GARBEGE,
+            CARS_ON_POINT,
+            ROAD_REPAER,
+            DOORS_CLOSED,
+            CLIENT_DENIAL,
+            NO_EQUIPMENT,
+            EQUIPMENT_LOCKED,
+            OTHER
+        )
+        val spinner = mainFragment.findViewById<Spinner>(R.id.reasonSpinner)
+        val arrayAdapter = ArrayAdapter<String>(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            reasonArray
+        )
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val comment = mainFragment.findViewById<TextInputEditText>(R.id.reasonInput)
+        arrayAdapter.setNotifyOnChange(true)
+        spinner.adapter = arrayAdapter
+        val itemSelectedListener: AdapterView.OnItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+
+                // Получаем выбранный объект
+                val item = parent.getItemAtPosition(position) as String
+                /*
+                    вот тут можно записать в точку!!!!!
+                */
+                if (item == OTHER) {
+                    comment.visibility = ViewGroup.VISIBLE
+                } else {
+                    comment.visibility = ViewGroup.GONE
+                    comment.text?.clear()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+        spinner.onItemSelectedListener = itemSelectedListener
+
+        comment.addTextChangedListener {
+            val commentText = it.toString()
+            // здесь можно писать в точку
         }
 
         return mainFragment
     }
+
 
     private fun showButtons(mainFragment: View, listOfActions: ArrayList<PointActoins>){
         for(child in (mainFragment.findViewById<View>(R.id.buttonsToDo) as ConstraintLayout).children){
@@ -264,6 +363,9 @@ class point_action : Fragment() {
                     View.VISIBLE
                 PointActoins.SET_VOLUME
                 -> mainFragment.findViewById<View>(R.id.layoutSetCountFact).visibility =
+                    View.VISIBLE
+                PointActoins.SET_REASON
+                -> mainFragment.findViewById<View>(R.id.reasonLayout).visibility =
                     View.VISIBLE
             }
         }
@@ -426,6 +528,175 @@ class point_action : Fragment() {
         val postalCode: String = addresses.get(0).getPostalCode()
         val knownName: String = addresses.get(0).getFeatureName()*/
 
+    }
+
+    @SuppressLint("InflateParams")
+    private fun createResultImageFile() {
+
+        // Основное изображение
+        var originalBitmap: Bitmap = BitmapFactory.decodeFile(currentFile!!.absolutePath)
+        val degree = getRotateDegreeFromExif(currentFile!!.absolutePath)
+        //Если угол не нулевой, то сначала повернем картинку
+        if (degree != 0) {
+            //Получим ориентацию картинки и определим матрицу трансформаци
+            val matrix = Matrix()
+            matrix.postRotate(degree.toFloat())
+            val rotatedBitmap = Bitmap.createBitmap(
+                originalBitmap,
+                0, 0,
+                originalBitmap.width, originalBitmap.height,
+                matrix, true
+            )
+            originalBitmap = rotatedBitmap
+        }
+        // Итоговая картинка (результат)
+        val overlayBitmap =
+            Bitmap.createBitmap(
+                originalBitmap.width,
+                originalBitmap.height,
+                originalBitmap.config
+            )
+        /*
+        // Изображение из макета photo_data
+        val inflater = activity?.layoutInflater
+        val photoDataView: View? = inflater?.inflate(R.layout.photo_data, null)
+        photoDataView!!.findViewById<TextView>(R.id.addressTextView).text = getAddressNameFromLocation(
+            location!!
+        )
+        photoDataView.findViewById<TextView>(R.id.latTextView).text =
+            location!!.latitude.toString()
+        photoDataView.findViewById<TextView>(R.id.lonTextView).text =
+            location!!.longitude.toString()
+        photoDataView.findViewById<TextView>(R.id.dateTextView).text = SimpleDateFormat(
+            "yyyy-MM-dd (EEE) HH:mm:ss",
+            Locale("ru")
+        ).format(Date())
+
+        val widthSpec =
+            View.MeasureSpec.makeMeasureSpec(originalBitmap.width, View.MeasureSpec.AT_MOST)
+        val heightSpec =
+            View.MeasureSpec.makeMeasureSpec(
+                originalBitmap.height / 4,
+                View.MeasureSpec.AT_MOST
+            )
+        photoDataView.measure(widthSpec, heightSpec)
+        photoDataView.layout(
+            0,
+            0,
+            photoDataView.measuredWidth,
+            photoDataView.measuredHeight
+        )*/
+
+        // Вывод в холст
+        val canvas = Canvas(overlayBitmap)
+        val paint = Paint()
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER) // Text Overlapping Pattern
+        canvas.drawBitmap(originalBitmap, 0F, 0F, paint)
+
+        /*canvas.save()
+        //TODO Маштабирование макета при выводе на холст
+        canvas.translate(
+            0F,
+            (originalBitmap.height - photoDataView.measuredHeight).toFloat()
+        )
+        photoDataView.draw(canvas)
+        canvas.restore()*/
+
+        val rt = Rect(
+            0,
+            originalBitmap.height,
+            originalBitmap.width,
+            originalBitmap.height - originalBitmap.height / 4
+        )
+        paint.style = Paint.Style.FILL
+        paint.color = ContextCompat.getColor(requireContext(), R.color.colorGrayBack)
+        canvas.drawRect(rt, paint)
+
+        paint.color = Color.WHITE
+        paint.textSize = originalBitmap.height / 30F
+
+        //Вывод адреса
+        var addressText = ""
+        var latText = ""
+        var lonText = ""
+
+        if (location == null || location!!.latitude == 0.0 || location!!.longitude == 0.0) {
+            addressText = point!!.getAddressName()
+        } else {
+            addressText = getAddressNameFromLocation(location!!)
+            latText = location!!.latitude.toString()
+            lonText = location!!.latitude.toString()
+        }
+
+        printText(addressText, rt.width() - 40, 10, rt.bottom + 20, paint, canvas)
+
+        // Вывод координат и даты
+        val textWidth = rt.width()/3-40
+        val textLine = originalBitmap.height - abs(rt.height() / 2) +20
+        //Долгота
+        printText(latText, textWidth, 10, textLine, paint, canvas)
+
+        //Широта
+        printText(lonText, textWidth, 10 + textWidth, textLine, paint, canvas)
+
+        //Дата время
+        printText(
+            SimpleDateFormat(
+                "yyyy-MM-dd (EEE) HH:mm:ss",
+                Locale("ru")
+            ).format(Date()), textWidth, 10 + 2 * textWidth, textLine, paint, canvas
+        )
+
+        //Сохранение в файл
+        currentFile!!.delete()
+        val out = FileOutputStream(currentFile)
+        overlayBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        out.flush()
+        out.close()
+
+    }
+
+    private fun printText(
+        currentText: String,
+        textWidth: Int,
+        startPointX: Int,
+        startPointY: Int,
+        paint: Paint,
+        canvas: Canvas
+    ) {
+        val rectText = Rect()
+        paint.getTextBounds(currentText, 0, currentText.length, rectText)
+        val textHeight = rectText.height()
+
+        val stringArray = stringArray(currentText, textWidth.toFloat(), paint)
+        var stringLineY = (startPointY + textHeight).toFloat()
+
+        stringArray.forEach {
+            canvas.drawText(
+                it, startPointX.toFloat(),
+                stringLineY,
+                paint
+            )
+            stringLineY += textHeight
+        }
+    }
+
+    private fun stringArray(originalString: String, width: Float, paint: Paint): ArrayList<String>{
+        var currentString = originalString
+        val stringArrayList: ArrayList<String> = ArrayList()
+        var doLoop = true
+        do {
+            val measuredWidth = FloatArray(1)
+            val cntSymbols = paint.breakText(currentString, true, width, measuredWidth)
+            if (cntSymbols < currentString.length) {
+                stringArrayList.add(currentString.substring(0, cntSymbols))
+                currentString = currentString.substring(cntSymbols, currentString.length)
+            }else{
+                stringArrayList.add(currentString.substring(0, cntSymbols))
+                doLoop = false
+            }
+        } while (doLoop)
+        return stringArrayList
     }
 
 

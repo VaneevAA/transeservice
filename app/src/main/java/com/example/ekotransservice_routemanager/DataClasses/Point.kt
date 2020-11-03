@@ -61,6 +61,7 @@ class Point : Serializable{
         pointActionsArray.add(PointActoins.SET_VOLUME)
 
         pointActionsCancelArray.add(PointActoins.TAKE_PHOTO_BEFORE)
+        pointActionsCancelArray.add(PointActoins.SET_REASON)
     }
 
     constructor(){
