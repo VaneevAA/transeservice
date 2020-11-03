@@ -246,36 +246,6 @@ class point_action : Fragment() {
             }
         }
 
-        mainFragment.showRouteButton.setOnClickListener{
-
-            if (location != null && location!!.latitude != 0.0  && location!!.longitude != 0.0 ) {
-                val startlat = location!!.latitude
-                val startlon = location!!.longitude
-                val endlat = point!!.getAddressLat()
-                val endlon = point!!.getAddressLon()
-                val uri =
-                    Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
-                var intent = Intent(Intent.ACTION_VIEW, uri)
-                val packageManager: PackageManager = requireContext().packageManager
-                val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
-                val isIntentSafe: Boolean = activities.isNotEmpty()
-                if (isIntentSafe) {
-                    startActivity(intent)
-                } else {
-                    // Открываем страницу приложения Яндекс.Карты в Google Play.
-                    intent = Intent(Intent.ACTION_VIEW)
-                    intent.data = Uri.parse("market://details?id=ru.yandex.yandexmaps")
-                    startActivity(intent)
-                }
-            }else {
-                Toast.makeText(
-                    requireContext(),
-                    "Текущее местоположение не определено",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-
         return mainFragment
     }
 

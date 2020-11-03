@@ -1,5 +1,10 @@
 package com.example.ekotransservice_routemanager.ViewIssues.RouteList
 
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,11 +13,14 @@ import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.SwitchCompat
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -86,6 +94,13 @@ class route_list : Fragment() {
         }
         (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
             .currentPoint.observe(viewLifecycleOwner,currentPointObserver)
+
+        val curPoint = mViewList!!.getList().value?.get(0)
+        if (curPoint!=null) {
+            (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel.setCurrentPoint(
+                curPoint
+            )
+        }
 
         val openCloseBottomSheetObserver = Observer<Boolean> {
             if(it){
@@ -178,6 +193,36 @@ class route_list : Fragment() {
         mViewList!!.getList().removeObservers(requireActivity())
         mViewList!!.getList().observe(requireActivity(), observer)
         mViewList!!.loadDataFromDB()
+
+    }
+
+    private fun buildRoute(location: Location, point: Point) {
+        if (location != null && location!!.latitude != 0.0 && location!!.longitude != 0.0) {
+            val startlat = location!!.latitude
+            val startlon = location!!.longitude
+            val endlat = point.getAddressLat()
+            val endlon = point.getAddressLon()
+            val uri =
+                Uri.parse("yandexmaps://maps.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
+            var intent = Intent(Intent.ACTION_VIEW, uri)
+            val packageManager: PackageManager = requireContext().packageManager
+            val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
+            val isIntentSafe: Boolean = activities.isNotEmpty()
+            if (isIntentSafe) {
+                startActivity(intent)
+            } else {
+                // Открываем страницу приложения Яндекс.Карты в Google Play.
+                intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse("market://details?id=ru.yandex.yandexmaps")
+                startActivity(intent)
+            }
+        } else {
+            Toast.makeText(
+                requireContext(),
+                "Текущее местоположение не определено",
+                Toast.LENGTH_LONG
+            ).show()
+        }
 
     }
 }
