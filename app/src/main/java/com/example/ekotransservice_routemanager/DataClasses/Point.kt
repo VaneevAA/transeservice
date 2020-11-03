@@ -112,6 +112,8 @@ class Point : Serializable{
             this.tripNumber = properties.getInt("tripNumber")
             this.polygon = properties.getBoolean("polygon")
             this.routeName = properties.getString("routeName").trim { it <= ' ' }
+            this.addressLat = properties.getDouble("addressLat")
+            this.addressLon = properties.getDouble("addressLon")
 
         } catch (e: Exception) {
             //TODO error parsing JSON

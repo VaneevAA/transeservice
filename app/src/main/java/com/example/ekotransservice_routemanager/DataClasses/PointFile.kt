@@ -186,10 +186,10 @@ class PointFile(
         // Вывод координат и даты
         val textWidth = rt.width()/3-40
         val textLine = originalBitmap.height - abs(rt.height()/2) +20
-        //Долгота
+        //Широта
         printText(latText, textWidth, 10,textLine,paint, canvas)
 
-        //Широта
+        //Долгота
         printText(lonText, textWidth, 10 + textWidth,textLine,paint, canvas)
 
         //Дата время
