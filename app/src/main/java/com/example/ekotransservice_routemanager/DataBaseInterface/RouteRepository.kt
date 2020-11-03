@@ -1,6 +1,7 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import android.content.Context
+import android.location.Location
 import android.media.RingtoneManager
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -276,14 +277,18 @@ class RouteRepository constructor(val context: Context) {
     }
 
     //Получение файлов из локальной базы данных
-    suspend fun getFilesFromDBAsync(point: Point, photoOrder: PhotoOrder? = null): MutableList<PointFile>? {
-        val result = GlobalScope.async { getFilesFromDB(point, photoOrder) }
+    suspend fun getFilesFromDBAsync(point: Point, photoOrder: PhotoOrder? = null, withoutGeotag: Boolean = false): MutableList<PointFile>? {
+        val result = GlobalScope.async { getFilesFromDB(point, photoOrder,withoutGeotag) }
         return result.await()
     }
 
-    private fun getFilesFromDB(point: Point, photoOrder: PhotoOrder?): MutableList<PointFile>? {
+    private fun getFilesFromDB(point: Point, photoOrder: PhotoOrder?,withoutGeotag: Boolean = false): MutableList<PointFile>? {
         return try {
-            val data = mRoutesDao!!.getPointFiles(point.getLineUID(),photoOrder)
+            val data = if (withoutGeotag) {
+                mRoutesDao!!.getGeolessPointFiles(point.getLineUID())
+            }else{
+                mRoutesDao!!.getPointFiles(point.getLineUID(),photoOrder)
+            }
             data
         } catch (e: java.lang.Exception) {
             null
@@ -300,6 +305,13 @@ class RouteRepository constructor(val context: Context) {
 
     fun setVehicle (vehicle: Vehicle?){
         this.vehicle = vehicle
+    }
+
+
+    fun updatePointFileLocationAsync(pointFile: PointFile,lat: Double, lon: Double ) {
+        GlobalScope.launch {
+            mRoutesDao!!.updatePointFileLocation(lat, lon, pointFile.id)
+        }
     }
 
     private fun getSSLSocketFactory(): SSLSocketFactory {
