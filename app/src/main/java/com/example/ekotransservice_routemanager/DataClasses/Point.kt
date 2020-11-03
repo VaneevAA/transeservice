@@ -48,6 +48,7 @@ class Point : Serializable{
     private var polygon: Boolean = false
     private var timestamp: Date? = null
     private var routeName: String = ""
+    private var reasonComment: String = ""
 
 
     @Ignore
@@ -150,6 +151,7 @@ class Point : Serializable{
     fun getPointActionsCancelArray() : ArrayList<PointActoins>{ return this.pointActionsCancelArray }
     fun getTimestamp() : Date? { return this.timestamp}
     fun getRouteName() : String { return this.routeName}
+    fun getReasonComment() : String { return this.reasonComment}
 
     //endregion
 
@@ -181,6 +183,7 @@ class Point : Serializable{
     fun setPolygon(polygon: Boolean){ this.polygon = polygon }
     fun setTimestamp(timestamp: Date?) { this.timestamp = timestamp}
     fun setRouteName(name: String) { this.routeName = name}
+    fun setReasonComment(name: String) { this.reasonComment = name}
 
     //endregion
 
