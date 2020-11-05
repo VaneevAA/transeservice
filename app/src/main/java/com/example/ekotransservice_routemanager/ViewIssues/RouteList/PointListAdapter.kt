@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
@@ -59,14 +60,20 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         if(mCurrentPointViewModel.currentPoint.value == null ){
             mCurrentPointViewModel.currentPoint.value = point
         }
+        val doneImage = holder.itemView.findViewById<ImageView>(R.id.doneImage)
+        if(!point.getReasonComment().equals("")){
+            doneImage.setImageResource(R.drawable.ic_baseline_block_24_small)
+        }else if (!point.getDone()){
+            doneImage.visibility = ViewGroup.GONE
+        }
         holder.pointItemView.text = "${point.getRowNumber()}. ${point.getAddressName()}"
         holder.contCountType.text = point.getContType()
         holder.contCountView.text = point.getContCount().toString()
         holder.itemView.clipToOutline = true
 
         holder.pointPosition = position
-        val animateView = AnimateView(holder.buttonsView,holder.itemView.context,false)
-        animateView.hideHeight()
+        //val animateView = AnimateView(holder.buttonsView,holder.itemView.context,false)
+        //animateView.hideHeight()
         //при нажатии определяется пока только точка
 
         holder.itemView.setOnClickListener {
@@ -90,6 +97,8 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
                 .navigate(R.id.action_route_list_to_point_action, bundle)
 
         }*/
+        //image done
+
 
     }else{
         holder.pointItemView.text = "no points"
