@@ -84,7 +84,7 @@ class RouteRepository constructor(val context: Context) {
         // Получение текущих настроек
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.context.applicationContext)
         val urlName = sharedPreferences.getString("URL_NAME","") as String
-        val urlPort = sharedPreferences.getString("URL_PORT","80") as String
+        val urlPort = sharedPreferences.getString("URL_PORT","443") as String
         val urlPass = sharedPreferences.getString("URL_AUTHPASS","") as String
         val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
         vehicle = Vehicle(vehicleString)
@@ -155,8 +155,10 @@ class RouteRepository constructor(val context: Context) {
     private fun loadTaskFromServer(currentRoute: Route?): Boolean {
         errorArrayList.clear()
         val vehicleNumber: String? = currentRoute?.getVehicleNumber() ?: this.vehicle!!.getName()
-        val dateTask: Date = currentRoute?.getRouteDate() ?: SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
-            Locale.getDefault()).parse("2020-09-03 00:00:00")
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val datePrefValue = sharedPreferences.getString("DATE","")
+        val dateTask: Date = currentRoute?.getRouteDate() ?: SimpleDateFormat("yyyy.MM.dd HH:mm:ss",
+            Locale.getDefault()).parse("$datePrefValue 00:00:00")
         return if (vehicleNumber != null) {
             val postParam = JSONObject()
             postParam.put("dateTask",  SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(dateTask)) //"2020-09-03 00:00:00")//dateTask.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))

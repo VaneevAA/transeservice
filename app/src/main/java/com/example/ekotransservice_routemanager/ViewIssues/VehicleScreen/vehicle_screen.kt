@@ -7,6 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AutoCompleteTextView
+import android.widget.EditText
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataClasses.Region
@@ -15,6 +17,9 @@ import com.example.ekotransservice_routemanager.R
 import com.example.ekotransservice_routemanager.RegionListAdapter
 import com.google.android.material.transition.MaterialContainerTransform
 import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class vehicle_screen : Fragment() {
 
@@ -71,6 +76,25 @@ class vehicle_screen : Fragment() {
         }
         if (currentVehicle!=null) {
             vehicleName.setText(currentVehicle.toString())
+        }
+
+        val datePref: EditText = view.findViewById(R.id.editTextDate)
+        datePref.setText(SimpleDateFormat(
+            "YYYY.MM.dd",
+            Locale("ru")
+        ).format(mViewVehicle!!.currentDate))
+
+        datePref.addTextChangedListener {
+            try {
+                mViewVehicle!!.currentDate = SimpleDateFormat(
+                    "yyyy.MM.dd",
+                    Locale("ru")
+                ).parse(it.toString())
+
+            } catch(e: Exception) {
+
+            }
+            savePreference("DATE", it.toString())
         }
 
          return view

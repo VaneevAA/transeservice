@@ -28,6 +28,8 @@ import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.ViewIssues.StartScreen.StartFrameScreenViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -50,6 +52,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
+
+        //TODO Сделать нормально настройку даты
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
+        val prefEditor = sharedPreferences.edit()
+        prefEditor.putString("DATE", SimpleDateFormat(
+            "YYYY.MM.dd",
+            Locale("ru")
+        ).format(Date()))
+        prefEditor.commit()
 
         routeRepository = RouteRepository.getInstance(applicationContext)
 

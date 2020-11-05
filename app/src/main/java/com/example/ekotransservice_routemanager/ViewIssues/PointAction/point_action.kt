@@ -515,6 +515,7 @@ class point_action : Fragment() {
                     )
                     if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
                         point!!.setDone(true)
+                        point!!.setTimestamp(Date())
                         viewPointModel!!.getRepository().updatePointAsync(point!!)
                         Toast.makeText(requireContext(), "Точка выполнена!", Toast.LENGTH_LONG)
                             .show()
@@ -535,19 +536,6 @@ class point_action : Fragment() {
 
     }
 
-    private fun getAddressNameFromLocation(location: Location): String {
-
-        val geocoder = Geocoder(requireContext(), Locale("ru"))
-        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-        return addresses[0].getAddressLine(0) // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-
-        /*val city: String = addresses.get(0).getLocality()
-        val state: String = addresses.get(0).getAdminArea()
-        val country: String = addresses.get(0).getCountryName()
-        val postalCode: String = addresses.get(0).getPostalCode()
-        val knownName: String = addresses.get(0).getFeatureName()*/
-
-    }
 
     @SuppressLint("MissingPermission")
     private fun setGeoTag() : Boolean {

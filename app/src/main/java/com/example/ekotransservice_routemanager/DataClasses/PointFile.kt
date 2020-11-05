@@ -177,6 +177,9 @@ class PointFile(
             addressText = point!!.getAddressName()
         } else {
             addressText = getAddressNameFromLocation(lat,lon,context)
+            if (addressText=="") {
+                addressText = point!!.getAddressName()
+            }
             latText = lat.toString()
             lonText = lon.toString()
         }
@@ -211,8 +214,12 @@ class PointFile(
     private fun getAddressNameFromLocation(lat: Double, lon: Double, context: Context): String {
 
         val geocoder = Geocoder(context, Locale("ru"))
-        val addresses = geocoder.getFromLocation(lat, lon, 1)
-        return addresses[0].getAddressLine(0) // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+        return try {
+            val addresses = geocoder.getFromLocation(lat, lon, 1)
+            addresses[0].getAddressLine(0) // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+        } catch (e: Exception) {
+           ""
+        }
 
         /*val city: String = addresses.get(0).getLocality()
         val state: String = addresses.get(0).getAdminArea()
