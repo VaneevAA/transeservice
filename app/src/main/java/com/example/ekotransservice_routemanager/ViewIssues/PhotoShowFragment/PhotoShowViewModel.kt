@@ -8,7 +8,6 @@ import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.MainActivity
 import kotlinx.coroutines.launch
-import kotlin.properties.Delegates
 
 class PhotoShowViewModel (pointFile: PointFile,val point : Point?,val activity : MainActivity) : ViewModel() {
     val mData : MutableLiveData<PointFile> = MutableLiveData(pointFile)
@@ -37,22 +36,5 @@ class PhotoShowViewModel (pointFile: PointFile,val point : Point?,val activity :
             }
         }
     }
-
-    fun setNextPhoto(d : Int){
-        if(d == 0){
-
-        }
-        else if(currentIndex + 1 >= photoList.value!!.size){
-            currentIndex = 0
-        }else if(currentIndex + 1 < 0){
-            currentIndex = photoList.value!!.size - 1
-        }else{
-            currentIndex ++
-        }
-
-        mData.value = photoList.value!![currentIndex]
-    }
-
-
 
 }
