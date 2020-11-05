@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.location.Geocoder
 import android.location.Location
 import android.net.Uri
@@ -14,8 +13,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Looper
 import android.provider.MediaStore
-import android.text.Editable
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,12 +37,10 @@ import com.example.ekotransservice_routemanager.R
 import com.google.android.gms.location.*
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialContainerTransform
-import kotlinx.android.synthetic.main.fragment_point_action.view.*
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 /**
@@ -168,7 +163,7 @@ class point_action : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-        ): View? {
+    ): View? {
 
             val mainFragment = inflater.inflate(R.layout.fragment_point_action, container, false)
             viewPointModel = ViewModelProvider(
@@ -212,14 +207,16 @@ class point_action : Fragment() {
             viewPointModel!!.fileAfterIsDone.observe(requireActivity(), observerAfter)
 
 
-        viewPointModel!!.setViewData(point!!,canDone)
-
-
-            fillFragment(mainFragment)
-
+        viewPointModel!!.setViewData(point!!, canDone)
 
         mainFragment.findViewById<Button>(R.id.takePhotoBefore)!!.setOnClickListener {
-            takePicture(if (canDone) {PhotoOrder.PHOTO_BEFORE} else {PhotoOrder.PHOTO_CANTDONE})
+            takePicture(
+                if (canDone) {
+                    PhotoOrder.PHOTO_BEFORE
+                } else {
+                    PhotoOrder.PHOTO_CANTDONE
+                }
+            )
         }
         mainFragment.findViewById<Button>(R.id.takePhotoAfter).setOnClickListener {
             if (viewPointModel!!.fileBeforeIsDone.value!!
@@ -249,7 +246,9 @@ class point_action : Fragment() {
 
         }
 
+
         mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).setOnClickListener {
+
             if (viewPointModel!!.fileBeforeIsDone.value!!) {
                 val bundle = bundleOf("point" to point!!)
                 (requireActivity() as MainActivity).navController.navigate(
@@ -269,55 +268,10 @@ class point_action : Fragment() {
             }
         }
 
-        val reasonArray = mutableListOf<String>(
-            NO_GARBEGE,
-            CARS_ON_POINT,
-            ROAD_REPAER,
-            DOORS_CLOSED,
-            CLIENT_DENIAL,
-            NO_EQUIPMENT,
-            EQUIPMENT_LOCKED,
-            OTHER
-        )
-        val spinner = mainFragment.findViewById<Spinner>(R.id.reasonSpinner)
-        val arrayAdapter = ArrayAdapter<String>(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            reasonArray
-        )
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        val comment = mainFragment.findViewById<TextInputEditText>(R.id.reasonInput)
-        arrayAdapter.setNotifyOnChange(true)
-        spinner.adapter = arrayAdapter
-        val itemSelectedListener: AdapterView.OnItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-
-                // Получаем выбранный объект
-                val item = parent.getItemAtPosition(position) as String
-                point!!.setReasonComment(item)
-                if (item == OTHER) {
-                    comment.visibility = ViewGroup.VISIBLE
-                } else {
-                    comment.visibility = ViewGroup.GONE
-                    comment.text?.clear()
-                }
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        if (!canDone) {
+            fillCannotDone(mainFragment)
         }
-        spinner.onItemSelectedListener = itemSelectedListener
-
-        comment.addTextChangedListener {
-            val commentText = it.toString()
-            point!!.setReasonComment(commentText)
-            // здесь можно писать в точку
-        }
+        //fillFragment(mainFragment)
 
         return mainFragment
     }
@@ -350,6 +304,91 @@ class point_action : Fragment() {
         fillFragment(mainFragment)
     }*/
 
+
+    private fun getReasonArray(): MutableList<String> {
+        val reasonArray = mutableListOf<String>(
+            NO_GARBEGE,
+            CARS_ON_POINT,
+            ROAD_REPAER,
+            DOORS_CLOSED,
+            CLIENT_DENIAL,
+            NO_EQUIPMENT,
+            EQUIPMENT_LOCKED,
+            OTHER
+        )
+        return reasonArray
+    }
+
+    private fun fillCannotDone(mainFragment: View){
+        val reasonArray = getReasonArray()
+        /*mutableListOf<String>(
+        NO_GARBEGE,
+        CARS_ON_POINT,
+        ROAD_REPAER,
+        DOORS_CLOSED,
+        CLIENT_DENIAL,
+        NO_EQUIPMENT,
+        EQUIPMENT_LOCKED,
+        OTHER
+    )*/
+        val spinner = mainFragment.findViewById<Spinner>(R.id.reasonSpinner)
+        val arrayAdapter = ArrayAdapter<String>(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            reasonArray
+        )
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val comment = mainFragment.findViewById<TextInputEditText>(R.id.reasonInput)
+        arrayAdapter.setNotifyOnChange(true)
+        spinner.adapter = arrayAdapter
+        val itemSelectedListener: AdapterView.OnItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+
+                // Получаем выбранный объект
+                val item = parent.getItemAtPosition(position) as String
+                point!!.setReasonComment(item)
+                viewPointModel!!.getRepository().updatePointAsync(point!!)
+                if (item == OTHER) {
+                    comment.visibility = ViewGroup.VISIBLE
+                } else {
+                    comment.visibility = ViewGroup.GONE
+                    comment.text?.clear()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+        spinner.onItemSelectedListener = itemSelectedListener
+
+        comment.addTextChangedListener {
+            val commentText = it.toString()
+            point!!.setReasonComment(commentText)
+            viewPointModel!!.getRepository().updatePointAsync(point!!)
+            // здесь можно писать в точку
+        }
+
+        //Установим текущие значения значением полученным из точки
+        val reasonComment: String = viewPointModel!!.getPoint().value!!.getReasonComment()
+        if (reasonComment!="") {
+            if (reasonArray.contains(reasonComment)) {
+                val spinnerPosition: Int =
+                    (spinner.adapter as ArrayAdapter<String>).getPosition(reasonComment)
+                spinner.setSelection(spinnerPosition)
+            } else {
+                val spinnerPosition: Int =
+                    (spinner.adapter as ArrayAdapter<String>).getPosition(OTHER)
+                spinner.setSelection(spinnerPosition)
+                comment.setText(reasonComment)
+            }
+        }
+    }
+
     private fun fillFragment(mainFragment: View){
 
         val addressText = mainFragment.findViewById<TextView>(R.id.pointAdress)
@@ -373,6 +412,7 @@ class point_action : Fragment() {
         }else{
             viewPointModel!!.getPoint().value!!.getPointActionsCancelArray()
         }
+
 
         showButtons(mainFragment, listOfActions)
     }
@@ -468,7 +508,11 @@ class point_action : Fragment() {
 
                 if (currentFile != null) {
                     setGeoTag()
-                    val pointFile = viewPointModel!!.saveFile(currentFile!!, point!!, currentFileOrder)
+                    val pointFile = viewPointModel!!.saveFile(
+                        currentFile!!,
+                        point!!,
+                        currentFileOrder
+                    )
                     if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
                         point!!.setDone(true)
                         viewPointModel!!.getRepository().updatePointAsync(point!!)
