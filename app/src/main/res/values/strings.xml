@@ -33,6 +33,7 @@
 
     <string name="regionTitle">Регион</string>
     <string name="vehicleNumberTitle">Номер ТС</string>
+    <string name="datePrefTitle">Дата</string>
     <!-- Preference Titles -->
 
     <!-- Messages Preferences -->

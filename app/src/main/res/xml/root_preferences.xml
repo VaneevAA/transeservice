@@ -57,5 +57,14 @@
             android:title="@string/vehicleNumberTitle"
             app:useSimpleSummaryProvider="true"
             app:isPreferenceVisible="false"/>
+        <androidx.preference.EditTextPreference
+            android:defaultValue="Default value"
+            android:key="DATE"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/datePrefTitle"
+            android:title="@string/datePrefTitle"
+            app:useSimpleSummaryProvider="true"
+            app:isPreferenceVisible="true"/>
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>

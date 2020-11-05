@@ -8,6 +8,8 @@ import com.example.ekotransservice_routemanager.DataClasses.Region
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import kotlinx.coroutines.async
 import java.lang.IllegalArgumentException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ViewVehicle (application: Application): AndroidViewModel(application) {
 
@@ -15,7 +17,7 @@ class ViewVehicle (application: Application): AndroidViewModel(application) {
     var vehicleList =  MutableLiveData<MutableList<Vehicle>>()
     var currentRegion: Region? = null
     var currentVehicle: Vehicle? = null
-
+    lateinit var currentDate:Date
     private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
     //val routeRepository: RouteRepository = RouteRepository(application)
 
@@ -23,6 +25,12 @@ class ViewVehicle (application: Application): AndroidViewModel(application) {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application.applicationContext)
         currentRegion = Region(sharedPreferences.getString("REGION","") as String)
         currentVehicle = Vehicle(sharedPreferences.getString("VEHICLE","") as String)
+        val datePrefValue = sharedPreferences.getString("DATE","") as String
+        currentDate = SimpleDateFormat(
+            "yyyy.MM.dd",
+            Locale("ru")
+        ).parse( "$datePrefValue")
+
        /* regionList.value = ArrayList<Region>()
         viewModelScope.launch { loadRegion() }*/
     }
