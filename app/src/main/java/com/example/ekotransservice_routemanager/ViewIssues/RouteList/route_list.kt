@@ -6,7 +6,6 @@ import android.content.pm.ResolveInfo
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,20 +14,19 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SwitchCompat
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.transition.MaterialElevationScale
-import com.example.ekotransservice_routemanager.DataClasses.Point as Point
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -93,7 +91,7 @@ class route_list : Fragment() {
 
         }
         (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
-            .currentPoint.observe(viewLifecycleOwner,currentPointObserver)
+            .currentPoint.observe(viewLifecycleOwner, currentPointObserver)
 
         val curPoint = mViewList!!.getList().value?.get(0)
         if (curPoint!=null) {
@@ -110,13 +108,15 @@ class route_list : Fragment() {
             }
         }
         (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
-            .bottomSheetOpen.observe(viewLifecycleOwner,openCloseBottomSheetObserver)
+            .bottomSheetOpen.observe(viewLifecycleOwner, openCloseBottomSheetObserver)
 
         //bottom sheet click listeners
         val pointDone = bts.findViewById<ImageButton>(R.id.canDoneImageButton)
         pointDone.setOnClickListener {
-            val bundle = bundleOf("point" to  (recycleView!!.adapter as PointListAdapter)
-                .mCurrentPointViewModel.currentPoint.value, "canDone" to true)
+            val bundle = bundleOf(
+                "point" to (recycleView!!.adapter as PointListAdapter)
+                    .mCurrentPointViewModel.currentPoint.value, "canDone" to true
+            )
             view.findNavController()
                 .navigate(R.id.action_route_list_to_point_action, bundle)
             standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
@@ -124,8 +124,10 @@ class route_list : Fragment() {
 
         val pointCantDone = bts.findViewById<ImageButton>(R.id.cannotDoneImageButton)
         pointCantDone.setOnClickListener {
-            val bundle = bundleOf("point" to  (recycleView!!.adapter as PointListAdapter)
-                .mCurrentPointViewModel.currentPoint.value, "canDone" to false)
+            val bundle = bundleOf(
+                "point" to (recycleView!!.adapter as PointListAdapter)
+                    .mCurrentPointViewModel.currentPoint.value, "canDone" to false
+            )
             view.findNavController()
                 .navigate(R.id.action_route_list_to_point_action, bundle)
             standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
@@ -133,8 +135,10 @@ class route_list : Fragment() {
 
         val photoPoint = bts.findViewById<ImageButton>(R.id.pointPhotos)
         photoPoint.setOnClickListener {
-            val bundle = bundleOf("point" to  (recycleView!!.adapter as PointListAdapter)
-                .mCurrentPointViewModel.currentPoint.value)
+            val bundle = bundleOf(
+                "point" to (recycleView!!.adapter as PointListAdapter)
+                    .mCurrentPointViewModel.currentPoint.value
+            )
             view.findNavController()
                 .navigate(R.id.action_route_list_to_pointFiles, bundle)
             standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
@@ -145,6 +149,16 @@ class route_list : Fragment() {
             view.findNavController()
                 .navigate(R.id.start_frame_screen)
             standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        val route = bts.findViewById<ImageButton>(R.id.routeImageButton)
+        route.setOnClickListener {
+            val curPoint = (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel.currentPoint.value
+            if (curPoint!=null) {
+                buildRoute(curPoint,"2gis")
+            }else{
+                Toast.makeText(activity,"Точка не выбрана",Toast.LENGTH_LONG).show()
+            }
         }
 
         val switch = bts.findViewById<SwitchCompat>(R.id.listSwitcher)
@@ -166,7 +180,8 @@ class route_list : Fragment() {
     override fun onResume() {
         super.onResume()
         if((requireActivity() as MainActivity).refreshPointList){
-            mViewList = ViewPointList(requireActivity().application,
+            mViewList = ViewPointList(
+                requireActivity().application,
                 requireActivity() as MainActivity
             )
             setNewViewModel()
@@ -175,7 +190,8 @@ class route_list : Fragment() {
     }
 
     private fun setNewViewModel(){
-        mViewList = ViewModelProvider(this.requireActivity(),
+        mViewList = ViewModelProvider(
+            this.requireActivity(),
             ViewPointList.ViewPointsFactory(
                 this.requireActivity().application,
                 requireActivity() as MainActivity
@@ -186,8 +202,7 @@ class route_list : Fragment() {
             activity?.onBackPressed()
             return
         }*/
-        val observer = Observer<MutableList<Point>> {
-                (pointList) -> ((recycleView?.adapter as PointListAdapter)
+        val observer = Observer<MutableList<Point>> { (pointList) -> ((recycleView?.adapter as PointListAdapter)
             .setList(mViewList!!.getList()))
         }
         mViewList!!.getList().removeObservers(requireActivity())
@@ -196,33 +211,62 @@ class route_list : Fragment() {
 
     }
 
-    private fun buildRoute(location: Location, point: Point) {
-        if (location != null && location!!.latitude != 0.0 && location!!.longitude != 0.0) {
-            val startlat = location!!.latitude
-            val startlon = location!!.longitude
-            val endlat = point.getAddressLat()
-            val endlon = point.getAddressLon()
-            val uri =
-                Uri.parse("yandexnavi://navi.yandex.ru/?rtext=$startlat,$startlon~$endlat,$endlon&rtt=auto")
-            var intent = Intent(Intent.ACTION_VIEW, uri)
-            val packageManager: PackageManager = requireContext().packageManager
-            val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
-            val isIntentSafe: Boolean = activities.isNotEmpty()
-            if (isIntentSafe) {
-                startActivity(intent)
-            } else {
-                // Открываем страницу приложения Яндекс.Карты в Google Play.
-                intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse("market://details?id=ru.yandex.yandexmaps")
-                startActivity(intent)
+    private fun buildRoute(point: Point, naviApp: String) {
+        //if (location != null && location!!.latitude != 0.0 && location!!.longitude != 0.0) {
+        // val startlat = location!!.latitude
+        // val startlon = location!!.longitude
+        val endlat = point.getAddressLat()
+        val endlon = point.getAddressLon()
+        if (endlat == 0.0 || endlon == 0.0) {
+            Toast.makeText(
+                activity,
+                "Отмена.Для данной точки не заданы координаты",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        var uriString = ""
+        var packageName = ""
+
+        when (naviApp) {
+            "yandex" -> {
+                uriString = "yandexnavi://build_route_on_map?lat_to=$endlat&lon_to=$endlon"
+                packageName = "ru.yandex.yandexnavi"
             }
+            "2gis" -> {
+                uriString = "dgis://2gis.ru/routeSearch/rsType/car/to/$endlon,$endlat"
+                packageName = "ru.dublgis.dgismobile"
+            }
+        }
+
+        if (uriString.isEmpty() || packageName.isEmpty()) {
+            Toast.makeText(activity,"Отмена. Неизвестное приложение навигации", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val uri = Uri.parse(uriString)
+        var intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage(packageName)
+        val packageManager: PackageManager = requireContext().packageManager
+        val activities: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
+        val isIntentSafe: Boolean = activities.isNotEmpty()
+        if (isIntentSafe) {
+            startActivity(intent)
         } else {
+            // Открываем страницу приложения Яндекс.Карты в Google Play.
+            intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("market://details?id=$packageName")
+            startActivity(intent)
+        }
+
+        /*} else {
             Toast.makeText(
                 requireContext(),
                 "Текущее местоположение не определено",
                 Toast.LENGTH_LONG
             ).show()
-        }
+        }*/
 
     }
 }

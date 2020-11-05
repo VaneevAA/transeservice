@@ -8,6 +8,7 @@ import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointFile
 import com.example.ekotransservice_routemanager.MainActivity
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.lang.IllegalArgumentException
@@ -113,7 +114,7 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
     }
 
     fun setPointFilesGeodata(location: Location) {
-        viewModelScope.launch {
+        GlobalScope.launch {
             val result = routeRepository.getFilesFromDBAsync(currentPoint.value!!,null,true)
             result?.forEach {
                 setDataInfoOnFile(it,location)
