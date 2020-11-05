@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
         routeRepository = RouteRepository.getInstance(applicationContext)
 
         mSwipeRefreshLayout = findViewById<View>(R.id.thinking) as SwipeRefreshLayout

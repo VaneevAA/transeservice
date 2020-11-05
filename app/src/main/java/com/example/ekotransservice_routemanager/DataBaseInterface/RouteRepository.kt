@@ -84,7 +84,7 @@ class RouteRepository constructor(val context: Context) {
         // Получение текущих настроек
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.context.applicationContext)
         val urlName = sharedPreferences.getString("URL_NAME","") as String
-        val urlPort = sharedPreferences.getString("URL_PORT","80") as String
+        val urlPort = sharedPreferences.getString("URL_PORT","443") as String
         val urlPass = sharedPreferences.getString("URL_AUTHPASS","") as String
         val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
         vehicle = Vehicle(vehicleString)
