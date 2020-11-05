@@ -14,7 +14,7 @@ class PhotoShowViewModel (pointFile: PointFile,val point : Point?,val activity :
     val mData : MutableLiveData<PointFile> = MutableLiveData(pointFile)
     val routeRepository = RouteRepository.getInstance(activity.applicationContext)
     val photoList : MutableLiveData<MutableList<PointFile>> = MutableLiveData(mutableListOf())
-    var currentIndex by Delegates.notNull<Int>()
+    var currentIndex : Int = 0
 
     fun loadPhotos (){
         if(point == null){
@@ -23,27 +23,31 @@ class PhotoShowViewModel (pointFile: PointFile,val point : Point?,val activity :
             viewModelScope.launch {
                 val resultBefore = routeRepository.getFilesFromDBAsync(point!!)
                 if (resultBefore != null) {
+                    currentIndex = 0
+                    for (pointFile in resultBefore){
+                        if (pointFile.id == mData.value!!.id){
+                            currentIndex = resultBefore.indexOf(pointFile)
+                            break
+                        }
+                    }
                     photoList.value = resultBefore
                 }
-                currentIndex = 0
-                for (pointFile in photoList.value!!){
-                    if (pointFile.id == mData.value!!.id){
-                        currentIndex = photoList.value!!.indexOf(pointFile)
-                        break
-                    }
-                }
+
                 activity.mSwipeRefreshLayout!!.isRefreshing = false
             }
         }
     }
 
     fun setNextPhoto(d : Int){
-        if(currentIndex + d >= photoList.value!!.size){
+        if(d == 0){
+
+        }
+        else if(currentIndex + 1 >= photoList.value!!.size){
             currentIndex = 0
-        }else if(currentIndex + d < 0){
+        }else if(currentIndex + 1 < 0){
             currentIndex = photoList.value!!.size - 1
         }else{
-            currentIndex += d
+            currentIndex ++
         }
 
         mData.value = photoList.value!![currentIndex]

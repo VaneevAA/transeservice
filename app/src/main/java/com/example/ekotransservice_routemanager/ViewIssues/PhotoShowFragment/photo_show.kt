@@ -35,14 +35,16 @@ class photo_show : Fragment() {
         imageView = view.findViewById(R.id.photoImageView)
 
         viewModel = PhotoShowViewModel(pointFile,point,requireActivity() as MainActivity)
-        viewModel.loadPhotos()
+        imageView.offscreenPageLimit = 7
         val adapter = PhotoSlideAdapter(requireActivity() as MainActivity,viewModel)
         val observer = Observer<MutableList<PointFile>> {
-            imageView.adapter = adapter
+            adapter.notifyDataSetChanged()
+            imageView.currentItem = viewModel.currentIndex
         }
+        imageView.adapter = adapter
         viewModel.photoList.observe(requireActivity(),observer)
         imageView.setPageTransformer(ZoomOutPageTransformer())
-
+        viewModel.loadPhotos()
         return view
     }
 

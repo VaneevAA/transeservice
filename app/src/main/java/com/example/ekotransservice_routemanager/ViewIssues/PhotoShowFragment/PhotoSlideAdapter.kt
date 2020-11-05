@@ -33,8 +33,8 @@ class PhotoSlideAdapter(val activity : MainActivity, val mViewModel : PhotoShowV
     }
 
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {
-        mViewModel.setNextPhoto(position)
-        val currentFile = mViewModel.mData.value
+        //mViewModel.setNextPhoto(position)
+        val currentFile = mViewModel.photoList.value?.get(position)
         holder.imageView.setImageURI(Uri.parse(currentFile!!.filePath))
         holder.description.text = when (currentFile.photoOrder) {
             PhotoOrder.PHOTO_BEFORE -> {

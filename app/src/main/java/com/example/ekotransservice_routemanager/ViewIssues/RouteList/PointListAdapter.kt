@@ -60,12 +60,17 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         if(mCurrentPointViewModel.currentPoint.value == null ){
             mCurrentPointViewModel.currentPoint.value = point
         }
+
         val doneImage = holder.itemView.findViewById<ImageView>(R.id.doneImage)
+        doneImage.visibility = ViewGroup.VISIBLE
         if(!point.getReasonComment().equals("")){
             doneImage.setImageResource(R.drawable.ic_baseline_block_24_small)
         }else if (!point.getDone()){
             doneImage.visibility = ViewGroup.GONE
+        }else{
+            doneImage.setImageResource(R.drawable.ic_baseline_check_24_small)
         }
+
         holder.pointItemView.text = "${point.getRowNumber()}. ${point.getAddressName()}"
         holder.contCountType.text = point.getContType()
         holder.contCountView.text = point.getContCount().toString()
