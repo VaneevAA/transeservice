@@ -61,6 +61,7 @@ class AllPhotos : Fragment() {
         super.onActivityCreated(savedInstanceState)
         //viewModel = AllPhotosViewModel(requireActivity() as MainActivity)
         // TODO: Use the ViewModel
+
     }
 
     private fun showHideFileSend (show : Boolean){
@@ -74,4 +75,5 @@ class AllPhotos : Fragment() {
             sendFilesShow = false
         }
     }
+
 }

@@ -246,7 +246,9 @@ class point_action : Fragment() {
 
         }
 
+
         mainFragment.findViewById<ImageView>(R.id.doneTakePhotoBefore).setOnClickListener {
+
             if (viewPointModel!!.fileBeforeIsDone.value!!) {
                 val bundle = bundleOf("point" to point!!)
                 (requireActivity() as MainActivity).navController.navigate(
@@ -270,6 +272,7 @@ class point_action : Fragment() {
             fillCannotDone(mainFragment)
         }
         //fillFragment(mainFragment)
+
         return mainFragment
     }
 

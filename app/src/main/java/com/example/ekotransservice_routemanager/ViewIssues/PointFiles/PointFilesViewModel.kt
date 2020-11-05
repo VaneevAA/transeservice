@@ -15,11 +15,11 @@ class PointFilesViewModel(private val activity: MainActivity, val point : Point)
         viewModelScope.launch {
             val resultBefore = routeRepository.getFilesFromDBAsync(point)
             if (resultBefore != null) {
-                if (files.value == null) {
+                //if (files.value == null) {
                     files.value = resultBefore
-                } else {
-                    files.value?.addAll(resultBefore)
-                }
+                //} else {
+                //    files.value?.addAll(resultBefore)
+                //}
             }
             activity.mSwipeRefreshLayout!!.isRefreshing = false
         }
