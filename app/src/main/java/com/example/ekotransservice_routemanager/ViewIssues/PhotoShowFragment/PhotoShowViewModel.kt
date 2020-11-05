@@ -25,7 +25,13 @@ class PhotoShowViewModel (pointFile: PointFile,val point : Point?,val activity :
                 if (resultBefore != null) {
                     photoList.value = resultBefore
                 }
-                currentIndex = photoList.value!!.indexOf(mData.value)
+                currentIndex = 0
+                for (pointFile in photoList.value!!){
+                    if (pointFile.id == mData.value!!.id){
+                        currentIndex = photoList.value!!.indexOf(pointFile)
+                        break
+                    }
+                }
                 activity.mSwipeRefreshLayout!!.isRefreshing = false
             }
         }
