@@ -4,29 +4,31 @@ package com.example.ekotransservice_routemanager.ViewIssues.PointFiles
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.GenericTransitionOptions.with
+import com.bumptech.glide.annotation.GlideModule
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.DataClasses.PointFile
+import com.example.ekotransservice_routemanager.GlideApp
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import java.io.*
-import com.example.ekotransservice_routemanager.DataClasses.PointFile
-import kotlin.collections.mutableListOf as mutableListOf
 
 
 class PointFilesAdapter(val context: Context, val point : Point, private val fromAllPhoto : Boolean) : RecyclerView.Adapter<PointFilesAdapter.PointFilesHolder>() {
@@ -64,7 +66,8 @@ class PointFilesAdapter(val context: Context, val point : Point, private val fro
                 ""
             }
         }
-        try {
+
+        /*try {
 
             val imageBytes = getByteArray(pointFile.filePath)
             val mBitmap = BitmapFactory.decodeByteArray(
@@ -76,7 +79,15 @@ class PointFilesAdapter(val context: Context, val point : Point, private val fro
         }catch (e: Exception){
             Toast.makeText(context, "Ошибка сжатия файла: $e", Toast.LENGTH_LONG).show()
             holder.pointFile.setImageURI(Uri.parse(pointFile.filePath))
-        }
+        }*/
+        //loadPhotos(pointFile,holder.pointFile)
+
+        GlideApp.with(context)
+            .load(pointFile.filePath)
+            .override(300,300)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(holder.pointFile)
+
 
         holder.listElement.setOnClickListener {
 
@@ -221,5 +232,24 @@ class PointFilesAdapter(val context: Context, val point : Point, private val fro
         }
 
     }
+
+    fun loadPhotos (pointFile : PointFile, imageView: ImageView){
+        GlobalScope.async {
+            try {
+
+                val imageBytes = getByteArray(pointFile.filePath)
+                val mBitmap = BitmapFactory.decodeByteArray(
+                    imageBytes,
+                    0,
+                    imageBytes.size
+                )
+                imageView.setImageBitmap(Bitmap.createScaledBitmap(mBitmap, 300, 300, false))
+            }catch (e: Exception){
+                //Toast.makeText(context, "Ошибка сжатия файла: $e", Toast.LENGTH_LONG).show()
+                imageView.setImageURI(Uri.parse(pointFile.filePath))
+            }
+        }
+    }
+
 }
 
