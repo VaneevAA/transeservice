@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -84,6 +85,7 @@ class route_list : Fragment() {
         val currentPointObserver = Observer<Point> {
             if(it != null){
                 currentPointNameText.text = it.getAddressName()
+                setButtonVisibility(it,bts.findViewById(R.id.canDoneLayout))
                 view.refreshDrawableState()
            // }else{
            //     currentPointNameText.text = ""
@@ -113,13 +115,25 @@ class route_list : Fragment() {
         //bottom sheet click listeners
         val pointDone = bts.findViewById<ImageButton>(R.id.canDoneImageButton)
         pointDone.setOnClickListener {
-            val bundle = bundleOf(
-                "point" to (recycleView!!.adapter as PointListAdapter)
-                    .mCurrentPointViewModel.currentPoint.value, "canDone" to true
-            )
-            view.findNavController()
-                .navigate(R.id.action_route_list_to_point_action, bundle)
-            standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            if((recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
+                    .currentPoint.value!!.getPolygon()){
+                (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
+                    .currentPoint.value!!.setDone(true)
+                mViewList!!.routeRepository.updatePointAsync(
+                    (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
+                    .currentPoint.value!!
+                )
+                mViewList!!.loadDataFromDB()
+            }else{
+                val bundle = bundleOf(
+                    "point" to (recycleView!!.adapter as PointListAdapter)
+                        .mCurrentPointViewModel.currentPoint.value, "canDone" to true
+                )
+                view.findNavController()
+                    .navigate(R.id.action_route_list_to_point_action, bundle)
+                standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            }
+
         }
 
         val pointCantDone = bts.findViewById<ImageButton>(R.id.cannotDoneImageButton)
@@ -268,5 +282,23 @@ class route_list : Fragment() {
             ).show()
         }*/
 
+    }
+
+    private fun setButtonVisibility (point : Point, parentView : ViewGroup){
+        for (child in parentView.children){
+            when(child.id){
+                R.id.cannotDoneImageButton -> child.visibility = if (point.getPolygon()){
+                    ViewGroup.GONE
+                }else{
+                    ViewGroup.VISIBLE
+                }
+                R.id.pointPhotos -> child.visibility = if (point.getPolygon()){
+                    ViewGroup.GONE
+                }else{
+                    ViewGroup.VISIBLE
+                }
+            }
+
+        }
     }
 }

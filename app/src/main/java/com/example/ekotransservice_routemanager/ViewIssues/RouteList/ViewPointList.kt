@@ -18,7 +18,7 @@ class ViewPointList(application: Application, val activity: MainActivity):Androi
         activity.mSwipeRefreshLayout!!.isRefreshing = false
     }*/
 
-    private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
+    val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
 
     class ViewPointsFactory(private val application: Application, private  val activity: MainActivity):ViewModelProvider.Factory{
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
