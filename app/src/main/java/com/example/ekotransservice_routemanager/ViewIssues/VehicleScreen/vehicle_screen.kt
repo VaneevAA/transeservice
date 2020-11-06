@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager.ViewIssues.VehicleScreen
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AutoCompleteTextView
 import android.widget.EditText
+import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
@@ -78,7 +80,8 @@ class vehicle_screen : Fragment() {
             vehicleName.setText(currentVehicle.toString())
         }
 
-        val datePref: EditText = view.findViewById(R.id.editTextDate)
+        val datePref: TextView = view.findViewById(R.id.editTextDate)
+        /*
         datePref.setText(SimpleDateFormat(
             "YYYY.MM.dd",
             Locale("ru")
@@ -95,8 +98,14 @@ class vehicle_screen : Fragment() {
 
             }
             savePreference("DATE", it.toString())
+        }*/
+        datePref.setOnClickListener {
+            setDate(it)
         }
-
+        datePref.text = SimpleDateFormat(
+            "YYYY.MM.dd",
+            Locale("ru")
+        ).format(mViewVehicle!!.currentDate)
          return view
     }
 
@@ -116,4 +125,24 @@ class vehicle_screen : Fragment() {
         vehicleName.setAdapter(adapter)
     }
 
+    private fun setDate(v:View){
+        val tempCalendar = Calendar.getInstance()
+        tempCalendar.time = mViewVehicle!!.currentDate
+        DatePickerDialog(requireContext()
+            ,DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
+                val calendar = Calendar.getInstance()
+                calendar.set(year,month,dayOfMonth)
+                mViewVehicle!!.currentDate = calendar.time
+                savePreference("DATE", SimpleDateFormat(
+                    "YYYY.MM.dd",
+                    Locale("ru")
+                ).format(mViewVehicle!!.currentDate))
+                (v as TextView).text = SimpleDateFormat(
+                    "YYYY.MM.dd",
+                    Locale("ru")
+                ).format(mViewVehicle!!.currentDate)
+            },tempCalendar.get(Calendar.YEAR),
+            tempCalendar.get(Calendar.MONTH),
+            tempCalendar.get(Calendar.DAY_OF_MONTH)).show()
+    }
 }

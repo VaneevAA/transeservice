@@ -94,12 +94,11 @@
                 app:layout_constraintStart_toStartOf="@+id/textViewVehicleTitle"
                 app:layout_constraintTop_toBottomOf="@+id/textViewVehicleTitle" />
 
-            <EditText
+            <TextView
                 android:id="@+id/editTextDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="date"
+
                 app:layout_constraintBottom_toBottomOf="@+id/textViewDateTitle"
                 app:layout_constraintEnd_toEndOf="@+id/AutoCompleteTextViewVehicle"
                 app:layout_constraintStart_toStartOf="@+id/AutoCompleteTextViewVehicle"
