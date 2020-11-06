@@ -30,6 +30,11 @@ class ViewVehicle (application: Application): AndroidViewModel(application) {
             "yyyy.MM.dd",
             Locale("ru")
         ).parse( "$datePrefValue")
+        val beginningOfYear = GregorianCalendar.getInstance()
+        beginningOfYear.set(2020,1,1)
+        if(currentDate.before(beginningOfYear.time)){
+            currentDate = Calendar.getInstance().time
+        }
 
        /* regionList.value = ArrayList<Region>()
         viewModelScope.launch { loadRegion() }*/
@@ -61,3 +66,5 @@ class ViewVehicle (application: Application): AndroidViewModel(application) {
         return regionList
     }
 }
+
+
