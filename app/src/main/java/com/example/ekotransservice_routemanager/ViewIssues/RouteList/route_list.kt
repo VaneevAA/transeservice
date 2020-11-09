@@ -96,16 +96,17 @@ class route_list : Fragment() {
             .currentPoint.observe(viewLifecycleOwner, currentPointObserver)
 
         val curPoint = mViewList!!.getList().value?.get(0)
-        if (curPoint!=null) {
+        if (curPoint != null) {
             (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel.setCurrentPoint(
-                curPoint
+                curPoint,
+                null
             )
         }
 
         val openCloseBottomSheetObserver = Observer<Boolean> {
             if(it){
                 standartBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-            }else{
+            } else {
                 standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
             }
         }
