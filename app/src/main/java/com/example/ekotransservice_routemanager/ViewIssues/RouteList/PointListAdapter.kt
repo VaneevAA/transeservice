@@ -34,7 +34,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
 
     private var mLayout : LayoutInflater = LayoutInflater.from(context)
     private var pointList : MutableList<Point>? = null
-    var mCurrentPointViewModel : viewModelCurrentPoint = viewModelCurrentPoint(null,context)
+    var mCurrentPointViewModel : viewModelCurrentPoint = viewModelCurrentPoint(null)
     private var selectedPos = RecyclerView.NO_POSITION
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointViewHolder {
         val itemView : View = mLayout.inflate(R.layout.recycleview_item,parent,false)
@@ -82,7 +82,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
             notifyItemChanged(selectedPos)
             selectedPos = holder.layoutPosition
             notifyItemChanged(selectedPos)
-            mCurrentPointViewModel.setCurrentPoint(point,holder.itemView)
+            mCurrentPointViewModel.setCurrentPoint(point)
         }
         /*holder.itemView.findViewById<Button>(R.id.doneButton).setOnClickListener {
 
@@ -120,11 +120,11 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         notifyDataSetChanged()
     }
 
-    class viewModelCurrentPoint (startPoint : Point?,context: Context) : ViewModel() {
+    class viewModelCurrentPoint (startPoint : Point?) : ViewModel() {
         val currentPoint : MutableLiveData<Point> = MutableLiveData(startPoint)
         val bottomSheetOpen : MutableLiveData<Boolean> = MutableLiveData(false)
 
-        fun setCurrentPoint (point : Point, v : View?){
+        fun setCurrentPoint (point : Point){
 
             currentPoint.value = point
             bottomSheetOpen.value = true

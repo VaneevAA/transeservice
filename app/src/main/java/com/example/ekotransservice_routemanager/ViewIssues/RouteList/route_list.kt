@@ -98,8 +98,7 @@ class route_list : Fragment() {
         val curPoint = mViewList!!.getList().value?.get(0)
         if (curPoint != null) {
             (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel.setCurrentPoint(
-                curPoint,
-                null
+                curPoint
             )
         }
 
