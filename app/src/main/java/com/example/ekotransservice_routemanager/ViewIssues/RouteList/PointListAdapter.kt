@@ -35,7 +35,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     private var mLayout : LayoutInflater = LayoutInflater.from(context)
     private var pointList : MutableList<Point>? = null
     var mCurrentPointViewModel : viewModelCurrentPoint = viewModelCurrentPoint(null)
-
+    private var selectedPos = RecyclerView.NO_POSITION
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointViewHolder {
         val itemView : View = mLayout.inflate(R.layout.recycleview_item,parent,false)
         return PointViewHolder(itemView)
@@ -55,7 +55,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         if(mCurrentPointViewModel.currentPoint.value == null ){
             mCurrentPointViewModel.currentPoint.value = point
         }
-
+        holder.itemView.isSelected = position == selectedPos
         val doneImage = holder.itemView.findViewById<ImageView>(R.id.doneImage)
         doneImage.visibility = ViewGroup.VISIBLE
         if(!point.getReasonComment().equals("")){
@@ -79,6 +79,9 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.itemView.setOnClickListener {
             /*holder.viewClosed = !holder.viewClosed
             bind(holder)*/
+            notifyItemChanged(selectedPos)
+            selectedPos = holder.layoutPosition
+            notifyItemChanged(selectedPos)
             mCurrentPointViewModel.setCurrentPoint(point)
         }
         /*holder.itemView.findViewById<Button>(R.id.doneButton).setOnClickListener {
@@ -121,10 +124,11 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         val currentPoint : MutableLiveData<Point> = MutableLiveData(startPoint)
         val bottomSheetOpen : MutableLiveData<Boolean> = MutableLiveData(false)
 
-
         fun setCurrentPoint (point : Point){
+
             currentPoint.value = point
             bottomSheetOpen.value = true
+
         }
 
         fun setSheetClose(){
