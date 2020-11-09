@@ -13,10 +13,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import com.example.ekotransservice_routemanager.DataClasses.Point
-import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
-import kotlinx.android.synthetic.main.fact_dialog.*
-import java.util.*
 
 
 class FactDialog(
@@ -34,15 +31,29 @@ class FactDialog(
         val inflater = activity?.layoutInflater
         val mainView = inflater?.inflate(R.layout.fact_dialog, null)
 
-        mainView?.findViewById<TextView>(R.id.planCount)?.text = plan.toString()
+        /*mainView?.findViewById<TextView>(R.id.planCount)?.text = plan.toString()
         mainView?.findViewById<EditText>(R.id.factCount)?.setText(
             fact.toString(),
             TextView.BufferType.EDITABLE
-        )
+        )*/
+        val factCountView = mainView?.findViewById<TextView>(R.id.factTextSet)
+        factCountView?.text = plan.toString()
+        if(fact == 0.0){
+            fact = plan
+        }
+        mainView?.findViewById<ImageButton>(R.id.setHigh)?.setOnClickListener {
+            fact += 0.5
+            factCountView?.text = fact.toString()
+        }
+
+        mainView?.findViewById<ImageButton>(R.id.setLow)?.setOnClickListener {
+            fact -= 0.5
+            factCountView?.text = fact.toString()
+        }
 
         val positiveButtonClick = { dialog: DialogInterface, which: Int ->
             try {
-                mainFragment.okFactDialogClicked(mainView?.findViewById<EditText>(R.id.factCount)?.text.toString())
+                mainFragment.okFactDialogClicked(fact)
             }catch (e: Exception){
                 Toast.makeText(activity, "Число введено неправильно", Toast.LENGTH_LONG).show()
             }
@@ -61,12 +72,14 @@ class FactDialog(
 
         dialog.window?.setLayout(50, 100)
 
-        mainView?.findViewById<ImageButton>(R.id.planToFact)?.setOnClickListener {
+       /* mainView?.findViewById<ImageButton>(R.id.planToFact)?.setOnClickListener {
             mainView.findViewById<EditText>(R.id.factCount)?.setText(
                 plan.toString(),
                 TextView.BufferType.EDITABLE
             )
-        }
+        }*/
+
+
 
         /*mainView?.findViewById<ImageButton>(R.id.OK)?.setOnClickListener {
             try {
