@@ -272,6 +272,12 @@ class point_action : Fragment() {
             fillCannotDone(mainFragment)
         }
         //fillFragment(mainFragment)
+        val buttonEnd = mainFragment.findViewById<Button>(R.id.pointDone)
+        buttonEnd.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
+        //TODO set comment
+
 
         return mainFragment
     }

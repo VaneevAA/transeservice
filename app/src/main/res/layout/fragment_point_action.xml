@@ -10,7 +10,8 @@
         android:id="@+id/backLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/gradient_list">
+        android:background="@drawable/gradient_list"
+        android:scrollbars="vertical">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/pointInfo"
@@ -55,7 +56,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:text="container"
-                    android:textSize="10sp"
+                    android:textSize="15sp"
                     app:layout_constraintEnd_toStartOf="@id/guideline"
                     app:layout_constraintStart_toStartOf="parent" />
 
@@ -71,7 +72,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:text="1"
-                    android:textSize="10sp"
+                    android:textSize="15sp"
                     app:layout_constraintStart_toEndOf="@id/guideline"
                     app:layout_constraintEnd_toEndOf="parent" />
 
@@ -275,5 +276,41 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <Button
+            android:id="@+id/pointDone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/done"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/buttonsToDo" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/commentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/point_back"
+        android:elevation="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pointDone">
+        <TextView
+            android:id="@+id/commentText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
