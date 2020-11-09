@@ -274,7 +274,12 @@ class point_action : Fragment() {
         //fillFragment(mainFragment)
         val buttonEnd = mainFragment.findViewById<Button>(R.id.pointDone)
         buttonEnd.setOnClickListener {
-            requireActivity().onBackPressed()
+            if(point!!.getDone() || point!!.getReasonComment() != ""){
+                requireActivity().onBackPressed()
+            } else {
+                Toast.makeText(requireContext(),"Точка не может считаться выполненной",Toast.LENGTH_LONG).show()
+            }
+
         }
         //TODO set comment
 
