@@ -577,15 +577,15 @@ class point_action : Fragment() {
     }*/
 
     // Обработка результат ввода факта
-    fun okFactDialogClicked(factText: String) {
+    fun okFactDialogClicked(fact : Double) {
         try {
-            val fact = factText.toDouble()
+            //val fact = factText.toDouble()
             val pointValue = viewPointModel!!.currentPoint.value!!
             pointValue.setCountFact(fact)
             // Отметим выполнение точки.
             // Если количество равно 0, то считаем точку выполненной, даже если не сделано фото после
             // Если количество не равно 0, то считаем точку выполненной только при начлии фото после
-            if (fact==0.0) {
+            if (fact == 0.0) {
                 pointValue.setDone(true)
                 Toast.makeText(activity, "Точка выполнена", Toast.LENGTH_LONG).show()
             }else{
