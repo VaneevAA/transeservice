@@ -460,7 +460,12 @@ class point_action : Fragment() {
 
     private fun generateFileName(point: Point): String {
         val timeCreated = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        return "${point.getRouteName()}__{$timeCreated}__${point.getAddressName()}_${currentFileOrder.string}"
+        var addressName = point.getAddressName().replace("/","")
+        addressName = addressName.replace("\\" , "")
+        addressName = addressName.replace(":" , "")
+        addressName = addressName.replace("(" , "")
+        addressName = addressName.replace(")" , "")
+        return "${point.getRouteName()}__{$timeCreated}__${addressName}_${currentFileOrder.string}"
     }
 
     @SuppressLint("MissingPermission")
