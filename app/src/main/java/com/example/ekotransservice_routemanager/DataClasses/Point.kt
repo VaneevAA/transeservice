@@ -49,6 +49,7 @@ class Point : Serializable{
     private var timestamp: Date? = null
     private var routeName: String = ""
     private var reasonComment: String = ""
+    private var comment:String = ""
 
 
     @Ignore
@@ -114,6 +115,7 @@ class Point : Serializable{
             this.routeName = properties.getString("routeName").trim { it <= ' ' }
             this.addressLat = properties.getDouble("addressLat")
             this.addressLon = properties.getDouble("addressLon")
+            this.comment = properties.getString("comment")
 
         } catch (e: Exception) {
             //TODO error parsing JSON
@@ -154,6 +156,7 @@ class Point : Serializable{
     fun getTimestamp() : Date? { return this.timestamp}
     fun getRouteName() : String { return this.routeName}
     fun getReasonComment() : String { return this.reasonComment}
+    fun getComment() : String { return this.comment}
 
     //endregion
 
@@ -186,6 +189,7 @@ class Point : Serializable{
     fun setTimestamp(timestamp: Date?) { this.timestamp = timestamp}
     fun setRouteName(name: String) { this.routeName = name}
     fun setReasonComment(name: String) { this.reasonComment = name}
+    fun setComment(name: String) { this.comment = name}
 
     //endregion
 

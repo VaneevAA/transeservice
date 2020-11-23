@@ -424,6 +424,8 @@ class point_action : Fragment() {
             viewPointModel!!.getPoint().value!!.getPointActionsCancelArray()
         }
 
+        val commentText = mainFragment.findViewById<TextView>(R.id.commentText)
+        commentText.text =  viewPointModel!!.getPoint().value!!.getComment()
 
         showButtons(mainFragment, listOfActions)
     }
