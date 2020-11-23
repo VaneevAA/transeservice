@@ -2,6 +2,7 @@ package com.example.ekotransservice_routemanager.ViewIssues.RouteList
 
 
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.view.LayoutInflater
@@ -36,6 +37,9 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     private var pointList : MutableList<Point>? = null
     var mCurrentPointViewModel : viewModelCurrentPoint = viewModelCurrentPoint(null)
     private var selectedPos = RecyclerView.NO_POSITION
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private val onCallBackground = context.getDrawable(R.drawable.recycled_view_on_call_background)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointViewHolder {
         val itemView : View = mLayout.inflate(R.layout.recycleview_item,parent,false)
         return PointViewHolder(itemView)
@@ -64,6 +68,10 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
             doneImage.visibility = ViewGroup.GONE
         }else{
             doneImage.setImageResource(R.drawable.ic_baseline_check_24_small)
+        }
+        val isCall = true
+        if(isCall){
+            holder.itemView.background = onCallBackground
         }
 
         holder.pointItemView.text = "${point.getRowNumber()}. ${point.getAddressName()}"
