@@ -61,6 +61,16 @@ class start_frame_screen : Fragment() {
         viewScreen.routeLiveData.observe(requireActivity(), Observer {
             routeUpdate(it,mainView)
         })
+
+        //Отслеживание ошибок
+        viewScreen.errorLiveData.removeObservers(requireActivity())
+        viewScreen.errorLiveData.observe(requireActivity(), Observer {
+            if(it){
+                (requireActivity() as MainActivity).errorCheck(viewScreen.routeRepository)
+                viewScreen.errorLiveData.value = false
+            }
+
+        })
         //Отслеживание изменения машины
         viewScreen.vehicle.removeObservers(requireActivity())
         viewScreen.vehicle.observe(requireActivity(), Observer {
