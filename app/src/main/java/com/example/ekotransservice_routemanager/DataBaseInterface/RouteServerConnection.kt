@@ -110,7 +110,6 @@ class RouteServerConnection {
                         )
                     )
                     null
-                    // TODO обработка исключений
                 } finally {
                     connector.disconnect()
                 }
@@ -123,12 +122,9 @@ class RouteServerConnection {
                         null
                     )
                 )
-                // TODO Требуется обработка Код возврата
-                //val msg = connector.responseMessage
                 null
             }
         } catch (e: MalformedURLException) {
-            //TODO Требуется обработка Плохой URL
             errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Плохой URL", e))
             connector.disconnect()
             null
@@ -166,7 +162,6 @@ class RouteServerConnection {
             }
         }
         return DownloadResult(pointArrayList as ArrayList<Any>, errorArrayList)
-        //TODO Unchecked cast
     }
 
     fun getRegions() : DownloadResult {

@@ -146,15 +146,6 @@ class PointFile(
         paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER) // Text Overlapping Pattern
         canvas.drawBitmap(originalBitmap, 0F, 0F, paint)
 
-        /*canvas.save()
-        //TODO Маштабирование макета при выводе на холст
-        canvas.translate(
-            0F,
-            (originalBitmap.height - photoDataView.measuredHeight).toFloat()
-        )
-        photoDataView.draw(canvas)
-        canvas.restore()*/
-
         val rt = Rect(
             0,
             originalBitmap.height,
