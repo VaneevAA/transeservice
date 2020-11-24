@@ -29,8 +29,6 @@ import com.example.ekotransservice_routemanager.R
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.transition.MaterialElevationScale
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "point"
 private const val ARG_PARAM2 = "canDone"
 

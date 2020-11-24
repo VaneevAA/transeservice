@@ -55,7 +55,6 @@ class MainActivity : AppCompatActivity() {
 
         PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
 
-        //TODO Сделать нормально настройку даты
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
         val prefEditor = sharedPreferences.edit()
         prefEditor.putString("DATE", SimpleDateFormat(

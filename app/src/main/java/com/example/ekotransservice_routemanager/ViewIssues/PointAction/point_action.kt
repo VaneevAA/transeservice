@@ -106,7 +106,6 @@ class point_action : Fragment() {
                     "Присвоить координаты не получилось",
                     Toast.LENGTH_SHORT
                 ).show()
-                //TODO обработка ошибки получения координат
             }
         }
     }
@@ -282,7 +281,6 @@ class point_action : Fragment() {
 
         }
         //TODO set comment
-
 
         return mainFragment
     }
@@ -466,7 +464,6 @@ class point_action : Fragment() {
             return currentFile
         }catch (e: Exception){
             Toast.makeText(requireContext(), "Неудалось записать файл", Toast.LENGTH_LONG).show()
-            //TODO create exception behavior
         }
         return null
     }
