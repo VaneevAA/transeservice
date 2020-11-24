@@ -12,8 +12,8 @@ import java.lang.IllegalArgumentException
 
 class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel() {
     // TODO: Implement the ViewModel
-
-    private val routeRepository = RouteRepository.getInstance(activity.applicationContext)
+    val errorLiveData : MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
+    val routeRepository = RouteRepository.getInstance(activity.applicationContext)
     var routeLiveData : MutableLiveData<Route> = MutableLiveData()/*liveData {
         activity.mSwipeRefreshLayout!!.isRefreshing = true
         try {
@@ -56,12 +56,14 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
                 routeLiveData.value = valueRoute
             }else{
                 Toast.makeText(activity.applicationContext, "Маршрут не загружен", Toast.LENGTH_LONG).show()
+                errorLiveData.value = true
             }
 
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
             vehicle.value = Vehicle(sharedPreferences.getString("VEHICLE","") as String)
             routeRepository.setVehicle(vehicle.value)
             activity.mSwipeRefreshLayout!!.isRefreshing = false
+
         }
         /*vehicle = liveData<Vehicle> {
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)

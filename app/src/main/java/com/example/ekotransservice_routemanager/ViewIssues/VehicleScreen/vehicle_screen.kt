@@ -8,15 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AutoCompleteTextView
-import android.widget.EditText
 import android.widget.TextView
-import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataClasses.Region
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
+import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
-import com.example.ekotransservice_routemanager.RegionListAdapter
 import com.google.android.material.transition.MaterialContainerTransform
 import java.lang.Exception
 import java.text.SimpleDateFormat
@@ -51,7 +49,7 @@ class vehicle_screen : Fragment() {
 
         val regionName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewRegionName)
         val dataList: ArrayList<Region> = ArrayList()
-        val adapter = RegionListAdapter(view.context, R.layout.regionlist_item,dataList)
+        val adapter = RegionListAdapter(view.context, R.layout.regionlist_item,dataList,requireActivity() as MainActivity)
 
         if (currentRegion != null && currentRegion.getUid() != "" ) {
             setVehicleAdapter(currentRegion,view)

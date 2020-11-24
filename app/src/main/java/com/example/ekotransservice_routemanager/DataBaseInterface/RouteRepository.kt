@@ -15,6 +15,7 @@ import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.InputStream
+import java.io.Serializable
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -25,7 +26,7 @@ import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManagerFactory
 import kotlin.collections.ArrayList
 
-class RouteRepository constructor(val context: Context) {
+class RouteRepository constructor(val context: Context){
 
     private val serverConnector: RouteServerConnection = RouteServerConnection()
     /*private val serverConnector: RouteServerConnection = RouteServerConnection(
@@ -58,6 +59,14 @@ class RouteRepository constructor(val context: Context) {
             }
 
         }
+    }
+
+    fun getErrors() : java.util.ArrayList<ErrorMessage>{
+        return errorArrayList
+    }
+
+    fun getErrorsCount() : Int{
+        return errorArrayList.size
     }
 
     init {
@@ -130,14 +139,14 @@ class RouteRepository constructor(val context: Context) {
     suspend fun getRegionList(): ArrayList<Region> {
         val serverData = GlobalScope.async { serverConnector.getRegions() }
         val downloadResult = serverData.await()
-        errorArrayList.union(downloadResult.log)
+        errorArrayList = downloadResult.log
         return downloadResult.data as ArrayList<Region>
     }
 
     suspend fun getVehiclesList(region: Region): ArrayList<Vehicle> {
         val serverData = GlobalScope.async { serverConnector.getVehicles(region.getUid()) }
         val downloadResult = serverData.await()
-        errorArrayList.union(downloadResult.log)
+        errorArrayList = downloadResult.log
         return downloadResult.data as ArrayList<Vehicle>
     }
 
@@ -149,6 +158,7 @@ class RouteRepository constructor(val context: Context) {
         }else{
             currentRoute[0]
         }
+
     }
 
     // Загрузка данных путевого листа с сервера и сохранение их в локальную базу Room

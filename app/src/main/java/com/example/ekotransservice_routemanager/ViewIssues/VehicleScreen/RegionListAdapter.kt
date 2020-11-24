@@ -1,4 +1,4 @@
-package com.example.ekotransservice_routemanager
+package com.example.ekotransservice_routemanager.ViewIssues.VehicleScreen
 
 import android.app.Application
 import android.content.Context
@@ -11,6 +11,8 @@ import android.widget.Filter
 import android.widget.TextView
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Region
+import com.example.ekotransservice_routemanager.MainActivity
+import com.example.ekotransservice_routemanager.R
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -18,7 +20,7 @@ import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 
-class RegionListAdapter(context: Context, private val itemLayout: Int, var dataList: ArrayList<Region>?) : ArrayAdapter<Region>(
+class RegionListAdapter(context: Context, private val itemLayout: Int, var dataList: ArrayList<Region>?,val activity: MainActivity) : ArrayAdapter<Region>(
     context,
     itemLayout
 )
@@ -50,7 +52,7 @@ class RegionListAdapter(context: Context, private val itemLayout: Int, var dataL
                 if (dataList!!.size == 0) {
                     GlobalScope.launch { loadRegion() }
                 }
-
+                activity.errorCheck(routeRepository)
                 val filterResults = FilterResults()
                 filterResults.values = if (queryString==null || queryString.isEmpty())
                     dataList
