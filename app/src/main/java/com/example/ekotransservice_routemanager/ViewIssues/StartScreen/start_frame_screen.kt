@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.database.Observable
 import android.os.Build
@@ -200,6 +201,7 @@ class start_frame_screen : Fragment() {
         }
     }*/
 
+    @SuppressLint("SimpleDateFormat")
     private fun showHideRouteLiveData (route: Route?, animate : Boolean, mainView : View){
         val routeGroup  = mainView.findViewById<View>(R.id.routeGroup)
         val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
@@ -212,15 +214,15 @@ class start_frame_screen : Fragment() {
             val animation = AnimateView(routeGroup,requireContext(),animate)
             animation.hideHeight()
             imageButton.setImageResource(R.drawable.ic_baseline_add_24)
-            atAllCount!!.text = "0"
-            doneCount!!.text = "0"
+            atAllCount.text = "0"
+            doneCount.text = "0"
             dateView.text = SimpleDateFormat("dd.MM.yyyy").format(Date())
         }else{
             val animation = AnimateView(routeGroup,requireContext(),animate)
             animation.showHeight()
             imageButton.setImageResource(R.drawable.ic_baseline_replay_24)
-            atAllCount!!.text = route!!.getCountPoint().toString()
-            doneCount!!.text = route!!.getCountPointDone().toString()
+            atAllCount.text = route.getCountPoint().toString()
+            doneCount.text = route.getCountPointDone().toString()
             dateView.text = SimpleDateFormat("dd.MM.yyyy").format(route.getRouteDate())
         }
     }
@@ -235,7 +237,7 @@ class start_frame_screen : Fragment() {
         if(vehicle == null){
             vehicleView.text = ""
         }else{
-            vehicleView.text = vehicle!!.getNumber()
+            vehicleView.text = vehicle.getNumber()
         }
 
     }

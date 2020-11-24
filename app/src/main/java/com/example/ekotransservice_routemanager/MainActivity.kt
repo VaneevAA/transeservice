@@ -244,9 +244,10 @@ class MainActivity : AppCompatActivity() {
 
                     notify(notificationId, builder.build())
 
-                    Toast.makeText(this@MainActivity,
+                    /*Toast.makeText(this@MainActivity,
                         "Ошибка выгрузки",
-                        Toast.LENGTH_LONG).show()
+                        Toast.LENGTH_LONG).show()*/
+                    errorCheck(routeRepository)
 
 
 

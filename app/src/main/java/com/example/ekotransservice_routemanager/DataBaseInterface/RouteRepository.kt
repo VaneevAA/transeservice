@@ -241,7 +241,9 @@ class RouteRepository constructor(val context: Context){
                 TODO("VERSION.SDK_INT < O")
             }
         }
-        return uploadResult.await().success
+        val dataResult = uploadResult.await()
+        errorArrayList.intersect(dataResult.log)
+        return dataResult.success
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
