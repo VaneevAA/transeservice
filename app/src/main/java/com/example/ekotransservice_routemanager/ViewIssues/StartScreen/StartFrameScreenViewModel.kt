@@ -54,9 +54,11 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
             val valueRoute = routeRepository.getCurrentRoute()
             if(valueRoute != null){
                 routeLiveData.value = valueRoute
-            }else{
+            }else if(routeRepository.getErrorsCount() > 0){
                 Toast.makeText(activity.applicationContext, "Маршрут не загружен", Toast.LENGTH_LONG).show()
                 errorLiveData.value = true
+            } else {
+                Toast.makeText(activity.applicationContext, "Нет маршрута на заданную дату", Toast.LENGTH_LONG).show()
             }
 
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
