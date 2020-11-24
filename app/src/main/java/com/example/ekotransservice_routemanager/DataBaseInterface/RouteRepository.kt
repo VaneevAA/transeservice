@@ -137,14 +137,14 @@ class RouteRepository constructor(val context: Context){
     suspend fun getRegionList(): ArrayList<Region> {
         val serverData = GlobalScope.async { serverConnector.getRegions() }
         val downloadResult = serverData.await()
-        errorArrayList.intersect(downloadResult.log)
+        addErrors(downloadResult.log)
         return downloadResult.data as ArrayList<Region>
     }
 
     suspend fun getVehiclesList(region: Region): ArrayList<Vehicle> {
         val serverData = GlobalScope.async { serverConnector.getVehicles(region.getUid()) }
         val downloadResult = serverData.await()
-        errorArrayList.intersect(downloadResult.log)
+        addErrors(downloadResult.log)
         return downloadResult.data as ArrayList<Vehicle>
     }
 
@@ -172,7 +172,7 @@ class RouteRepository constructor(val context: Context){
             postParam.put("dateTask",  SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(dateTask)) //"2020-09-03 00:00:00")//dateTask.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
             postParam.put("vehicle", vehicleNumber)
             val serverData = serverConnector.getTrackList(postParam)
-            errorArrayList.intersect(serverData.log)
+            addErrors(serverData.log)
             val result = saveTrackListIntoRoom(serverData.data as ArrayList<Point>?)
             if (result && serverData.data.size!=0 && currentRoute == null) {
                 saveRouteIntoRoom(serverData.data,vehicle!!,dateTask)
@@ -352,4 +352,9 @@ class RouteRepository constructor(val context: Context){
         return sslContext.socketFactory
     }
 
+    private fun addErrors(errors : ArrayList<ErrorMessage>){
+        for(error in errors) {
+            errorArrayList.add(error)
+        }
+    }
 }
