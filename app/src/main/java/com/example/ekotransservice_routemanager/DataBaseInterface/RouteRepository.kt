@@ -1,8 +1,6 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import android.content.Context
-import android.location.Location
-import android.media.RingtoneManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.preference.PreferenceManager
@@ -15,7 +13,6 @@ import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.InputStream
-import java.io.Serializable
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -107,6 +104,7 @@ class RouteRepository constructor(val context: Context){
     // Загрузка списка точек
     // reload - требуется загрузка с  Postgres
     suspend fun getPointList(reload: Boolean, doneOnly: Boolean = false): MutableList<Point>? {
+
         return try {
             if (reload) {
                 val currentRoute = GlobalScope.async { getCurrentRoute() }
@@ -139,14 +137,14 @@ class RouteRepository constructor(val context: Context){
     suspend fun getRegionList(): ArrayList<Region> {
         val serverData = GlobalScope.async { serverConnector.getRegions() }
         val downloadResult = serverData.await()
-        errorArrayList = downloadResult.log
+        errorArrayList.intersect(downloadResult.log)
         return downloadResult.data as ArrayList<Region>
     }
 
     suspend fun getVehiclesList(region: Region): ArrayList<Vehicle> {
         val serverData = GlobalScope.async { serverConnector.getVehicles(region.getUid()) }
         val downloadResult = serverData.await()
-        errorArrayList = downloadResult.log
+        errorArrayList.intersect(downloadResult.log)
         return downloadResult.data as ArrayList<Vehicle>
     }
 
@@ -174,7 +172,7 @@ class RouteRepository constructor(val context: Context){
             postParam.put("dateTask",  SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(dateTask)) //"2020-09-03 00:00:00")//dateTask.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
             postParam.put("vehicle", vehicleNumber)
             val serverData = serverConnector.getTrackList(postParam)
-            errorArrayList.union(serverData.log)
+            errorArrayList.intersect(serverData.log)
             val result = saveTrackListIntoRoom(serverData.data as ArrayList<Point>?)
             if (result && serverData.data.size!=0 && currentRoute == null) {
                 saveRouteIntoRoom(serverData.data,vehicle!!,dateTask)
