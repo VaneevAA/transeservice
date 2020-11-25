@@ -38,7 +38,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     var mCurrentPointViewModel : viewModelCurrentPoint = viewModelCurrentPoint(null)
     private var selectedPos = RecyclerView.NO_POSITION
     @SuppressLint("UseCompatLoadingForDrawables")
-    private val onCallBackground = context.getDrawable(R.drawable.recycled_view_on_call_background)
+    //private val onCallBackground = context.getDrawable(R.drawable.recycled_view_on_call_background)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointViewHolder {
         val itemView : View = mLayout.inflate(R.layout.recycleview_item,parent,false)
@@ -53,6 +53,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     }
 
 
+    @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: PointViewHolder, position: Int) = if (pointList != null){
         val point : Point = pointList!![position]
@@ -62,16 +63,18 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.itemView.isSelected = position == selectedPos
         val doneImage = holder.itemView.findViewById<ImageView>(R.id.doneImage)
         doneImage.visibility = ViewGroup.VISIBLE
-        if(!point.getReasonComment().equals("")){
+        if(point.getReasonComment() != ""){
             doneImage.setImageResource(R.drawable.ic_baseline_block_24_small)
         }else if (!point.getDone()){
             doneImage.visibility = ViewGroup.GONE
         }else{
             doneImage.setImageResource(R.drawable.ic_baseline_check_24_small)
         }
-        val isCall = true
-        if(isCall){
-            holder.itemView.background = onCallBackground
+        val isCall = false //По заявке
+        holder.itemView.findViewById<TextView>(R.id.onCall).visibility = if(isCall){
+             View.VISIBLE
+        } else {
+            View.GONE
         }
 
         holder.pointItemView.text = "${point.getRowNumber()}. ${point.getAddressName()}"

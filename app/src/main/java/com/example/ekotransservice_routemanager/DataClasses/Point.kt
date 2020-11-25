@@ -2,6 +2,7 @@ package com.example.ekotransservice_routemanager.DataClasses
 
 
 import androidx.annotation.NonNull
+import androidx.core.text.isDigitsOnly
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.Index
@@ -205,7 +206,34 @@ class Point : Serializable{
         this.countOver = max(0.0, this.countFact - this.countPlan)
     }
 
+    //get phone number from comment
+    fun getPhoneFromComment () : String{
+        var phoneNumber = "";
+        for (char in this.comment){
+            if(char.isDigit() || (char == '+' && phoneNumber == "")) {
+                phoneNumber += char
+                if (phoneNumber.isDigitsOnly() && phoneNumber.length >= 11){
+                    return phoneNumber
+                } else if (phoneNumber.length >= 12){
+                    return phoneNumber
+                }
+            }else if (char == '(' || char == ')'
+                || char == '-' || char == ' '){
+                continue
+            } else {
+                phoneNumber = ""
+            }
+        }
 
+        return if (phoneNumber.isDigitsOnly() && phoneNumber.length >= 11){
+            phoneNumber
+        } else if (phoneNumber.length >= 12){
+            phoneNumber
+        } else {
+            ""
+        }
+
+    }
 
 }
 
