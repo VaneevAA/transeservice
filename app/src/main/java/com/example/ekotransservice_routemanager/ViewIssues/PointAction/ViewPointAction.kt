@@ -19,7 +19,7 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
     private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
 
     val currentPoint: MutableLiveData<Point> = MutableLiveData(point)
-
+    private var phoneNumberData = ""
     val fileBeforeIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
     val fileAfterIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
     var geoIsRequired: Boolean = false
@@ -35,6 +35,7 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
     }*/
 
     fun setViewData(point: Point,canDone: Boolean){
+        phoneNumberData = point.getPhoneFromComment()
         currentPoint.value = point
         viewModelScope.launch {
             var data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_AFTER)
@@ -43,11 +44,17 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
             fileBeforeIsDone.value = data!!.size > 0
             data = routeRepository.getFilesFromDBAsync(currentPoint.value!!,null,true)
             geoIsRequired = data!!.size > 0
+
         }
+
     }
 
     fun getRepository(): RouteRepository{
         return routeRepository
+    }
+
+    fun getPhoneNumber() : String{
+        return this.phoneNumberData
     }
 
     /*var fileBeforeIsDone: LiveData<Boolean> = currentState.switchMap {

@@ -57,8 +57,11 @@ class FactDialog(
 
         mainView?.findViewById<ImageButton>(R.id.setLow)?.setOnTouchListener(RepeatListener(400,100
         ) {
-            fact -= 0.5
-            factCountView?.text = fact.toString()
+            if (fact >= 0.5){
+                fact -= 0.5
+                factCountView?.text = fact.toString()
+            }
+
         })
         /*mainView?.findViewById<ImageButton>(R.id.setHigh)?.setOnClickListener {
             fact += 0.5
