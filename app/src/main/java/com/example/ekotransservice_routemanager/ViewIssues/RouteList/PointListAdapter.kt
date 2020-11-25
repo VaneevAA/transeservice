@@ -38,7 +38,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     var mCurrentPointViewModel : viewModelCurrentPoint = viewModelCurrentPoint(null)
     private var selectedPos = RecyclerView.NO_POSITION
     @SuppressLint("UseCompatLoadingForDrawables")
-    private val onCallBackground = context.getDrawable(R.drawable.recycled_view_on_call_background)
+    //private val onCallBackground = context.getDrawable(R.drawable.recycled_view_on_call_background)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PointViewHolder {
         val itemView : View = mLayout.inflate(R.layout.recycleview_item,parent,false)
