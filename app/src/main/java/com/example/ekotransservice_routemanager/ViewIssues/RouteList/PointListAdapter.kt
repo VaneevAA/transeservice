@@ -53,6 +53,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     }
 
 
+    @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: PointViewHolder, position: Int) = if (pointList != null){
         val point : Point = pointList!![position]
@@ -62,17 +63,17 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.itemView.isSelected = position == selectedPos
         val doneImage = holder.itemView.findViewById<ImageView>(R.id.doneImage)
         doneImage.visibility = ViewGroup.VISIBLE
-        if(!point.getReasonComment().equals("")){
+        if(point.getReasonComment() != ""){
             doneImage.setImageResource(R.drawable.ic_baseline_block_24_small)
         }else if (!point.getDone()){
             doneImage.visibility = ViewGroup.GONE
         }else{
             doneImage.setImageResource(R.drawable.ic_baseline_check_24_small)
         }
-        val isCall = true
+        /*val isCall = true
         if(isCall){
             holder.itemView.background = onCallBackground
-        }
+        }*/
 
         holder.pointItemView.text = "${point.getRowNumber()}. ${point.getAddressName()}"
         holder.contCountType.text = point.getContType()

@@ -425,6 +425,22 @@ class point_action : Fragment() {
         val commentText = mainFragment.findViewById<TextView>(R.id.commentText)
         commentText.text =  viewPointModel!!.getPoint().value!!.getComment()
 
+        //phone number stuff
+        val callButton = mainFragment.findViewById<ImageButton>(R.id.call)
+        if (viewPointModel!!.getPhoneNumber() == ""){
+            callButton.visibility = View.GONE
+        } else {
+            callButton.visibility = View.VISIBLE
+        }
+        callButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_DIAL).apply {
+                data = Uri.parse("tel:" + viewPointModel!!.getPhoneNumber())
+            }
+            if (intent.resolveActivity(requireActivity().packageManager) != null){
+                startActivity(intent)
+            }
+        }
+
         showButtons(mainFragment, listOfActions)
     }
 
