@@ -117,6 +117,8 @@ class Point : Serializable{
             this.addressLat = properties.getDouble("addressLat")
             this.addressLon = properties.getDouble("addressLon")
             this.comment = properties.getString("comment")
+            this.agentName = properties.getString("agentName").trim { it <= ' ' }
+            this.agentUID = properties.getString("agentUID").trim { it <= ' ' }
 
         } catch (e: Exception) {
             //TODO error parsing JSON
