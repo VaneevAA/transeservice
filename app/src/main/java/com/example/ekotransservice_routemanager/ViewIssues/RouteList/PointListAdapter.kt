@@ -70,10 +70,12 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         }else{
             doneImage.setImageResource(R.drawable.ic_baseline_check_24_small)
         }
-        /*val isCall = true
-        if(isCall){
-            holder.itemView.background = onCallBackground
-        }*/
+        val isCall = false //По заявке
+        holder.itemView.findViewById<TextView>(R.id.onCall).visibility = if(isCall){
+             View.VISIBLE
+        } else {
+            View.GONE
+        }
 
         holder.pointItemView.text = "${point.getRowNumber()}. ${point.getAddressName()}"
         holder.contCountType.text = point.getContType()
