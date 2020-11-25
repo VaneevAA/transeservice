@@ -269,6 +269,10 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this,
                         error.errorMessage + " " + error.errorException.message,
                         Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this,
+                        error.errorMessage ,
+                        Toast.LENGTH_LONG).show()
                 }
 
             }
