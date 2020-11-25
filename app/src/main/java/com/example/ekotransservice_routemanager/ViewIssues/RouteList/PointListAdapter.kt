@@ -77,7 +77,12 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
             View.GONE
         }
 
-        holder.pointItemView.text = "${point.getRowNumber()}. ${point.getAddressName()}"
+        val pointText = if (point.getPolygon()) {
+            "${point.getAddressName()}"
+        } else {
+            "${point.getRowNumber()}. ${point.getAddressName()}"
+        }
+        holder.pointItemView.text = pointText
         holder.contCountType.text = point.getContType()
         holder.contCountView.text = point.getContCount().toString()
         holder.itemView.clipToOutline = true

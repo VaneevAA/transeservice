@@ -89,7 +89,7 @@ class RouteServerConnection {
         connector.setRequestProperty("Content-Type", "application/json")
         connector.setRequestProperty("Authorization", "Bearer $authPass")
         connector.requestMethod = requestMethod
-        connector.connectTimeout = 30000
+        connector.connectTimeout = 10000
         if (requestMethod == "POST" && postParam!=null ){
             val wr = OutputStreamWriter(connector.outputStream)
             wr.write(postParam.toString())
@@ -100,7 +100,19 @@ class RouteServerConnection {
             if (code == 200) {
                 try {
                     val outputString: String = connector.inputStream.bufferedReader().readText()
-                    JSONArray(outputString)
+                    if (outputString == "null") {
+                        errorArrayList.add(
+                            ErrorMessage(
+                                ErrorTypes.DOWNLOAD_ERROR,
+                                "Отсутствуют данные для загрузки",
+                                null
+                            )
+                        )
+                        null
+                    }else {
+                        JSONArray(outputString)
+                    }
+
                 } catch (e: java.lang.Exception) {
                     errorArrayList.add(
                         ErrorMessage(
