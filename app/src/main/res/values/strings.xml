@@ -50,5 +50,6 @@
     <string name="send_files">Отправить файлы</string>
     <string name="showRouteText">Построить маршрут</string>
     <string name="full_list">Показать полный список</string>
+    <string name="onCall">По заявке</string>
 
 </resources>

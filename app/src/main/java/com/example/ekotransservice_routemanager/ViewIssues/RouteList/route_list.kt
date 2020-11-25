@@ -174,8 +174,15 @@ class route_list : Fragment() {
         }
 
         val switch = bts.findViewById<SwitchCompat>(R.id.listSwitcher)
-        switch.setOnCheckedChangeListener() { compoundButton: CompoundButton, b: Boolean ->
+        switch.setOnCheckedChangeListener() { _: CompoundButton, b: Boolean ->
             mViewList!!.loadFullList = b
+            mViewList!!.loadDataFromDB()
+            standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+        val switchText = bts.findViewById<TextView>(R.id.switcherText)
+        switchText.setOnClickListener {
+            switch.isChecked = !switch.isChecked
+            mViewList!!.loadFullList = switch.isChecked
             mViewList!!.loadDataFromDB()
             standartBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
