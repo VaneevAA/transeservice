@@ -265,7 +265,12 @@ class MainActivity : AppCompatActivity() {
     fun errorCheck (repository: RouteRepository){
         if(repository.getErrorsCount() > 0) {
             for (error in repository.getErrors()){
-                Toast.makeText(this,error.errorMessage + " " + error.errorException!!.message,Toast.LENGTH_LONG).show()
+                if (error.errorException != null){
+                    Toast.makeText(this,
+                        error.errorMessage + " " + error.errorException.message,
+                        Toast.LENGTH_LONG).show()
+                }
+
             }
 
         }
