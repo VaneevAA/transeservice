@@ -70,7 +70,7 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         }else{
             doneImage.setImageResource(R.drawable.ic_baseline_check_24_small)
         }
-        val isCall = false //По заявке
+        val isCall = point.getTripNumber() == 0 //По заявке
         holder.itemView.findViewById<TextView>(R.id.onCall).visibility = if(isCall){
              View.VISIBLE
         } else {

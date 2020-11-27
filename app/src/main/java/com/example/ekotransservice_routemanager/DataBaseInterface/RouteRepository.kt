@@ -174,8 +174,14 @@ class RouteRepository constructor(val context: Context){
             val serverData = serverConnector.getTrackList(postParam)
             addErrors(serverData.log)
             val result = saveTrackListIntoRoom(serverData.data as ArrayList<Point>?)
-            if (result && serverData.data.size!=0 && currentRoute == null) {
-                saveRouteIntoRoom(serverData.data,vehicle!!,dateTask)
+            if (result && serverData.data.size!=0 ) {
+                if (currentRoute == null) {
+                    saveRouteIntoRoom(serverData.data, vehicle!!, dateTask)
+                } else
+                {
+                    currentRoute.setCountPoint(serverData.data.size)
+                    mRoutesDao!!.insertRouteWithReplace(currentRoute) // Если обновляем текущий маршрут
+                }
             }
 
             result
@@ -250,7 +256,22 @@ class RouteRepository constructor(val context: Context){
     fun uploadTrackListToServer(): UploadResult {
         val trackList = loadTrackListFromRoom(true, false)
         return if (trackList != null) {
-            val result = serverConnector.uploadTrackList(trackList as ArrayList<Point>)
+            val data = mRoutesDao!!.getRoutePointFiles()
+            val resultFiles = serverConnector.uploadFiles(data)
+            if (resultFiles.success) {
+                val result = serverConnector.uploadTrackList(trackList as ArrayList<Point>)
+                if (result.success) {
+                    serverConnector.setStatus(trackList[0].getDocUID(),STATUS_UPLOAD_TO_SERVER)
+                    mRoutesDao!!.deletePointList()
+                    mRoutesDao!!.deleteCurrentRoute()
+                }
+                result
+            } else {
+                resultFiles
+            }
+
+            // sorokina.m изменила порядок выгрузки. Сначала выгружаются фотографии
+            /*val result = serverConnector.uploadTrackList(trackList as ArrayList<Point>)
             if (result.success) {
                 serverConnector.setStatus(trackList[0].getDocUID(),STATUS_UPLOAD_TO_SERVER)
                 val data = mRoutesDao!!.getRoutePointFiles()
@@ -262,7 +283,7 @@ class RouteRepository constructor(val context: Context){
                 resultFiles
             }else{
                 result
-            }
+            }*/
 
         }else {
             val errorArray = ArrayList<ErrorMessage>()
