@@ -257,7 +257,8 @@ class RouteRepository constructor(val context: Context){
         val trackList = loadTrackListFromRoom(true, false)
         return if (trackList != null) {
             val data = mRoutesDao!!.getRoutePointFiles()
-            val resultFiles = serverConnector.uploadFiles(data)
+            //val resultFiles = serverConnector.uploadFiles(data)
+            val resultFiles = uploadFiles(data)
             if (resultFiles.success) {
                 val result = serverConnector.uploadTrackList(trackList as ArrayList<Point>)
                 if (result.success) {
@@ -291,6 +292,37 @@ class RouteRepository constructor(val context: Context){
             UploadResult(false,errorArray)
         }
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun uploadFiles(data: List<PointFile>):UploadResult{
+
+        val portionSize = 40
+        val iterationCount = (data.size.toFloat()/portionSize)
+        var startPos = 0
+        var endPos =  if (portionSize - 1 > (data.size - 1)) {
+            data.size - 1
+        } else {portionSize-1}
+        val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
+        var i = 0
+        var result = false
+        do {
+            i++
+            val deletedFiles = ArrayList<Long>()
+            val resultPortion = serverConnector.uploadFilesPortion(data,startPos,endPos,deletedFiles)
+            errorArrayList.addAll(resultPortion.log)
+            if (resultPortion.success) {
+                mRoutesDao!!.deleteFiles(deletedFiles)
+            }
+            result = resultPortion.success
+            startPos = endPos + 1
+            endPos += portionSize
+            if (endPos > (data.size - 1)) {
+                endPos = data.size - 1
+            }
+        } while (i<iterationCount)
+
+        return UploadResult(result, errorArrayList)
     }
 
     // Сохранение файлов в локальную базу данных. Асинхронный вызов

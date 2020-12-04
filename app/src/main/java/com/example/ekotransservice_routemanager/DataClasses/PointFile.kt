@@ -6,12 +6,14 @@ import android.content.res.Resources
 import android.graphics.*
 import android.location.Geocoder
 import android.location.Location
+import android.media.ExifInterface.TAG_APERTURE
 import android.os.Build
-import android.util.Base64.encodeToString
 import android.util.TypedValue
+import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
+import androidx.recyclerview.widget.RecyclerView
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
 import com.example.ekotransservice_routemanager.R
@@ -19,7 +21,6 @@ import java.io.*
 import java.math.BigInteger
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.experimental.and
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -43,7 +44,8 @@ class PointFile(
     val lon: Double,
     val filePath: String,
     val fileName: String,
-    val fileExtension: String
+    val fileExtension: String,
+    val uploaded: Boolean = false
 ) : Serializable {
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0L
@@ -75,10 +77,18 @@ class PointFile(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun getCompresedBase64():String {
-        val mBitmap = BitmapFactory.decodeFile(this.filePath)
+
+        /*val mBitmap = BitmapFactory.decodeFile(this.filePath)
         val stream = ByteArrayOutputStream()
-        mBitmap.compress(Bitmap.CompressFormat.JPEG,50,stream)
-        val imageBytes = stream.toByteArray()
+        mBitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream)
+        val imageBytes = stream.toByteArray()*/
+
+        val f = File(this.filePath)
+        val imageBytes = ByteArray(f.length().toInt())
+        val stream = FileInputStream(this.filePath)
+        stream.read(imageBytes)
+        stream.close()
+
         return Base64.getEncoder().encodeToString(imageBytes)
     }
 
@@ -167,7 +177,7 @@ class PointFile(
         if (lat == 0.0 || lon == 0.0) {
             addressText = point!!.getAddressName()
         } else {
-            addressText = getAddressNameFromLocation(lat,lon,context)
+            addressText = getAddressNameFromLocation(lat, lon, context)
             if (addressText=="") {
                 addressText = point!!.getAddressName()
             }
@@ -175,31 +185,87 @@ class PointFile(
             lonText = lon.toString()
         }
 
-        printText(addressText, rt.width()-40, 10,rt.bottom + 20,paint, canvas)
+        printText(addressText, rt.width() - 40, 10, rt.bottom + 20, paint, canvas)
 
         // Вывод координат и даты
         val textWidth = rt.width()/3-40
-        val textLine = originalBitmap.height - abs(rt.height()/2) +20
+        val textLine = originalBitmap.height - abs(rt.height() / 2) +20
         //Широта
-        printText(latText, textWidth, 10,textLine,paint, canvas)
+        printText(latText, textWidth, 10, textLine, paint, canvas)
 
         //Долгота
-        printText(lonText, textWidth, 10 + textWidth,textLine,paint, canvas)
+        printText(lonText, textWidth, 10 + textWidth, textLine, paint, canvas)
 
         //Дата время
         printText(
             SimpleDateFormat(
-            "yyyy-MM-dd (EEE) HH:mm:ss",
-            Locale("ru")
-        ).format(Date()), textWidth, 10 + 2*textWidth,textLine,paint, canvas)
+                "yyyy-MM-dd (EEE) HH:mm:ss",
+                Locale("ru")
+            ).format(Date()), textWidth, 10 + 2 * textWidth, textLine, paint, canvas
+        )
 
         //Сохранение в файл
+        val exifData = getExifData(currentFile)
         currentFile!!.delete()
         val out = FileOutputStream(currentFile)
-        overlayBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        overlayBitmap.compress(Bitmap.CompressFormat.JPEG, 50, out)
         out.flush()
         out.close()
+        setExifData(currentFile,exifData)
 
+    }
+
+    @Throws(IOException::class)
+    private fun getExifData(currentFile: File): MutableMap<String,String> {
+        val oldExif = ExifInterface(
+            currentFile
+        )
+
+
+        val attributes = arrayOf(
+            ExifInterface.TAG_APERTURE_VALUE,
+            ExifInterface.TAG_DATETIME,
+            ExifInterface.TAG_DATETIME_DIGITIZED,
+            ExifInterface.TAG_EXPOSURE_TIME,
+            ExifInterface.TAG_FLASH,
+            ExifInterface.TAG_FOCAL_LENGTH,
+            ExifInterface.TAG_GPS_ALTITUDE,
+            ExifInterface.TAG_GPS_ALTITUDE_REF,
+            ExifInterface.TAG_GPS_DATESTAMP,
+            ExifInterface.TAG_GPS_LATITUDE,
+            ExifInterface.TAG_GPS_LATITUDE_REF,
+            ExifInterface.TAG_GPS_LONGITUDE,
+            ExifInterface.TAG_GPS_LONGITUDE_REF,
+            ExifInterface.TAG_GPS_PROCESSING_METHOD,
+            ExifInterface.TAG_GPS_TIMESTAMP,
+            ExifInterface.TAG_IMAGE_LENGTH,
+            ExifInterface.TAG_IMAGE_WIDTH,
+            ExifInterface.TAG_RW2_ISO,
+            ExifInterface.TAG_MAKE,
+            ExifInterface.TAG_MODEL,
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.TAG_SUBSEC_TIME,
+            ExifInterface.TAG_SUBSEC_TIME_DIGITIZED,
+            ExifInterface.TAG_SUBSEC_TIME_ORIGINAL,
+            ExifInterface.TAG_WHITE_BALANCE
+        )
+
+        val exifData: MutableMap<String,String> = mutableMapOf()
+        for (i in attributes.indices) {
+            val value = oldExif.getAttribute(attributes[i])
+            if (value != null) exifData[attributes[i]] = value
+        }
+        return  exifData
+    }
+
+    private fun setExifData(currentFile: File,exifData: MutableMap<String,String>){
+        val currentFileExif = ExifInterface(
+            currentFile
+        )
+        exifData.forEach {
+            currentFileExif.setAttribute(it.key,it.value)
+        }
+        currentFileExif.saveAttributes()
     }
 
     private fun getAddressNameFromLocation(lat: Double, lon: Double, context: Context): String {
@@ -219,12 +285,19 @@ class PointFile(
         val knownName: String = addresses.get(0).getFeatureName()*/
 
     }
-    private fun printText(currentText:String, textWidth:Int, startPointX:Int, startPointY: Int, paint: Paint, canvas: Canvas) {
+    private fun printText(
+        currentText: String,
+        textWidth: Int,
+        startPointX: Int,
+        startPointY: Int,
+        paint: Paint,
+        canvas: Canvas
+    ) {
         val rectText = Rect()
-        paint.getTextBounds(currentText,0,currentText.length,rectText)
+        paint.getTextBounds(currentText, 0, currentText.length, rectText)
         val textHeight = rectText.height()
 
-        val stringArray = stringArray(currentText,textWidth.toFloat(),paint)
+        val stringArray = stringArray(currentText, textWidth.toFloat(), paint)
         var stringLineY = (startPointY + textHeight).toFloat()
 
         stringArray.forEach {
@@ -237,7 +310,7 @@ class PointFile(
         }
     }
 
-    private fun stringArray(originalString: String, width:Float, paint: Paint): ArrayList<String>{
+    private fun stringArray(originalString: String, width: Float, paint: Paint): ArrayList<String>{
         var currentString = originalString
         val stringArrayList: ArrayList<String> = ArrayList()
         var doLoop = true
@@ -245,10 +318,10 @@ class PointFile(
             val measuredWidth = FloatArray(1)
             val cntSymbols = paint.breakText(currentString, true, width, measuredWidth)
             if (cntSymbols < currentString.length) {
-                stringArrayList.add(currentString.substring(0,cntSymbols))
-                currentString = currentString.substring(cntSymbols,currentString.length)
+                stringArrayList.add(currentString.substring(0, cntSymbols))
+                currentString = currentString.substring(cntSymbols, currentString.length)
             }else{
-                stringArrayList.add(currentString.substring(0,cntSymbols))
+                stringArrayList.add(currentString.substring(0, cntSymbols))
                 doLoop = false
             }
         } while (doLoop)
