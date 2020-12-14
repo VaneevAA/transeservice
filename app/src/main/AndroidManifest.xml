@@ -19,7 +19,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
-        android:networkSecurityConfig="@xml/network_security_config">
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:name=".RouteManagerApplication">
 
         <activity android:name=".MainActivity"
             android:launchMode="singleTop">
@@ -40,6 +41,10 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <provider
+            android:name="androidx.work.impl.WorkManagerInitializer"
+            android:authorities="${applicationId}.workmanager-init"
+            tools:node="remove"/>
 
     </application>
 
