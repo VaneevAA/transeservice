@@ -24,6 +24,9 @@ interface RouteDaoInterface {
         }
     }
 
+    @Query("SELECT * from currentRoute_table ") //ORDER BY addressName ASC")
+    fun getCurrentRoute(): MutableList<Route>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertPoint(point: Point)
 
@@ -32,9 +35,6 @@ interface RouteDaoInterface {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertPointListOnlyNew(pointList: ArrayList<Point>)
-
-    @Query("SELECT * from currentRoute_table ") //ORDER BY addressName ASC")
-    fun getCurrentRoute(): MutableList<Route>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertRouteWithReplace(route: Route)
@@ -51,9 +51,11 @@ interface RouteDaoInterface {
     @Query("SELECT * from pointFiles_table where lineUID = :lineUID AND (lat = 0.0 OR lon = 0.0)")  //ORDER BY addressName ASC")
     fun getGeolessPointFiles(lineUID: String): MutableList<PointFile>
 
-
     @Query("SELECT * from pointFiles_table") //ORDER BY addressName ASC")
     fun getRoutePointFiles(): List<PointFile>
+
+    @Query("SELECT * from pointFiles_table where NOT uploaded") //ORDER BY addressName ASC")
+    fun getRouteNotUploadedPointFiles(): List<PointFile>
 
     @Transaction
     fun getPointFiles(lineUID: String, photoOrder: PhotoOrder?): MutableList<PointFile>{
@@ -83,6 +85,8 @@ interface RouteDaoInterface {
     @Query("UPDATE pointFiles_table SET lat = :lat, lon = :lon WHERE id = :id")
     fun updatePointFileLocation(lat: Double, lon: Double, id: Long)
 
+    @Query("UPDATE pointFiles_table SET uploaded = :status WHERE id in (:idList)")
+    fun updatePointFileUploadStatus(idList: ArrayList<Long>, status: Boolean)
 
     @Query("SELECT DISTINCT pointList_table.* from pointList_table INNER JOIN pointFiles_table on pointList_table.docUID = pointFiles_table.docUID AND pointList_table.lineUID = pointFiles_table.lineUID ORDER BY pointList_table.rowNumber")
     fun getPointsWithFiles(): MutableList<Point>
@@ -95,4 +99,6 @@ interface RouteDaoInterface {
 
     @Query("DELETE FROM pointFiles_table where id in (:idList)")
     fun deleteFiles(idList: ArrayList<Long>)
+
+
 }

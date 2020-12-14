@@ -2,6 +2,7 @@ package com.example.ekotransservice_routemanager
 
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -17,6 +18,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.app.NotificationManagerCompat
+
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewModelScope
@@ -24,13 +26,16 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.work.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
+import com.example.ekotransservice_routemanager.WorkManager.UploadFilesWorker
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.ViewIssues.StartScreen.StartFrameScreenViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
@@ -40,6 +45,8 @@ class MainActivity : AppCompatActivity() {
     private var doubleBackClick = false
     lateinit var navController: NavController
     lateinit private var routeRepository: RouteRepository
+    val JOB_UPLOADFILES_ID = 1
+    val JOB_UPLOADFILES_TIMEINTERVAL = 1000*60*60L
 
     private val mPrefsListener =
         OnSharedPreferenceChangeListener { sharedPreferences, key ->
@@ -183,13 +190,27 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         PreferenceManager.getDefaultSharedPreferences(this)
-            .registerOnSharedPreferenceChangeListener(mPrefsListener);
+            .registerOnSharedPreferenceChangeListener(mPrefsListener)
+
+        // Work manager: configure schedule and rules for periodic files upload
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+        val uploadWorkRequest: WorkRequest =
+            PeriodicWorkRequestBuilder<UploadFilesWorker>(10,TimeUnit.MINUTES,15, TimeUnit.MINUTES)
+                .addTag("uploadFiles")
+                .setConstraints(constraints)
+                .build()
+        WorkManager
+            .getInstance(applicationContext)
+            .enqueue(uploadWorkRequest)
+
     }
 
     override fun onStop() {
         super.onStop()
         PreferenceManager.getDefaultSharedPreferences(this)
-            .unregisterOnSharedPreferenceChangeListener(mPrefsListener);
+            .unregisterOnSharedPreferenceChangeListener(mPrefsListener)
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -219,6 +240,7 @@ class MainActivity : AppCompatActivity() {
             notify(notificationId, builder.build())
 
             viewModel.viewModelScope.launch {
+                // Final upload of task and files
                 val result = routeRepository.uploadTrackListToServerAsync()
                 if (result) {
                     builder.setProgress(0, 0, false)
@@ -283,7 +305,6 @@ class MainActivity : AppCompatActivity() {
 
         }
     }
-
 
 }
 

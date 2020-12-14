@@ -97,6 +97,9 @@ class PointFile(
 
         // Основное изображение
         val currentFile = File(this.filePath)
+        if (currentFile.absolutePath.isNullOrEmpty()){
+            return // Проблема с обработкой файла, файл не найден
+        }
         var originalBitmap: Bitmap = BitmapFactory.decodeFile(currentFile.absolutePath)
         val degree = getRotateDegreeFromExif(currentFile.absolutePath)
         //Если угол не нулевой, то сначала повернем картинку
@@ -175,11 +178,11 @@ class PointFile(
         var lonText = ""
 
         if (lat == 0.0 || lon == 0.0) {
-            addressText = point!!.getAddressName()
+            addressText = point.getAddressName()
         } else {
             addressText = getAddressNameFromLocation(lat, lon, context)
             if (addressText=="") {
-                addressText = point!!.getAddressName()
+                addressText = point.getAddressName()
             }
             latText = lat.toString()
             lonText = lon.toString()
@@ -206,7 +209,7 @@ class PointFile(
 
         //Сохранение в файл
         val exifData = getExifData(currentFile)
-        currentFile!!.delete()
+        currentFile.delete()
         val out = FileOutputStream(currentFile)
         overlayBitmap.compress(Bitmap.CompressFormat.JPEG, 50, out)
         out.flush()
@@ -330,6 +333,9 @@ class PointFile(
 
     @SuppressLint("MissingPermission")
     fun setGeoTag(location: Location) : Boolean {
+        if (this.filePath.isEmpty()) {
+            return false //Проверка, если не указан путь до файла
+        }
         val exifInterface =
             ExifInterface(this.filePath)
         exifInterface.setGpsInfo(location)

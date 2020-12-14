@@ -24,16 +24,6 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
     val fileAfterIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
     var geoIsRequired: Boolean = false
 
-    /*init {
-        currentPoint.value = point
-        viewModelScope.launch {
-            var data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_AFTER)
-            fileAfterIsDone.value = data!!.size > 0
-            data = routeRepository.getFilesFromDBAsync(currentPoint.value!!, PhotoOrder.PHOTO_BEFORE)
-            fileBeforeIsDone.value = data!!.size > 0
-        }
-    }*/
-
     fun setViewData(point: Point,canDone: Boolean){
         phoneNumberData = point.getPhoneFromComment()
         currentPoint.value = point
@@ -57,19 +47,6 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
         return this.phoneNumberData
     }
 
-    /*var fileBeforeIsDone: LiveData<Boolean> = currentState.switchMap {
-        liveData {
-            val data = routeRepository.getFilesFromDBAsync(currentPoint.value!!,PhotoOrder.PHOTO_BEFORE)
-            emit( data!!.size>0 )
-        }
-    }
-
-    var fileAfterIsDone: LiveData<Boolean> = currentPoint.switchMap {
-            liveData {
-                val data = routeRepository.getFilesFromDBAsync(point,PhotoOrder.PHOTO_AFTER)
-                emit( data!!.size>0 ) }
-        }*/
-
     /*var fileBeforeIsDone: LiveData<Boolean> = liveData {
         val data = routeRepository.getFilesFromDBAsync(point,PhotoOrder.PHOTO_BEFORE)
         emit( data!!.size > 0 )
@@ -92,7 +69,6 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
     fun getPoint() : MutableLiveData<Point> {
         return currentPoint
     }
-
 
     fun saveFile(file: File, point: Point, fileOrder: PhotoOrder): PointFile {
         val exifInterface = androidx.exifinterface.media.ExifInterface(file.absoluteFile)
@@ -124,7 +100,9 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
         GlobalScope.launch {
             val result = routeRepository.getFilesFromDBAsync(currentPoint.value!!,null,true)
             result?.forEach {
-                setDataInfoOnFile(it,location)
+                if (it.filePath.isNotEmpty()) {
+                    setDataInfoOnFile(it, location)
+                }
             }
             geoIsRequired = true
         }
