@@ -299,7 +299,7 @@ class RouteRepository constructor(val context: Context){
             val uploadResult = GlobalScope.async {
                 val data = mRoutesDao!!.getRouteNotUploadedPointFiles()
                 if (data.isEmpty()){
-                    true
+                    return@async true
                 }
                 val resultFiles = uploadFiles(data,false)
                 resultFiles.success

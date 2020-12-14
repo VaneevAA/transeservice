@@ -189,18 +189,21 @@ class MainActivity : AppCompatActivity() {
         PreferenceManager.getDefaultSharedPreferences(this)
             .registerOnSharedPreferenceChangeListener(mPrefsListener)
 
+        //region WorkManager
         // Work manager: configure schedule and rules for periodic files upload
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        val uploadWorkRequest: WorkRequest =
-            PeriodicWorkRequestBuilder<UploadFilesWorker>(10,TimeUnit.MINUTES,15, TimeUnit.MINUTES)
+        val uploadWorkRequest: PeriodicWorkRequest =
+            PeriodicWorkRequestBuilder<UploadFilesWorker>(45,TimeUnit.MINUTES,15, TimeUnit.MINUTES)
                 .addTag("uploadFiles")
                 .setConstraints(constraints)
                 .build()
-        WorkManager
-            .getInstance(applicationContext)
-            .enqueue(uploadWorkRequest)
+        val workManager = WorkManager.getInstance(applicationContext)
+        workManager.enqueueUniquePeriodicWork("uploadFiles",ExistingPeriodicWorkPolicy.REPLACE,uploadWorkRequest)
+        //workManager.pruneWork()
+        //workManager.cancelAllWork()
+        //endregion
 
     }
 
