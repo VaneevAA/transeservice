@@ -18,6 +18,9 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.app.NotificationManagerCompat
+
+import androidx.core.os.bundleOf
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -272,12 +275,15 @@ class MainActivity : AppCompatActivity() {
 
 
                 }
-                viewModel.routeLiveData.value = routeRepository.getCurrentRoute()
-                refreshPointList = true
+                if(this@MainActivity.lifecycle.currentState != Lifecycle.State.DESTROYED){
+                    viewModel.routeLiveData.value = routeRepository.getCurrentRoute()
+                    refreshPointList = true
 
-                if (navController.currentDestination?.id  != R.id.start_frame_screen){
-                    navController.navigate(R.id.start_frame_screen)
+                    if (navController.currentDestination?.id  != R.id.start_frame_screen){
+                        navController.navigate(R.id.start_frame_screen)
+                    }
                 }
+
             }
         }
     }
