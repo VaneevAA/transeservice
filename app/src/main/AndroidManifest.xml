@@ -30,7 +30,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".ErrorActivity"
+            android:label="Авария!"
+            android:process=":error_activity"/>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.ekotransservice_routemanager.fileprovider"
