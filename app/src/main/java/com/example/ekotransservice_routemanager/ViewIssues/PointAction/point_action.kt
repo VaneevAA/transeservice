@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Geocoder
 import android.location.Location
 import android.net.Uri
 import android.os.Build
@@ -132,7 +131,7 @@ class point_action : Fragment() {
                         Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ), 101
-                );
+                )
                 // TODO: Обработка результата запроса разрешения
             }
 
@@ -316,7 +315,7 @@ class point_action : Fragment() {
 
 
     private fun getReasonArray(): MutableList<String> {
-        val reasonArray = mutableListOf<String>(
+        return mutableListOf(
             NO_GARBEGE,
             CARS_ON_POINT,
             ROAD_REPAER,
@@ -326,7 +325,6 @@ class point_action : Fragment() {
             EQUIPMENT_LOCKED,
             OTHER
         )
-        return reasonArray
     }
 
     private fun fillCannotDone(mainFragment: View){
@@ -342,7 +340,7 @@ class point_action : Fragment() {
         OTHER
     )*/
         val spinner = mainFragment.findViewById<Spinner>(R.id.reasonSpinner)
-        val arrayAdapter = ArrayAdapter<String>(
+        val arrayAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
             reasonArray
@@ -488,12 +486,13 @@ class point_action : Fragment() {
     }
 
     private fun generateFileName(point: Point): String {
-        val timeCreated = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val timeCreated = SimpleDateFormat("yyyyMMdd_HHmmss",Locale("RU")).format(Date())
         var addressName = point.getAddressName().replace("/","")
         addressName = addressName.replace("\\" , "")
         addressName = addressName.replace(":" , "")
         addressName = addressName.replace("(" , "")
         addressName = addressName.replace(")" , "")
+        addressName = addressName.replace("\"" , "")
         return "${point.getRouteName()}__{$timeCreated}__${addressName}_${currentFileOrder.string}"
     }
 
@@ -570,17 +569,11 @@ class point_action : Fragment() {
                 }
 
             }
-        /*} catch (e: java.lang.Exception) {
-            Log.e("Ошибка фото", "Ошибка фото $e")
-            Toast.makeText(requireContext(), "Ошибка $e", Toast.LENGTH_LONG).show()
-        }*/
-
     }
 
 
     @SuppressLint("MissingPermission")
     private fun setGeoTag() : Boolean {
-
         val exifInterface =
             ExifInterface(currentFile!!.absoluteFile)
         exifInterface.setGpsInfo(location)

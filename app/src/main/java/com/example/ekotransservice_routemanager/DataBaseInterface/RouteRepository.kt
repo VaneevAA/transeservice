@@ -101,8 +101,11 @@ class RouteRepository constructor(val context: Context){
         serverConnector.setSSl(getSSLSocketFactory())
     }
 
+    // region LoadData
+
     // Загрузка списка точек
     // reload - требуется загрузка с  Postgres
+    // Main fun
     suspend fun getPointList(reload: Boolean, doneOnly: Boolean = false): MutableList<Point>? {
 
         return try {
@@ -162,12 +165,12 @@ class RouteRepository constructor(val context: Context){
     // Загрузка данных путевого листа с сервера и сохранение их в локальную базу Room
     private fun loadTaskFromServer(currentRoute: Route?): Boolean {
         errorArrayList.clear()
-        val vehicleNumber: String? = currentRoute?.getVehicleNumber() ?: this.vehicle!!.getName()
+        val vehicleNumber: String = currentRoute?.getVehicleNumber() ?: this.vehicle!!.getName()
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val datePrefValue = sharedPreferences.getString("DATE","")
         val dateTask: Date = currentRoute?.getRouteDate() ?: SimpleDateFormat("yyyy.MM.dd HH:mm:ss",
             Locale.getDefault()).parse("$datePrefValue 00:00:00")
-        return if (vehicleNumber != null) {
+        return run {
             val postParam = JSONObject()
             postParam.put("dateTask",  SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(dateTask)) //"2020-09-03 00:00:00")//dateTask.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
             postParam.put("vehicle", vehicleNumber)
@@ -177,16 +180,13 @@ class RouteRepository constructor(val context: Context){
             if (result && serverData.data.size!=0 ) {
                 if (currentRoute == null) {
                     saveRouteIntoRoom(serverData.data, vehicle!!, dateTask)
-                } else
-                {
+                } else {
                     currentRoute.setCountPoint(serverData.data.size)
                     mRoutesDao!!.insertRouteWithReplace(currentRoute) // Если обновляем текущий маршрут
                 }
             }
 
             result
-        } else {
-            false
         }
     }
 
@@ -221,7 +221,6 @@ class RouteRepository constructor(val context: Context){
         }
     }
 
-
     // Получение списка точек из локальной базы
     private fun loadTrackListFromRoom(dataLoaded: Boolean, doneOnly: Boolean): MutableList<Point>? {
         return if (dataLoaded) {
@@ -238,23 +237,34 @@ class RouteRepository constructor(val context: Context){
 
     }
 
+    //endregion LoadData
+
+    // region UploadData
+
+    // Async fun for final upload of the task and files. Call it from View
+    // using coroutines
     suspend fun uploadTrackListToServerAsync(): Boolean {
         errorArrayList.clear()
-        val uploadResult = GlobalScope.async {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                uploadTrackListToServer()
-            } else {
-                TODO("VERSION.SDK_INT < O")
+        return try {
+            val uploadResult = GlobalScope.async {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    uploadTrackListToServer()
+                } else {
+                    TODO("VERSION.SDK_INT < O")
+                }
             }
+            val dataResult = uploadResult.await()
+            addErrors(dataResult.log)
+            dataResult.success
+        } catch(e: java.lang.Exception) {
+            errorArrayList.add(ErrorMessage(ErrorTypes.OTHER,"Ошибка при выгрузке данных. Попробуйте снова",e))
+            false
         }
-        val dataResult = uploadResult.await()
-        errorArrayList.intersect(dataResult.log)
-        return dataResult.success
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun uploadTrackListToServer(): UploadResult {
-        val trackList = loadTrackListFromRoom(true, false)
+    private fun uploadTrackListToServer(): UploadResult {
+        val trackList = loadTrackListFromRoom(dataLoaded = true, doneOnly = false)
         return if (trackList != null) {
             val data = mRoutesDao!!.getRoutePointFiles()
             //val resultFiles = serverConnector.uploadFiles(data)
@@ -271,21 +281,6 @@ class RouteRepository constructor(val context: Context){
                 resultFiles
             }
 
-            // sorokina.m изменила порядок выгрузки. Сначала выгружаются фотографии
-            /*val result = serverConnector.uploadTrackList(trackList as ArrayList<Point>)
-            if (result.success) {
-                serverConnector.setStatus(trackList[0].getDocUID(),STATUS_UPLOAD_TO_SERVER)
-                val data = mRoutesDao!!.getRoutePointFiles()
-                val resultFiles = serverConnector.uploadFiles(data)
-                if (resultFiles.success) {
-                    mRoutesDao!!.deletePointList()
-                    mRoutesDao!!.deleteCurrentRoute()
-                }
-                resultFiles
-            }else{
-                result
-            }*/
-
         }else {
             val errorArray = ArrayList<ErrorMessage>()
             errorArray.add(ErrorMessage(ErrorTypes.ROOM_ERROR,"Отсутствуют данные для выгрузки",null))
@@ -294,10 +289,37 @@ class RouteRepository constructor(val context: Context){
 
     }
 
+    // Async fun for uploading files to server
+    // Check upload poinFile status and upload it to server if file was not uploaded before
+    // Call if you need upload only files during the day
     @RequiresApi(Build.VERSION_CODES.O)
-    fun uploadFiles(data: List<PointFile>):UploadResult{
+    suspend fun uploadFilesAsync(): Boolean {
+        errorArrayList.clear()
+        return try {
+            val uploadResult = GlobalScope.async {
+                val data = mRoutesDao!!.getRouteNotUploadedPointFiles()
+                if (data.isEmpty()){
+                    true
+                }
+                val resultFiles = uploadFiles(data,false)
+                resultFiles.success
+            }
+            uploadResult.await()
+        } catch(e: java.lang.Exception) {
+            errorArrayList.add(ErrorMessage(ErrorTypes.OTHER,"Ошибка при выгрузке данных. Попробуйте снова",e))
+            false
+        }
+    }
 
-        val portionSize = 40
+    // Upload files to server
+    // Changes pointFile upload status in Room in case of the during the day upload
+    // Delete uploaded files from Room in case of the Final upload
+    // Doing it in portion, param: portionSize
+    // Return UploadResult
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun uploadFiles(data: List<PointFile>, deleteUploaded: Boolean = true):UploadResult{
+
+        val portionSize = 30
         val iterationCount = (data.size.toFloat()/portionSize)
         var startPos = 0
         var endPos =  if (portionSize - 1 > (data.size - 1)) {
@@ -305,14 +327,18 @@ class RouteRepository constructor(val context: Context){
         } else {portionSize-1}
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         var i = 0
-        var result = false
+        var result: Boolean
         do {
             i++
-            val deletedFiles = ArrayList<Long>()
-            val resultPortion = serverConnector.uploadFilesPortion(data,startPos,endPos,deletedFiles)
-            errorArrayList.addAll(resultPortion.log)
+            val uploadedFiles = ArrayList<Long>()
+            val resultPortion = serverConnector.uploadFilesPortion(data,startPos,endPos,uploadedFiles)
+            addErrors(resultPortion.log)
             if (resultPortion.success) {
-                mRoutesDao!!.deleteFiles(deletedFiles)
+                if (deleteUploaded) {
+                    mRoutesDao!!.deleteFiles(uploadedFiles)
+                }else {
+                    mRoutesDao!!.updatePointFileUploadStatus(uploadedFiles,true)
+                }
             }
             result = resultPortion.success
             startPos = endPos + 1
@@ -320,16 +346,18 @@ class RouteRepository constructor(val context: Context){
             if (endPos > (data.size - 1)) {
                 endPos = data.size - 1
             }
-        } while (i<iterationCount)
+        } while (i<iterationCount && result)
 
         return UploadResult(result, errorArrayList)
     }
 
+    //endregion
+
+    // region WorkWithFiles
     // Сохранение файлов в локальную базу данных. Асинхронный вызов
     suspend fun saveFileIntoDBAsync(pointFile: PointFile): Boolean = withContext(Dispatchers.IO){
         val result =  GlobalScope.async { saveFileIntoDB(pointFile) }
         result.await()
-        //return result.await()
     }
 
     private fun saveFileIntoDB(pointFile: PointFile): Boolean {
@@ -360,6 +388,13 @@ class RouteRepository constructor(val context: Context){
         }
     }
 
+    fun updatePointFileLocationAsync(pointFile: PointFile,lat: Double, lon: Double ) {
+        GlobalScope.launch {
+            mRoutesDao!!.updatePointFileLocation(lat, lon, pointFile.id)
+        }
+    }
+
+    //endregion
 
     // Обновление выполнения / данных по точке
     fun updatePointAsync(point: Point) {
@@ -368,15 +403,9 @@ class RouteRepository constructor(val context: Context){
         }
     }
 
+
     fun setVehicle (vehicle: Vehicle?){
         this.vehicle = vehicle
-    }
-
-
-    fun updatePointFileLocationAsync(pointFile: PointFile,lat: Double, lon: Double ) {
-        GlobalScope.launch {
-            mRoutesDao!!.updatePointFileLocation(lat, lon, pointFile.id)
-        }
     }
 
     private fun getSSLSocketFactory(): SSLSocketFactory {
