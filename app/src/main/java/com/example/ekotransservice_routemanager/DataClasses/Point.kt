@@ -52,7 +52,6 @@ class Point : Serializable{
     private var reasonComment: String = ""
     private var comment:String = ""
 
-
     @Ignore
     private var pointActionsArray: ArrayList<PointActoins> = ArrayList()
     @Ignore

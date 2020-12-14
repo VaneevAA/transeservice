@@ -92,4 +92,7 @@ interface RouteDaoInterface {
 
     @Query("DELETE FROM currentRoute_table")
     fun deleteCurrentRoute()
+
+    @Query("DELETE FROM pointFiles_table where id in (:idList)")
+    fun deleteFiles(idList: ArrayList<Long>)
 }

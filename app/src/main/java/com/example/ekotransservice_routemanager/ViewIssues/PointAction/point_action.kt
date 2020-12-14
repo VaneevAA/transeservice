@@ -83,6 +83,7 @@ class point_action : Fragment() {
     private var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
     private var currentFilePath: String =""
     private var location: Location? = null
+    private var reasonComment: String = ""
 
     // Настройки обновления местоположения
     private val locationRequest  = LocationRequest.create().apply {
@@ -350,6 +351,7 @@ class point_action : Fragment() {
         val comment = mainFragment.findViewById<TextInputEditText>(R.id.reasonInput)
         arrayAdapter.setNotifyOnChange(true)
         spinner.adapter = arrayAdapter
+        reasonComment = comment.text.toString()
         val itemSelectedListener: AdapterView.OnItemSelectedListener = object :
             AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -362,6 +364,7 @@ class point_action : Fragment() {
                 // Получаем выбранный объект
                 val item = parent.getItemAtPosition(position) as String
                 point!!.setReasonComment(item)
+                reasonComment = item
                 viewPointModel!!.getRepository().updatePointAsync(point!!)
                 if (item == OTHER) {
                     comment.visibility = ViewGroup.VISIBLE
@@ -552,6 +555,13 @@ class point_action : Fragment() {
                             .show()
                     }
 
+                    if (currentFileOrder == PhotoOrder.PHOTO_CANTDONE) {
+                        if (point!!.getReasonComment().isEmpty()) {
+                            point!!.setReasonComment(reasonComment)
+                        }
+                        point!!.setTimestamp(Date())
+                        viewPointModel!!.getRepository().updatePointAsync(point!!)
+                    }
                     if (location != null || (pointFile.lat != 0.0 && pointFile.lon != 0.0)) {
                         viewPointModel!!.setDataInfoOnFile(pointFile, location)
                     } else {

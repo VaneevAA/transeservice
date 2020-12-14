@@ -11,6 +11,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -90,12 +91,12 @@ class RouteServerConnection {
         connector.setRequestProperty("Authorization", "Bearer $authPass")
         connector.requestMethod = requestMethod
         connector.connectTimeout = 10000
-        if (requestMethod == "POST" && postParam!=null ){
-            val wr = OutputStreamWriter(connector.outputStream)
-            wr.write(postParam.toString())
-            wr.flush()
-        }
         return try {
+            if (requestMethod == "POST" && postParam!=null ){
+                val wr =BufferedWriter(OutputStreamWriter(connector.outputStream))
+                wr.write(postParam.toString())
+                wr.flush()
+            }
             val code = connector.responseCode
             if (code == 200) {
                 try {
@@ -242,13 +243,14 @@ class RouteServerConnection {
             jo.put("countFact", it.getCountFact())
             jo.put("countOver", it.getCountOver())
             jo.put("done", it.getDone())
+            jo.put("reasonComment", it.getReasonComment())
             val timestamp = it.getTimestamp()
             if (timestamp != null) {
                 jo.put(
                     "timestamp",
                     SimpleDateFormat(
                         "yyyy-MM-dd HH:mm:ss",
-                        Locale.getDefault()
+                        Locale("RU")
                     ).format(it.getTimestamp())
                 )
             }else{
@@ -269,9 +271,31 @@ class RouteServerConnection {
         return UploadResult(result, errorArrayList)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /*@RequiresApi(Build.VERSION_CODES.O)
     fun uploadFiles(data: List<PointFile>):UploadResult{
-        val jsonArray = JSONArray()
+
+        val portionSize = 2
+        val iterationCount = (data.size.toFloat()/portionSize)
+        var startPos = 0
+        var endPos = portionSize-1
+        val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
+        var i = 0
+        var result = false
+        do {
+            i++
+            val resultPortion = uploadFilesPortion(data,startPos,endPos)
+            errorArrayList.addAll(resultPortion.log)
+            result = resultPortion.success
+            startPos = endPos + 1
+            endPos += portionSize
+            if (endPos > (data.size - 1)) {
+                endPos = data.size - 1
+            }
+        } while (i<iterationCount)
+
+        return UploadResult(result, errorArrayList)
+
+        /*val jsonArray = JSONArray()
         data.forEach{
             val jo = JSONObject()
             jo.put("docUID", it.docUID)
@@ -288,6 +312,39 @@ class RouteServerConnection {
             }
             jo.put("fileBase64",it.getCompresedBase64())
             jsonArray.put(jo)
+        }
+        val postParam = JSONObject()
+        postParam.put("files", jsonArray)
+        val methodName = "rpc/loadFiles"
+        val uploadResult = getData(methodName, "POST", postParam, errorArrayList)
+        var result = false
+        if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has("result")) {
+            result = true
+        }
+        return UploadResult(result, errorArrayList)*/
+    }*/
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun uploadFilesPortion(data: List<PointFile>, startPos: Int, endPos: Int,deletedFiles: ArrayList<Long>): UploadResult {
+        val jsonArray = JSONArray()
+        for (j in startPos..endPos){
+            val jo = JSONObject()
+            val it = data[j]
+            jo.put("docUID", it.docUID)
+            jo.put("lineUID", it.lineUID)
+            jo.put("lat", it.lat)
+            jo.put("lon", it.lon)
+            jo.put("fileName",it.fileName)
+            jo.put("fileExtension",it.fileExtension)
+            jo.put("timestamp", SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("RU")).format(it.timeDate))
+            if (it.photoOrder == PhotoOrder.PHOTO_BEFORE) {
+                jo.put("photoOrder", 0)
+            }else{
+                jo.put("photoOrder", 1)
+            }
+            jo.put("fileBase64",it.getCompresedBase64())
+            jsonArray.put(jo)
+            deletedFiles.add(it.id)
         }
         val postParam = JSONObject()
         postParam.put("files", jsonArray)
