@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        
+
         PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
 
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
