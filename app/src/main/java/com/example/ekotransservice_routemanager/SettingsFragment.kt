@@ -89,7 +89,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             try {
                 val currentFile = File.createTempFile(
                     fileName,
-                    ".log",
+                    ".txt",
                     storage
                 )
 
