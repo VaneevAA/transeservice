@@ -184,27 +184,31 @@ class PointFile(
             if (addressText=="") {
                 addressText = point.getAddressName()
             }
-            latText = lat.toString()
-            lonText = lon.toString()
+
+            latText = String.format("%.6f",lat) // 6 decimal digits
+            lonText =  String.format("%.6f",lon)
         }
 
-        printText(addressText, rt.width() - 40, 10, rt.bottom + 20, paint, canvas)
+        val textBorderSpace = 10
+        val textSpace = rt.width()/30
+
+        printText(addressText, rt.width() - 2*textBorderSpace, textBorderSpace, rt.bottom + 20, paint, canvas)
 
         // Вывод координат и даты
-        val textWidth = rt.width()/3-40
+        val textWidth = (rt.width()-textSpace*2 - textBorderSpace*2)/3
         val textLine = originalBitmap.height - abs(rt.height() / 2) +20
         //Широта
-        printText(latText, textWidth, 10, textLine, paint, canvas)
+        printText(latText, textWidth, textBorderSpace, textLine, paint, canvas)
 
         //Долгота
-        printText(lonText, textWidth, 10 + textWidth, textLine, paint, canvas)
+        printText(lonText, textWidth, textBorderSpace + textSpace + textWidth, textLine, paint, canvas)
 
         //Дата время
         printText(
             SimpleDateFormat(
                 "yyyy-MM-dd (EEE) HH:mm:ss",
                 Locale("ru")
-            ).format(Date()), textWidth, 10 + 2 * textWidth, textLine, paint, canvas
+            ).format(Date(currentFile.lastModified())), textWidth, textBorderSpace + 2*textSpace + 2*textWidth, textLine, paint, canvas
         )
 
         //Сохранение в файл
