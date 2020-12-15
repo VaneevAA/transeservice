@@ -9,13 +9,9 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ListView
 import android.widget.Toast
 import androidx.preference.*
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.*
 
