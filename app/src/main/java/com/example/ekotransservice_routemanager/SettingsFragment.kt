@@ -1,15 +1,23 @@
 package com.example.ekotransservice_routemanager
 
-import android.content.SharedPreferences
-import android.icu.text.CaseMap
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.text.InputType
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.children
+import android.widget.Button
+import android.widget.ListView
+import android.widget.Toast
 import androidx.preference.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -38,8 +46,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
         datePreference?.setOnBindEditTextListener { editText ->
             editText.inputType = InputType.TYPE_DATETIME_VARIATION_DATE
         }
+
+        val sendLog = findPreference<Preference>(getString(R.string.sendLog))
+
+        sendLog?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            sendLog(requireActivity() as MainActivity)
+            return@OnPreferenceClickListener true
+        }
+
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -60,5 +77,51 @@ class SettingsFragment : PreferenceFragmentCompat() {
         return view
     }
 
-    
+
+
+
+
+        fun createLogFile (activity: MainActivity) : File? {
+            val storage = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            val fileName = "log" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale("RU"))
+                .format(Date())
+
+            try {
+                val currentFile = File.createTempFile(
+                    fileName,
+                    ".txt",
+                    storage
+                )
+
+                return currentFile
+            }catch (e: Exception){
+                Toast.makeText(activity, "Неудалось записать файл", Toast.LENGTH_LONG).show()
+            }
+            return null
+        }
+
+        fun setLogInFile (file: File){
+            val command = "logcat -v threadtime *:* -f " + file.absoluteFile
+            val progress = Runtime.getRuntime().exec(command)
+
+        }
+
+        fun sendLog (activity: MainActivity){
+            val file = createLogFile(activity)
+            if(file != null){
+                setLogInFile(file)
+                val imageUris : ArrayList<Uri> = arrayListOf()
+                imageUris.add(Uri.parse(file.absolutePath))
+
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND_MULTIPLE
+                    putParcelableArrayListExtra(Intent.EXTRA_STREAM,imageUris)
+                    type = "*/*"
+                }
+
+                activity.startActivity(Intent.createChooser(shareIntent,"Отправка лога"))
+            }
+        }
+
 }
+

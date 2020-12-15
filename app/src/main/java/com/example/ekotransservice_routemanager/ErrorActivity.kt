@@ -6,10 +6,13 @@ import cat.ereza.customactivityoncrash.CustomActivityOnCrash
 import com.google.android.material.button.MaterialButton
 
 class ErrorActivity : AppCompatActivity() {
+
+    var mSavedInstanceState : Bundle? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.error_fragment)
-
+        mSavedInstanceState = savedInstanceState
         val config = CustomActivityOnCrash.getConfigFromIntent(intent)
 
         if(config == null){

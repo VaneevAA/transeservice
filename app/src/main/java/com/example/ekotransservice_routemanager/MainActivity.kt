@@ -115,7 +115,6 @@ class MainActivity : AppCompatActivity() {
                         && navController.backStack.last != it && navController.backStack.first != it
             }
 
-
             when (destanation.id) {
                 /*R.id.route_list -> {
                     bottomMenu.menu.findItem(R.id.list).isChecked = true
