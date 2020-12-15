@@ -63,12 +63,12 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         holder.itemView.isSelected = position == selectedPos
         val doneImage = holder.itemView.findViewById<ImageView>(R.id.doneImage)
         doneImage.visibility = ViewGroup.VISIBLE
-        if(point.getReasonComment() != ""){
-            doneImage.setImageResource(R.drawable.ic_baseline_block_24_small)
-        }else if (!point.getDone()){
-            doneImage.visibility = ViewGroup.GONE
-        }else{
+        if(point.getDone()){
             doneImage.setImageResource(R.drawable.ic_baseline_check_24_small)
+        }else if (point.getReasonComment() != ""){
+            doneImage.setImageResource(R.drawable.ic_baseline_block_24_small)
+        }else{
+            doneImage.visibility = ViewGroup.GONE
         }
         val isCall = point.getTripNumber() == 0 //По заявке
         holder.itemView.findViewById<TextView>(R.id.onCall).visibility = if(isCall){
