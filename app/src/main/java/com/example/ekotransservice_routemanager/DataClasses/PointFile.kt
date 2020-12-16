@@ -208,7 +208,7 @@ class PointFile(
             SimpleDateFormat(
                 "yyyy-MM-dd (EEE) HH:mm:ss",
                 Locale("ru")
-            ).format(Date(currentFile.lastModified())), textWidth, textBorderSpace + 2*textSpace + 2*textWidth, textLine, paint, canvas
+            ).format(timeDate), textWidth, textBorderSpace + 2*textSpace + 2*textWidth, textLine, paint, canvas
         )
 
         //Сохранение в файл
