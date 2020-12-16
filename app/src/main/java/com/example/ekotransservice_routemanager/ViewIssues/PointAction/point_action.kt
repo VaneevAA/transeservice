@@ -28,14 +28,20 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.work.Operation
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointActoins
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GooglePlayServicesUtil
+import com.google.android.gms.common.GooglePlayServicesUtilLight
 import com.google.android.gms.location.*
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialContainerTransform
+import com.muslimcompanion.utills.GPSTracker
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
@@ -65,7 +71,8 @@ class point_action : Fragment() {
     private var point: Point? = null
     private var canDone: Boolean = true
     private var viewPointModel : ViewPointAction? = null
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var fusedLocationClient: FusedLocationProviderClient // location client if google play services is AVAILABLE
+    private var gps: GPSTracker? = null // location client if google play services is UNAVAILABLE
 
     companion object {
         @JvmStatic
@@ -83,7 +90,9 @@ class point_action : Fragment() {
     private var currentFilePath: String =""
     private var location: Location? = null
     private var reasonComment: String = ""
+    private var googlePlayServicesAvailable: Boolean = false
 
+    //region Location
     // Настройки обновления местоположения
     private val locationRequest  = LocationRequest.create().apply {
         fastestInterval = 2000
@@ -97,9 +106,7 @@ class point_action : Fragment() {
         override fun onLocationResult(lr: LocationResult) {
             try {
                 location = lr.locations.last()
-                if (location!=null && viewPointModel!!.geoIsRequired) {
-                    viewPointModel!!.setPointFilesGeodata(location!!)
-                }
+                changeGeoTagIfNeeded()
             } catch (e: java.lang.Exception) {
                 Toast.makeText(
                     requireContext(),
@@ -109,6 +116,25 @@ class point_action : Fragment() {
             }
         }
     }
+
+    private fun changeGeoTagIfNeeded() {
+        if (!googlePlayServicesAvailable && gps!=null) {
+            location = gps!!.location
+        }
+        if (location!=null && viewPointModel!!.geoIsRequired) {
+            viewPointModel!!.setPointFilesGeodata(location!!)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationUpdatesCallback,
+            Looper.getMainLooper()
+        )
+    }
+    //endregion
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -153,9 +179,25 @@ class point_action : Fragment() {
                 // TODO: Обработка результата запроса разрешения
             }
 
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+            googlePlayServicesAvailable = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
+            if (googlePlayServicesAvailable) {
+                fusedLocationClient =
+                    LocationServices.getFusedLocationProviderClient(requireActivity())
+            }
         }
-        startLocationUpdates()
+
+        if (googlePlayServicesAvailable) {
+            startLocationUpdates()
+        }else{
+            gps = GPSTracker(requireContext())
+            if(gps!!.canGetLocation()){
+                location = gps!!.location
+            }else
+            {
+                gps!!.showSettingsAlert()
+            }
+        }
+
     }
 
     @SuppressLint("ObjectAnimatorBinding", "ResourceType")
@@ -517,26 +559,7 @@ class point_action : Fragment() {
                         "Предупреждение, местоположение не определено",
                         Toast.LENGTH_LONG
                     ).show()
-                    /*fusedLocationClient.lastLocation
-                        .addOnSuccessListener { location: Location? ->
-                            this.location = location
 
-                        }
-
-                    if (location == null) {
-                        Toast.makeText(
-                            activity,
-                            "Ошибка работы камеры, местоположение не определено",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            activity,
-                            "По последнему местоположению",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }*/
-                    //return
                 }
 
                 if (currentFile != null) {
@@ -651,23 +674,18 @@ class point_action : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        startLocationUpdates()
+        changeGeoTagIfNeeded()
     }
 
-    @SuppressLint("MissingPermission")
-    private fun startLocationUpdates() {
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationUpdatesCallback,
-            Looper.getMainLooper()
-        )
+    override fun onDestroy() {
+        super.onDestroy()
+        if (googlePlayServicesAvailable) {
+            fusedLocationClient.removeLocationUpdates(locationUpdatesCallback)
+        }else{
+            gps!!.stopUsingGPS()
+        }
+        changeGeoTagIfNeeded()
     }
-
-    override fun onPause() {
-        super.onPause()
-        fusedLocationClient.removeLocationUpdates(locationUpdatesCallback)
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
