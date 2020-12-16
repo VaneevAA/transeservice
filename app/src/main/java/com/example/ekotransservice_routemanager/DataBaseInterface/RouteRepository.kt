@@ -2,13 +2,11 @@ package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.preference.PreferenceManager
+import com.example.ekotransservice_routemanager.*
 import com.example.ekotransservice_routemanager.DataClasses.*
-import com.example.ekotransservice_routemanager.ErrorMessage
-import com.example.ekotransservice_routemanager.ErrorTypes
-import com.example.ekotransservice_routemanager.R
-import com.example.ekotransservice_routemanager.UploadResult
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.BufferedInputStream
@@ -38,6 +36,8 @@ class RouteRepository constructor(val context: Context){
 
     private val STATUS_LOAD_IN_DEVICE: Int = 1
     private val STATUS_UPLOAD_TO_SERVER: Int = 2
+
+    val TAG = MainActivity.TAG
 
     companion object {
         // Singleton prevents multiple instances of database opening at the
@@ -83,6 +83,9 @@ class RouteRepository constructor(val context: Context){
         serverConnector.setConnectionParams(urlName,urlPort.toInt())
         serverConnector.setAuthPass(urlPass)*/
         setPrefernces()
+
+        //log
+        Log.i(TAG,"" + this::class.java + " init")
     }
 
 
@@ -107,18 +110,30 @@ class RouteRepository constructor(val context: Context){
     // reload - требуется загрузка с  Postgres
     // Main fun
     suspend fun getPointList(reload: Boolean, doneOnly: Boolean = false): MutableList<Point>? {
+        //log
+        Log.i(TAG,"" + this::class.java + " getPointList start reload == " + reload.toString())
 
         return try {
             if (reload) {
                 val currentRoute = GlobalScope.async { getCurrentRoute() }
                 val dataLoaded = GlobalScope.async { loadTaskFromServer(currentRoute.await()) }
                 val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await(),doneOnly) }
+                //log
+                Log.i(TAG,"" + this::class.java + " getPointList end reload == " + reload.toString())
+
                 tracklist.await()
+
+
             } else {
                 val tracklist = GlobalScope.async { loadTrackListFromRoom(true,doneOnly) }
+                //log
+                Log.i(TAG,"" + this::class.java + " getPointList end reload == " + reload.toString())
+
                 tracklist.await()
             }
         }catch (e: java.lang.Exception){
+            //log
+            Log.e(TAG,"" + this::class.java + " getPointList ",e)
             null
         }
     }
@@ -133,6 +148,8 @@ class RouteRepository constructor(val context: Context){
             val data = mRoutesDao!!.getPointsWithFiles()
             data
         } catch (e: java.lang.Exception) {
+            //log
+            Log.e(TAG,"" + this::class.java + " getPointsWithFiles ",e)
             null
         }
     }
@@ -198,6 +215,8 @@ class RouteRepository constructor(val context: Context){
                 true
             } catch (e: java.lang.Exception){
                 errorArrayList.add(ErrorMessage(ErrorTypes.ROOM_ERROR, "Ошибка записи данных",e))
+                //log
+                Log.e(TAG,"" + this::class.java + " saveTrackListIntoRoom ",e)
                 false
             }
         }
@@ -217,6 +236,8 @@ class RouteRepository constructor(val context: Context){
             true
         } catch (e: java.lang.Exception){
             errorArrayList.add(ErrorMessage(ErrorTypes.ROOM_ERROR, "Ошибка записи данных",e))
+            //log
+            Log.e(TAG,"" + this::class.java + " saveRouteIntoRoom ",e)
             false
         }
     }
@@ -229,6 +250,8 @@ class RouteRepository constructor(val context: Context){
                 data
             } catch (e: Exception) {
                 errorArrayList.add(ErrorMessage(ErrorTypes.ROOM_ERROR, "Ошибка чтения данных",e))
+                //log
+                Log.e(TAG,"" + this::class.java + " loadTrackListFromRoom ",e)
                 null
             }
         }else {
@@ -258,6 +281,8 @@ class RouteRepository constructor(val context: Context){
             dataResult.success
         } catch(e: java.lang.Exception) {
             errorArrayList.add(ErrorMessage(ErrorTypes.OTHER,"Ошибка при выгрузке данных. Попробуйте снова",e))
+            //log
+            Log.e(TAG,"" + this::class.java + " uploadTrackListToServerAsync ",e)
             false
         }
     }
@@ -307,6 +332,8 @@ class RouteRepository constructor(val context: Context){
             uploadResult.await()
         } catch(e: java.lang.Exception) {
             errorArrayList.add(ErrorMessage(ErrorTypes.OTHER,"Ошибка при выгрузке данных. Попробуйте снова",e))
+            //log
+            Log.e(TAG,"" + this::class.java + " uploadFilesAsync ",e)
             false
         }
     }
@@ -365,6 +392,8 @@ class RouteRepository constructor(val context: Context){
             mRoutesDao!!.insertPointFile(pointFile)
             true
         } catch (e: java.lang.Exception) {
+            //log
+            Log.e(TAG,"" + this::class.java + " saveFileIntoDB ",e)
             false
         }
     }
@@ -384,6 +413,8 @@ class RouteRepository constructor(val context: Context){
             }
             data
         } catch (e: java.lang.Exception) {
+            //log
+            Log.e(TAG,"" + this::class.java + " getFilesFromDB ",e)
             null
         }
     }

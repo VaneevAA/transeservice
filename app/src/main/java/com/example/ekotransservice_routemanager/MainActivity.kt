@@ -47,6 +47,11 @@ class MainActivity : AppCompatActivity() {
     lateinit private var routeRepository: RouteRepository
     val JOB_UPLOADFILES_ID = 1
     val JOB_UPLOADFILES_TIMEINTERVAL = 1000*60*60L
+    companion object {
+        const val TAG = "RouteManager"
+    }
+
+
 
     private val mPrefsListener =
         OnSharedPreferenceChangeListener { sharedPreferences, key ->
@@ -60,7 +65,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        //log
+        Log.i(TAG,"Main activity on create")
         PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
 
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
@@ -108,6 +114,9 @@ class MainActivity : AppCompatActivity() {
         })
 
         navController.addOnDestinationChangedListener { _, destanation, _ ->
+            //log
+            Log.i(TAG,"nav destination " + destanation.displayName)
+
             findViewById<View>(R.id.bottom_menu).visibility = View.VISIBLE
 
             navController.backStack.removeIf {
@@ -217,7 +226,8 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun endOfTheRoute (viewModel : StartFrameScreenViewModel){
-
+        //
+        Log.i(TAG,"starting end of the route")
         //создание потока
         val mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(
@@ -285,6 +295,8 @@ class MainActivity : AppCompatActivity() {
                         navController.navigate(R.id.start_frame_screen)
                     }
                 }
+                //log
+                Log.i(TAG,"over end of the route")
 
             }
         }

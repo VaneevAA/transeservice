@@ -1,12 +1,10 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
+import com.example.ekotransservice_routemanager.*
 import com.example.ekotransservice_routemanager.DataClasses.*
-import com.example.ekotransservice_routemanager.DownloadResult
-import com.example.ekotransservice_routemanager.ErrorMessage
-import com.example.ekotransservice_routemanager.ErrorTypes
-import com.example.ekotransservice_routemanager.UploadResult
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.json.JSONArray
@@ -32,7 +30,7 @@ class RouteServerConnection {
     private var urlPort:Int =80
     private var authPass:String = ""
     private var sslSocketFactory = SSLSocketFactory.getDefault()
-
+    private final val TAG = MainActivity.TAG
     fun setAuthPass(authPass: String) {
         val token = encodeToken(authPass)
         if (token!=null) {
@@ -72,11 +70,15 @@ class RouteServerConnection {
     ): JSONArray? {
         //val url = URL("http://$urlName:$urlPort/$methodName")
         //val url = URL("http",urlName, urlPort,"mobileapp/$methodName")
+        //log
+        Log.i(TAG,"" + this::class.java + " getData method: " + methodName + " requestMethod " + requestMethod)
         val url = URL("https", urlName, urlPort, "mobileapp/$methodName")
         var connector: HttpsURLConnection? = null
         try {
             connector = url.openConnection() as HttpsURLConnection
         }catch (e: Exception){
+            //log
+            Log.e(TAG,"" + this::class.java + " getData connector url " + url,e)
             errorArrayList.add(
                 ErrorMessage(
                     ErrorTypes.DOWNLOAD_ERROR,
@@ -115,6 +117,8 @@ class RouteServerConnection {
                     }
 
                 } catch (e: java.lang.Exception) {
+                    //log
+                    Log.e(TAG,"" + this::class.java + " getData JSON reader ",e)
                     errorArrayList.add(
                         ErrorMessage(
                             ErrorTypes.DOWNLOAD_ERROR,
@@ -134,19 +138,28 @@ class RouteServerConnection {
                         outputString,
                         null
                     )
+
                 )
+                //log
+                Log.w(TAG,"" + this::class.java + " getData connector code " + code.toString())
                 null
             }
         } catch (e: MalformedURLException) {
             errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Плохой URL", e))
+            //log
+            Log.e(TAG,"" + this::class.java + " getData connector bad url " + url,e)
             connector.disconnect()
             null
         } catch (e: IOException) {
             errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Проблемы с сетью", e))
+            //log
+            Log.e(TAG,"" + this::class.java + " getData connector bad net ",e)
             connector.disconnect()
             null
         } catch (e: java.lang.Exception) {
             errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Ошибка обработки кода", e))
+            //log
+            Log.e(TAG,"" + this::class.java + " getData connector ",e)
            null
         }
         finally {
