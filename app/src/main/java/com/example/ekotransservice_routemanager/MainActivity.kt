@@ -151,7 +151,21 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
-
+        //region WorkManager
+        // Work manager: configure schedule and rules for periodic files upload
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+        val uploadWorkRequest: PeriodicWorkRequest =
+            PeriodicWorkRequestBuilder<UploadFilesWorker>(45,TimeUnit.MINUTES,15, TimeUnit.MINUTES)
+                .addTag("uploadFiles")
+                .setConstraints(constraints)
+                .build()
+        val workManager = WorkManager.getInstance(applicationContext)
+        workManager.enqueueUniquePeriodicWork("uploadFiles",ExistingPeriodicWorkPolicy.REPLACE,uploadWorkRequest)
+        //workManager.pruneWork()
+        //workManager.cancelAllWork()
+        //endregion
 
 
         /*
@@ -190,23 +204,6 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         PreferenceManager.getDefaultSharedPreferences(this)
             .registerOnSharedPreferenceChangeListener(mPrefsListener)
-
-        //region WorkManager
-        // Work manager: configure schedule and rules for periodic files upload
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        val uploadWorkRequest: PeriodicWorkRequest =
-            PeriodicWorkRequestBuilder<UploadFilesWorker>(45,TimeUnit.MINUTES,15, TimeUnit.MINUTES)
-                .addTag("uploadFiles")
-                .setConstraints(constraints)
-                .build()
-        val workManager = WorkManager.getInstance(applicationContext)
-        workManager.enqueueUniquePeriodicWork("uploadFiles",ExistingPeriodicWorkPolicy.REPLACE,uploadWorkRequest)
-        //workManager.pruneWork()
-        //workManager.cancelAllWork()
-        //endregion
-
     }
 
     override fun onStop() {
