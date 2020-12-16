@@ -23,7 +23,6 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocketFactory
 import kotlin.collections.ArrayList
-import kotlin.coroutines.coroutineContext
 
 class RouteServerConnection {
     private var urlName:String = ""
@@ -168,15 +167,19 @@ class RouteServerConnection {
     }
 
     fun getTrackList(postParam: JSONObject?): DownloadResult {
+        //log
+        Log.i(TAG,"" + this::class.java + " getTrackList start")
         val methodName = "rpc/getTaskList"
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val data = getData(methodName, "POST", postParam, errorArrayList)
         val pointArrayList: ArrayList<Point> = ArrayList()
-        if (data!=null) {
+        if (data != null) {
             for (i in 0 until data.length()) {
                 try {
                     pointArrayList.add(Point(data.getJSONObject(i)))
                 } catch (e: java.lang.Exception) {
+                    //log
+                    Log.e(TAG,"" + this::class.java + " getTrackList point error ",e)
                     errorArrayList.add(
                         ErrorMessage(
                             ErrorTypes.DOWNLOAD_ERROR,
@@ -187,17 +190,23 @@ class RouteServerConnection {
                 }
             }
         }
+        //log
+        Log.i(TAG,"" + this::class.java + " getTrackList end")
         return DownloadResult(pointArrayList as ArrayList<Any>, errorArrayList)
     }
 
     fun getRegions() : DownloadResult {
+        //log
+        Log.i(TAG,"" + this::class.java + " getRegions start")
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val methodName = "regions"
         val regionArrayList: ArrayList<Region> = ArrayList()
-        var data: JSONArray? =null
+        var data: JSONArray? = null
         try {
             data = getData(methodName, "GET", null, errorArrayList)
         }catch (e: java.lang.Exception){
+            //log
+            Log.e(TAG,"" + this::class.java + " getRegions getData error ",e)
             errorArrayList.add(
                 ErrorMessage(
                     ErrorTypes.DOWNLOAD_ERROR,
@@ -206,11 +215,13 @@ class RouteServerConnection {
                 )
             )
         }
-        if (data!=null) {
+        if (data != null) {
             for (i in 0 until data.length()) {
                 try {
                     regionArrayList.add(Region(data.getJSONObject(i)))
                 } catch (e: java.lang.Exception) {
+                    //log
+                    Log.e(TAG,"" + this::class.java + " getRegions region create ",e)
                     errorArrayList.add(
                         ErrorMessage(
                             ErrorTypes.DOWNLOAD_ERROR,
@@ -221,19 +232,25 @@ class RouteServerConnection {
                 }
             }
         }
+        //log
+        Log.i(TAG,"" + this::class.java + " getRegions end")
         return DownloadResult(regionArrayList as ArrayList<Any>, errorArrayList)
     }
 
     fun getVehicles(regionUID: String) : DownloadResult {
+        //log
+        Log.i(TAG,"" + this::class.java + " getVehicles start")
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val methodName = "vehicle?regionUID=eq.$regionUID"
         val data = getData(methodName, "GET", null, errorArrayList)
         val dataArrayList: ArrayList<Vehicle> = ArrayList()
-        if (data!=null) {
+        if (data != null) {
             for (i in 0 until data.length()) {
                 try {
                     dataArrayList.add(Vehicle(data.getJSONObject(i)))
                 } catch (e: java.lang.Exception) {
+                    //log
+                    Log.e(TAG,"" + this::class.java + " getVehicles vehicle create ",e)
                     errorArrayList.add(
                         ErrorMessage(
                             ErrorTypes.DOWNLOAD_ERROR,
@@ -244,12 +261,18 @@ class RouteServerConnection {
                 }
             }
         }
+        //log
+        Log.i(TAG,"" + this::class.java + " getVehicles end")
         return DownloadResult(dataArrayList as ArrayList<Any>, errorArrayList)
     }
 
     fun uploadTrackList(trackList: ArrayList<Point>): UploadResult {
+        //log
+        Log.i(TAG,"" + this::class.java + " uploadTrackList start")
         val jsonArray = JSONArray()
         trackList.forEach(){
+            //log
+            Log.i(TAG,"" + this::class.java + " uploadTrackList point: " + it.getAddressName())
             val jo = JSONObject()
             jo.put("docUID", it.getDocUID())
             jo.put("lineUID", it.getLineUID())
@@ -281,16 +304,25 @@ class RouteServerConnection {
         if ( data != null && data.length() != 0 && data.getJSONObject(0).has("result")) {
             result = true
         }
+        //log
+        Log.i(TAG,"" + this::class.java + " uploadTrackList end")
         return UploadResult(result, errorArrayList)
     }
 
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun uploadFilesPortion(data: List<PointFile>, startPos: Int, endPos: Int,deletedFiles: ArrayList<Long>): UploadResult {
+        //log
+        Log.i(TAG,"" + this::class.java + " uploadFilesPortion start")
         val jsonArray = JSONArray()
         for (j in startPos..endPos){
+
+
             val jo = JSONObject()
             val it = data[j]
+            //log
+            Log.i(TAG,"" + this::class.java + " uploadFilesPortion file: " + it.filePath)
+
             jo.put("docUID", it.docUID)
             jo.put("lineUID", it.lineUID)
             jo.put("lat", it.lat)
@@ -316,10 +348,14 @@ class RouteServerConnection {
         if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has("result")) {
             result = true
         }
+        //log
+        Log.i(TAG,"" + this::class.java + " uploadFilesPortion end")
         return UploadResult(result, errorArrayList)
     }
 
     fun setStatus(docUID: String, status: Int): UploadResult {
+        //log
+        Log.i(TAG,"" + this::class.java + " setStatus start")
         val jsonArray = JSONArray()
         val jo = JSONObject()
         jo.put("docUID", docUID)
@@ -334,6 +370,9 @@ class RouteServerConnection {
         if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has("result")) {
             result = true
         }
+
+        //log
+        Log.i(TAG,"" + this::class.java + " setStatus end")
         return UploadResult(result, errorArrayList)
     }
 
