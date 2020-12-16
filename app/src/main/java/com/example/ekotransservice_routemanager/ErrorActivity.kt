@@ -1,6 +1,7 @@
 package com.example.ekotransservice_routemanager
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash
 import com.google.android.material.button.MaterialButton
@@ -19,7 +20,7 @@ class ErrorActivity : AppCompatActivity() {
             finish()
             return
         }
-
+        Log.e(MainActivity.TAG,CustomActivityOnCrash.getStackTraceFromIntent(intent))
         val restartButton = findViewById<MaterialButton>(R.id.restartApp)
         if (config.isShowRestartButton && config.restartActivityClass != null){
             restartButton.text = "Перезагрузить"
