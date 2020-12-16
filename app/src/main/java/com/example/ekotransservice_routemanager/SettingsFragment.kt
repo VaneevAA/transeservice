@@ -73,51 +73,52 @@ class SettingsFragment : PreferenceFragmentCompat() {
         return view
     }
 
+    private fun createLogFile (activity: MainActivity) : File? {
+        val storage = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val fileName = "log" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale("RU"))
+            .format(Date())
 
+        try {
+            val currentFile = File.createTempFile(
+                fileName,
+                ".txt",
+                storage
+            )
 
+            return currentFile
+        }catch (e: Exception){
+            Toast.makeText(activity, "Неудалось записать файл", Toast.LENGTH_LONG).show()
+        }
+        return null
+    }
 
+    private fun setLogInFile (file: File){
+        val command = "logcat -v long *:* -f " + file.absoluteFile
+        val progress = Runtime.getRuntime().exec(command)
 
-        fun createLogFile (activity: MainActivity) : File? {
-            val storage = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-            val fileName = "log" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale("RU"))
-                .format(Date())
+    }
 
-            try {
-                val currentFile = File.createTempFile(
-                    fileName,
-                    ".txt",
-                    storage
-                )
+    private fun sendLog (activity: MainActivity){
+        val file = createLogFile(activity)
+        if(file != null){
+            setLogInFile(file)
+            val imageUris : ArrayList<Uri> = arrayListOf()
+            imageUris.add(Uri.parse(file.absolutePath))
 
-                return currentFile
-            }catch (e: Exception){
-                Toast.makeText(activity, "Неудалось записать файл", Toast.LENGTH_LONG).show()
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND_MULTIPLE
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM,imageUris)
+                type = "*/*"
             }
-            return null
+
+            activity.startActivity(Intent.createChooser(shareIntent,"Отправка лога"))
         }
+    }
 
-        fun setLogInFile (file: File){
-            val command = "logcat -v threadtime *:* -f " + file.absoluteFile
-            val progress = Runtime.getRuntime().exec(command)
 
-        }
 
-        fun sendLog (activity: MainActivity){
-            val file = createLogFile(activity)
-            if(file != null){
-                setLogInFile(file)
-                val imageUris : ArrayList<Uri> = arrayListOf()
-                imageUris.add(Uri.parse(file.absolutePath))
-
-                val shareIntent = Intent().apply {
-                    action = Intent.ACTION_SEND_MULTIPLE
-                    putParcelableArrayListExtra(Intent.EXTRA_STREAM,imageUris)
-                    type = "*/*"
-                }
-
-                activity.startActivity(Intent.createChooser(shareIntent,"Отправка лога"))
-            }
-        }
 
 }
+
+
 
