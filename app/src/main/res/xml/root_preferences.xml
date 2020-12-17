@@ -70,5 +70,11 @@
         <Preference
             android:title="@string/sendLog"
             android:key="@string/sendLog" />
+        <Preference
+            android:title="@string/update"
+            android:key="@string/update" />
+        <Preference
+            android:title="@string/clearCache"
+            android:key="@string/clearCache" />
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>

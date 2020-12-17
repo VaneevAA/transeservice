@@ -51,6 +51,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         sendLog?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             sendLog(requireActivity() as MainActivity)
+            return@OnPreferenceClickListener true
+        }
+
+        val update = findPreference<Preference>(getString(R.string.update))
+
+        update?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            //your update method
+            return@OnPreferenceClickListener true
+        }
+
+        val clearCache = findPreference<Preference>(getString(R.string.clearCache))
+
+        clearCache?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            //your clear method
+            
 
             return@OnPreferenceClickListener true
         }
