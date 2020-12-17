@@ -11,11 +11,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.preference.*
+import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
+import kotlinx.coroutines.GlobalScope
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
 class SettingsFragment : PreferenceFragmentCompat() {
+
+    lateinit var routeRepository: RouteRepository
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
@@ -47,8 +51,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         sendLog?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             sendLog(requireActivity() as MainActivity)
+
             return@OnPreferenceClickListener true
         }
+
+
 
     }
 
@@ -61,6 +68,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         //requireContext().getTheme().applyStyle(R.style.PreferenceScreen, true);
         val view = super.onCreateView(inflater, container, savedInstanceState)
         view?.background = requireActivity().getDrawable(R.drawable.pictures_back)
+        routeRepository = RouteRepository(requireContext())
+
+
         /*for( child in (view as ViewGroup).children){
             //child.background = requireActivity().getDrawable(R.drawable.point_back)
             if (child is ViewGroup){
@@ -93,7 +103,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setLogInFile (file: File){
-        val command = "logcat -v long *:* -f " + file.absoluteFile
+        val command = "logcat " + MainActivity.TAG + ":* -f " + file.absoluteFile
         val progress = Runtime.getRuntime().exec(command)
 
     }
