@@ -65,7 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         clearCache?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             //your clear method
-            
+
 
             return@OnPreferenceClickListener true
         }
