@@ -20,7 +20,11 @@ class ErrorActivity : AppCompatActivity() {
             finish()
             return
         }
-        Log.e(MainActivity.TAG,CustomActivityOnCrash.getStackTraceFromIntent(intent))
+        val error = CustomActivityOnCrash.getStackTraceFromIntent(intent)
+        if(error != null){
+            Log.e(MainActivity.TAG,error)
+        }
+
         val restartButton = findViewById<MaterialButton>(R.id.restartApp)
         if (config.isShowRestartButton && config.restartActivityClass != null){
             restartButton.text = "Перезагрузить"

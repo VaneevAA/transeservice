@@ -68,8 +68,7 @@ class MainActivity : AppCompatActivity() {
         //log
         Log.i(TAG,"Main activity on create")
         PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
-        var errorArray = mutableListOf<String>()
-        errorArray[0] = ""
+
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
         val prefEditor = sharedPreferences.edit()
         prefEditor.putString("DATE", SimpleDateFormat(
