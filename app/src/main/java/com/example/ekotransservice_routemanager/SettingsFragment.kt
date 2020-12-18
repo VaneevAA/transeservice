@@ -66,7 +66,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val clearCache = findPreference<Preference>(getString(R.string.clearCache))
 
         clearCache?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            //your clear method
             prepareClearCache(requireActivity() as MainActivity)
 
             return@OnPreferenceClickListener true
@@ -82,7 +81,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //requireContext().getTheme().applyStyle(R.style.PreferenceScreen, true);
+
         val view = super.onCreateView(inflater, container, savedInstanceState)
         view?.background = requireActivity().getDrawable(R.drawable.pictures_back)
         routeRepository = RouteRepository(requireContext())
@@ -96,13 +95,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             .format(Date())
 
         try {
-            val currentFile = File.createTempFile(
+
+            return File.createTempFile(
                 fileName,
                 ".txt",
                 storage
             )
-
-            return currentFile
         }catch (e: Exception){
             Toast.makeText(activity, "Неудалось записать файл", Toast.LENGTH_LONG).show()
         }
@@ -111,7 +109,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun setLogInFile (file: File){
         val command = "logcat " + MainActivity.TAG + ":* -f " + file.absoluteFile
-        val progress = Runtime.getRuntime().exec(command)
+        Runtime.getRuntime().exec(command)
 
     }
 
