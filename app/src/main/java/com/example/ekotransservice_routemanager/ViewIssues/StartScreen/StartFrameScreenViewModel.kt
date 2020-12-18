@@ -1,13 +1,20 @@
 package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Environment
 import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import com.example.ekotransservice_routemanager.MainActivity
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 import java.lang.IllegalArgumentException
 
 class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel() {
@@ -29,6 +36,7 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
         emit(Vehicle(sharedPreferences.getString("VEHICLE","") as String))
     }*/
 
+    var fileApk: MutableLiveData<File> = MutableLiveData()
 
     class StartFrameScreenModelFactory(private  val activity: MainActivity): ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -83,6 +91,14 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
                 Toast.makeText(activity.applicationContext,"Ошибка выгрузки",Toast.LENGTH_LONG).show()
             }
             routeLiveData.value = routeRepository.getCurrentRoute()
+        }
+    }
+
+    fun loadApk(){
+        val dir = activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        val fileName = "apk_release.apk"
+        viewModelScope.launch {
+            fileApk.value = routeRepository.loadApkAsync(dir!!,fileName)
         }
     }
 }
