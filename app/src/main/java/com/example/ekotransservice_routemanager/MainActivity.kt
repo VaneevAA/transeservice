@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val TAG = "RouteManager"
     }
-
+    var backPressedBlock = false
 
 
     private val mPrefsListener =
@@ -193,6 +193,9 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("RestrictedApi")
     override fun onBackPressed() {
+        if(backPressedBlock){
+            return
+        }
         if (navController.previousBackStackEntry != null) {
             navController.popBackStack()
             return

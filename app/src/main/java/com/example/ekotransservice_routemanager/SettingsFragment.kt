@@ -9,13 +9,16 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
+import androidx.lifecycle.ViewModel
 import androidx.preference.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -65,7 +68,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         clearCache?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             //your clear method
-
+            prepareClearCache(requireActivity() as MainActivity)
 
             return@OnPreferenceClickListener true
         }
@@ -140,7 +143,66 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private fun clearDir (dir : File,notDeleteFiles : ArrayList<String>){
+        if(dir.isDirectory){
+            val children = dir.list()
+            if(children != null){
+                for(itemFile in children) {
+                    val path = dir.absolutePath + "/" + itemFile
+                    if (notDeleteFiles.contains(path)) {
+                        continue
+                    }
+                    val uri = Uri.parse(path)
+                    if (uri != null){
+                        val file = File(uri.path)
+                        if (file.isDirectory) {
+                            clearDir(file, notDeleteFiles)
+                        } else {
+                            file.delete()
+                            if(file.exists()){
+                                file.canonicalFile.delete()
+                                if (file.exists()){
+                                    context?.deleteFile(file.path)
+                                }
+                            }
+                        }
+                    }
 
+                }   
+            }
+        }
+    }
+    
+
+    private fun prepareClearCache(activity: MainActivity){
+        activity.mSwipeRefreshLayout?.isRefreshing = true
+        requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                                            ,WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        activity.backPressedBlock = true
+        val viewModel = CoroutineViewModel(activity,{
+            val storage = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES) ?: return@CoroutineViewModel
+            val points = routeRepository.getPointsWithFilesAsync()
+            var notDeleteFiles = ArrayList<String>()
+            if (points != null) {
+                for (point in points){
+                    val files = routeRepository.getFilesFromDBAsync(point)
+                    if(files != null){
+                        for (file in files){
+                            notDeleteFiles.add(file.filePath)
+                        }
+                    }
+                }
+            }
+            delay(5000)
+            clearDir(storage,notDeleteFiles)
+        },{
+            requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            activity.mSwipeRefreshLayout?.isRefreshing = false
+            activity.backPressedBlock = false
+        })
+        viewModel.startWork()
+
+    }
 
 
 }
