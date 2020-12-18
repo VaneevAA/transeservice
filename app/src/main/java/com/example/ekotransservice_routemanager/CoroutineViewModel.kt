@@ -29,7 +29,9 @@ class CoroutineViewModel(val activity: MainActivity,
                 coroutineWork()
             } catch (e: Exception){
                 //log
-                Log.e(MainActivity.TAG,"" + this@CoroutineViewModel::class.java + "Exception in work ",e)
+                Log.e(MainActivity.TAG,
+                    "" + this@CoroutineViewModel::class.java + " Exception in work",
+                    e)
             }
 
             workDoneCheck.value = true
