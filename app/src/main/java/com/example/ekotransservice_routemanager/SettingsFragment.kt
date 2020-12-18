@@ -88,16 +88,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         view?.background = requireActivity().getDrawable(R.drawable.pictures_back)
         routeRepository = RouteRepository(requireContext())
 
-
-        /*for( child in (view as ViewGroup).children){
-            //child.background = requireActivity().getDrawable(R.drawable.point_back)
-            if (child is ViewGroup){
-                for (grandChild in (child as ViewGroup).children){
-                    grandChild.background = requireActivity().getDrawable(R.drawable.point_back)
-                }
-            }
-        }*/
-
         return view
     }
 
