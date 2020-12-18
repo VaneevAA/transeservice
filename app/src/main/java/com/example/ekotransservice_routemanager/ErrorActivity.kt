@@ -1,6 +1,7 @@
 package com.example.ekotransservice_routemanager
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash
 import com.google.android.material.button.MaterialButton
@@ -18,6 +19,10 @@ class ErrorActivity : AppCompatActivity() {
         if(config == null){
             finish()
             return
+        }
+        val error = CustomActivityOnCrash.getStackTraceFromIntent(intent)
+        if(error != null){
+            Log.e(MainActivity.TAG,error)
         }
 
         val restartButton = findViewById<MaterialButton>(R.id.restartApp)

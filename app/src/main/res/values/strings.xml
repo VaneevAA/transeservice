@@ -53,4 +53,6 @@
     <string name="onCall">По заявке</string>
     <string name="sendLog">Отправить лог</string>
     <string name="updateApp">Обновить приложение</string>
+    <string name="update">Обновить</string>
+    <string name="clearCache">Удалить кэш</string>
 </resources>

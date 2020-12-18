@@ -9,13 +9,19 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.preference.*
+import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
+import kotlinx.coroutines.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class SettingsFragment : PreferenceFragmentCompat() {
+
+    lateinit var routeRepository: RouteRepository
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
@@ -50,6 +56,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@OnPreferenceClickListener true
         }
 
+        val update = findPreference<Preference>(getString(R.string.update))
+
+        update?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            //your update method
+            return@OnPreferenceClickListener true
+        }
+
+        val clearCache = findPreference<Preference>(getString(R.string.clearCache))
+
+        clearCache?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            prepareClearCache(requireActivity() as MainActivity)
+
+            return@OnPreferenceClickListener true
+        }
+
+
+
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -58,17 +81,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //requireContext().getTheme().applyStyle(R.style.PreferenceScreen, true);
+
         val view = super.onCreateView(inflater, container, savedInstanceState)
         view?.background = requireActivity().getDrawable(R.drawable.pictures_back)
-        /*for( child in (view as ViewGroup).children){
-            //child.background = requireActivity().getDrawable(R.drawable.point_back)
-            if (child is ViewGroup){
-                for (grandChild in (child as ViewGroup).children){
-                    grandChild.background = requireActivity().getDrawable(R.drawable.point_back)
-                }
-            }
-        }*/
+        routeRepository = RouteRepository(requireContext())
 
         return view
     }
@@ -79,13 +95,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             .format(Date())
 
         try {
-            val currentFile = File.createTempFile(
+
+            return File.createTempFile(
                 fileName,
                 ".txt",
                 storage
             )
-
-            return currentFile
         }catch (e: Exception){
             Toast.makeText(activity, "Неудалось записать файл", Toast.LENGTH_LONG).show()
         }
@@ -93,8 +108,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setLogInFile (file: File){
-        val command = "logcat -v long *:* -f " + file.absoluteFile
-        val progress = Runtime.getRuntime().exec(command)
+        val command = "logcat " + MainActivity.TAG + ":* -f " + file.absoluteFile
+        Runtime.getRuntime().exec(command)
 
     }
 
@@ -115,7 +130,62 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private fun clearDir (dir : File,notDeleteFiles : ArrayList<String>){
+        if(dir.isDirectory){
+            val children = dir.list()
+            if(children != null){
+                for(itemFile in children) {
+                    val path = dir.absolutePath + "/" + itemFile
+                    if (notDeleteFiles.contains(path)) {
+                        continue
+                    }
+                    val file = File(path)
+                    if (file.isDirectory) {
+                        clearDir(file, notDeleteFiles)
+                    } else {
+                        file.delete()
+                        if(file.exists()){
+                            file.canonicalFile.delete()
+                            if (file.exists()){
+                                context?.deleteFile(file.path)
+                            }
+                        }
+                    }
+                }   
+            }
+        }
+    }
+    
 
+    private fun prepareClearCache(activity: MainActivity){
+        activity.mSwipeRefreshLayout?.isRefreshing = true
+        requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                                            ,WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        activity.backPressedBlock = true
+        val viewModel = CoroutineViewModel(activity,{
+            val storage = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES) ?: return@CoroutineViewModel
+            val points = routeRepository.getPointsWithFilesAsync()
+            val notDeleteFiles = ArrayList<String>()
+            if (points != null) {
+                for (point in points){
+                    val files = routeRepository.getFilesFromDBAsync(point)
+                    if(files != null){
+                        for (file in files){
+                            notDeleteFiles.add(file.filePath)
+                        }
+                    }
+                }
+            }
+            delay(5000)
+            clearDir(storage,notDeleteFiles)
+        },{
+            requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            activity.mSwipeRefreshLayout?.isRefreshing = false
+            activity.backPressedBlock = false
+        })
+        viewModel.startWork()
+
+    }
 
 
 }
