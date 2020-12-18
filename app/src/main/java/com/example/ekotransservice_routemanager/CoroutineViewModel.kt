@@ -12,6 +12,7 @@ class CoroutineViewModel(val activity: MainActivity,
     private val workDoneCheck : MutableLiveData<Boolean> = MutableLiveData(false)
 
     init{
+        
         workDoneCheck.removeObservers(activity)
         workDoneCheck.observe(activity, {
             if(it) {
