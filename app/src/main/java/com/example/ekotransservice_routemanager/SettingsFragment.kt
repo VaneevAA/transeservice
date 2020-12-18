@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.lifecycle.ViewModel
 import androidx.preference.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import kotlinx.coroutines.*
@@ -142,22 +141,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     if (notDeleteFiles.contains(path)) {
                         continue
                     }
-                    val uri = Uri.parse(path)
-                    if (uri != null){
-                        val file = File(uri.path)
-                        if (file.isDirectory) {
-                            clearDir(file, notDeleteFiles)
-                        } else {
-                            file.delete()
-                            if(file.exists()){
-                                file.canonicalFile.delete()
-                                if (file.exists()){
-                                    context?.deleteFile(file.path)
-                                }
+                    val file = File(path)
+                    if (file.isDirectory) {
+                        clearDir(file, notDeleteFiles)
+                    } else {
+                        file.delete()
+                        if(file.exists()){
+                            file.canonicalFile.delete()
+                            if (file.exists()){
+                                context?.deleteFile(file.path)
                             }
                         }
                     }
-
                 }   
             }
         }
@@ -172,7 +167,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val viewModel = CoroutineViewModel(activity,{
             val storage = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES) ?: return@CoroutineViewModel
             val points = routeRepository.getPointsWithFilesAsync()
-            var notDeleteFiles = ArrayList<String>()
+            val notDeleteFiles = ArrayList<String>()
             if (points != null) {
                 for (point in points){
                     val files = routeRepository.getFilesFromDBAsync(point)
