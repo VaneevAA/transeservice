@@ -2,7 +2,9 @@ package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
@@ -93,8 +95,10 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
     }
 
     fun loadApk(){
+        val dir = activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        val fileName = "apk_release.apk"
         viewModelScope.launch {
-            fileApk.value = routeRepository.loadApkAsync()
+            fileApk.value = routeRepository.loadApkAsync(dir!!,fileName)
         }
     }
 }

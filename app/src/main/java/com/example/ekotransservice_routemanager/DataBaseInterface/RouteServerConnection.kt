@@ -420,7 +420,7 @@ class RouteServerConnection {
         return UploadResult(result, errorArrayList)
     }
 
-    fun downloadApk(dir: File): File? {
+    fun downloadApk(dir: File, fileName: String): File? {
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val url = URL("https", urlName, urlPort, "/apk/app-release.apk")
         var connector: HttpsURLConnection? = null
@@ -454,7 +454,7 @@ class RouteServerConnection {
         return try {
             val code = connector.responseCode
             if (code == 200) {
-                val file = File(dir,"apk_release.apk")
+                val file = File(dir,fileName)
                 /*if (file.exists()) {
                     val writer = FileOutputStream(file)
                     writer.write("".toByteArray())

@@ -263,16 +263,15 @@ class RouteRepository constructor(val context: Context){
 
     }
 
-    suspend fun loadApkAsync(): File?{
+    suspend fun loadApkAsync(dir:File, fileName: String): File?{
         val result = GlobalScope.async {
-            loadApk()
+            loadApk(dir,fileName)
         }
         return result.await()
     }
 
-    private fun loadApk(): File?{
-        val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-        return serverConnector.downloadApk(dir!!)
+    private fun loadApk(dir: File, fileName: String): File?{
+        return serverConnector.downloadApk(dir!!,fileName)
     }
 
     //endregion LoadData

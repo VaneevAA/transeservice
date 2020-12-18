@@ -67,6 +67,8 @@
             android:title="@string/datePrefTitle"
             app:useSimpleSummaryProvider="true"
             app:isPreferenceVisible="true"/>
+    </androidx.preference.PreferenceCategory>
+    <androidx.preference.PreferenceCategory android:title="@string/servicePref">
         <Preference
             android:title="@string/sendLog"
             android:key="@string/sendLog" />

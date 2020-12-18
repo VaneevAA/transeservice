@@ -55,67 +55,6 @@ class start_frame_screen : Fragment() {
 
     private lateinit var viewScreen: StartFrameScreenViewModel
 
-    private var downloadReference: Long = 0
-    private lateinit var downloadManager: DownloadManager
-    private var uri: Uri? = null
-
-    private val receiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-            if (action == DownloadManager.ACTION_DOWNLOAD_COMPLETE) {
-                val downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                if (downloadId != downloadReference) {
-                    context.unregisterReceiver(this)
-                    return
-                }
-                Log.d(
-                    "Download APK",
-                    "" + this::class.java + " BroadcastReceiver onReceive "
-                )
-
-                val query = DownloadManager.Query()
-                query.setFilterById(downloadReference)
-                val cursor = downloadManager.query(query)
-                cursor?.let {
-                    if (cursor.moveToFirst()) {
-                        val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
-                        if (DownloadManager.STATUS_SUCCESSFUL == cursor.getInt(columnIndex)) {
-                            var localFile = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
-                            Toast.makeText(context,"Загружен$localFile", Toast.LENGTH_LONG).show()
-
-                            val install = Intent(Intent.ACTION_VIEW)
-                            install.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            install.setDataAndType(
-                                Uri.parse(localFile),
-                                downloadManager!!.getMimeTypeForDownloadedFile(downloadId)
-                            )
-                            Log.d(
-                                "Download APK",
-                                "" + this::class.java + " BroadcastReceiver onReceive $install.type ${install.data.toString()}"
-                            )
-
-                            if (localFile.contains("file:///")) {
-                                localFile = localFile.removePrefix("file:///").substringBeforeLast(File.separator)
-                            }
-
-
-                            startActivity(install)
-                        } else if (DownloadManager.STATUS_FAILED == cursor.getInt(columnIndex)) {
-                            val message = "Download error ${cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_REASON))}"
-                            Toast.makeText(context,message, Toast.LENGTH_LONG).show()
-                        }
-                    }
-                    cursor.close()
-                }
-
-
-
-                context.unregisterReceiver(this)
-
-            }
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -201,15 +140,6 @@ class start_frame_screen : Fragment() {
                 findNavController().navigate(com.example.ekotransservice_routemanager.R.id.action_start_frame_screen_to_allPhotos)
             }
         }
-
-        mainView.findViewById<View>(com.example.ekotransservice_routemanager.R.id.updateButton).setOnClickListener {
-            downloadAppFile()
-        }
-
-        //Отслеживание обновления/загрузки файла
-        viewScreen.fileApk.observe(requireActivity(), Observer {
-            openApkFile()
-        })
 
         //всё сворачиваем для старта
         showHideRouteLiveData(viewScreen.routeLiveData.value, false, mainView)
@@ -353,140 +283,16 @@ class start_frame_screen : Fragment() {
         if (viewScreen.fileApk.value!!.length() == 0L) {
             return
         }
-        //val uri = Uri.parse("file:/${viewScreen.fileApk.value!!.absolutePath}")
         val uri = FileProvider.getUriForFile(
             requireContext(), BuildConfig.APPLICATION_ID + ".fileprovider",
-            //File("Download/apk_release.apk")
             viewScreen.fileApk.value!!
         )
-        //val uri = Uri.fromFile(viewScreen.fileApk.value)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         intent.setDataAndType(uri, "application/vnd.android.package-archive")
         intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
 
         startActivity(intent)
-    }
-
-    private fun installApk(){
-        val packageManger = requireContext().packageManager
-        val packageInstaller = packageManger.packageInstaller
-        val params = SessionParams(
-            SessionParams.MODE_FULL_INSTALL
-        )
-        val packageName = Context::getPackageName.name
-        params.setAppPackageName(packageName)
-        var session: PackageInstaller.Session? = null
-        try {
-            val sessionId = packageInstaller.createSession(params)
-            session = packageInstaller.openSession(sessionId)
-            val out: OutputStream = session.openWrite(packageName, 0, -1)
-
-            val buffer = ByteArray(1024)
-            var length: Int
-            var count = 0
-
-            val apkStream = FileInputStream(viewScreen.fileApk.value)
-            while (apkStream.read(buffer).also { length = it } != -1) {
-                out.write(buffer, 0, length)
-                count += length
-            }
-            //out.write(apkStream.readBytes())
-            session.fsync(out)
-            out.close()
-            val intent = Intent(Intent.ACTION_PACKAGE_ADDED)
-            session.commit(
-                PendingIntent.getBroadcast(
-                    context, sessionId,
-                    intent, PendingIntent.FLAG_UPDATE_CURRENT
-                ).intentSender
-            )
-        } finally {
-            session?.close()
-        }
-    }
-
-    private fun downloadAndInstallApk() {
-
-        if (viewScreen.fileApk.value!!.length() == 0L) {
-            return
-        }
-
-        var destination: String =
-            context?.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!!.absolutePath + "/"
-        val fileName = "apk_release.apk"
-        destination += fileName
-        uri = Uri.parse("file://$destination")
-
-        //val uri = Uri.parse("file://" + BuildConfig.APPLICATION_ID + "/Download/apk_release.apk")
-        /*val uri = FileProvider.getUriForFile(
-            requireContext(), BuildConfig.APPLICATION_ID + ".fileprovider",
-            //File("Download/apk_release.apk")
-            viewScreen.fileApk.value!!
-        )*/
-
-        //Delete update file if exists
-        val file = File(destination)
-        if (file.exists()) //file.delete() - test this, I think sometimes it doesnt work
-            file.delete()
-
-        val url = URL("https", "188.234.242.63", 444, "/apk/app-release.apk")
-
-        downloadManager = requireContext().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-        val request = DownloadManager.Request(Uri.parse(url.toString()))
-        request.apply {
-            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
-            //setAllowedOverRoaming(true)
-            setTitle(fileName)
-            setDescription("Downloading $fileName")
-            setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            //setDestinationUri(uri)
-            //request.setDestinationUri(Uri.fromFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)))
-            setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-            requireContext().registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
-            downloadReference = downloadManager.enqueue(this)
-        }
-        Log.d("d","d")
-
-        /*request.setDescription("Electronic route manager")
-        request.setTitle(Context::getPackageName.name)
-        //set destination
-        request.setDestinationUri(uri)
-        // get download service and enqueue file
-        val manager = requireContext().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
-        val downloadId = manager!!.enqueue(request)
-
-        //set BroadcastReceiver to install app when .apk is downloaded
-        val onComplete: BroadcastReceiver = object : BroadcastReceiver() {
-            override fun onReceive(ctxt: Context?, intent: Intent?) {
-                Log.d(
-                    "Download APK",
-                    "" + this::class.java + " BroadcastReceiver onReceive "
-                )
-                val install = Intent(Intent.ACTION_VIEW)
-                install.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                install.setDataAndType(
-                    uri,
-                    manager!!.getMimeTypeForDownloadedFile(downloadId)
-                )
-                Log.d(
-                    "Download APK",
-                    "" + this::class.java + " BroadcastReceiver onReceive $install.type ${install.data.toString()}"
-                )
-                startActivity(install)
-                LocalBroadcastManager.getInstance(requireContext())
-                    .unregisterReceiver(this)
-            }
-        }
-
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))*/
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        Log.d("intent result code", "$resultCode")
     }
 
 }
