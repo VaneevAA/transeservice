@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -16,7 +17,13 @@ class CoroutineViewModel(val activity: MainActivity,val coroutineWork : suspend 
 
     fun startWork (){
         viewModelScope.launch {
-            coroutineWork()
+            try {
+                coroutineWork()
+            } catch (e: Exception){
+                //log
+                Log.e(MainActivity.TAG,"" + this@CoroutineViewModel::class.java + "Exception in work ",e)
+            }
+
             workDoneCheck.value = true
         }
 
