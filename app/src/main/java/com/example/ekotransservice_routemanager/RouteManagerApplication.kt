@@ -7,7 +7,7 @@ import cat.ereza.customactivityoncrash.config.CaocConfig
 class RouteManagerApplication: Application(), Configuration.Provider {
     override fun getWorkManagerConfiguration() =
         Configuration.Builder()
-            .setMinimumLoggingLevel(android.util.Log.DEBUG)
+            .setMinimumLoggingLevel(android.util.Log.INFO)
             .build()
 
     override fun onCreate() {

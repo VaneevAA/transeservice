@@ -1,10 +1,19 @@
 package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
 import android.annotation.SuppressLint
+import android.app.DownloadManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
-import android.database.Observable
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageInstaller
+import android.content.pm.PackageInstaller.SessionParams
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,23 +21,28 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
-import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
+import com.example.ekotransservice_routemanager.BuildConfig
 import com.example.ekotransservice_routemanager.DataClasses.Route
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import com.example.ekotransservice_routemanager.MainActivity
-import com.example.ekotransservice_routemanager.R
+import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.google.android.material.transition.Hold
 import com.google.android.material.transition.MaterialContainerTransform
-import com.google.android.material.transition.MaterialElevationScale
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.*
 import kotlinx.android.synthetic.main.start_frame_screen_fragment.view.*
 import kotlinx.coroutines.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.OutputStream
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -41,18 +55,85 @@ class start_frame_screen : Fragment() {
 
     private lateinit var viewScreen: StartFrameScreenViewModel
 
+    private var downloadReference: Long = 0
+    private lateinit var downloadManager: DownloadManager
+    private var uri: Uri? = null
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            if (action == DownloadManager.ACTION_DOWNLOAD_COMPLETE) {
+                val downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (downloadId != downloadReference) {
+                    context.unregisterReceiver(this)
+                    return
+                }
+                Log.d(
+                    "Download APK",
+                    "" + this::class.java + " BroadcastReceiver onReceive "
+                )
+
+                val query = DownloadManager.Query()
+                query.setFilterById(downloadReference)
+                val cursor = downloadManager.query(query)
+                cursor?.let {
+                    if (cursor.moveToFirst()) {
+                        val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                        if (DownloadManager.STATUS_SUCCESSFUL == cursor.getInt(columnIndex)) {
+                            var localFile = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
+                            Toast.makeText(context,"Загружен$localFile", Toast.LENGTH_LONG).show()
+
+                            val install = Intent(Intent.ACTION_VIEW)
+                            install.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            install.setDataAndType(
+                                Uri.parse(localFile),
+                                downloadManager!!.getMimeTypeForDownloadedFile(downloadId)
+                            )
+                            Log.d(
+                                "Download APK",
+                                "" + this::class.java + " BroadcastReceiver onReceive $install.type ${install.data.toString()}"
+                            )
+
+                            if (localFile.contains("file:///")) {
+                                localFile = localFile.removePrefix("file:///").substringBeforeLast(File.separator)
+                            }
+
+
+                            startActivity(install)
+                        } else if (DownloadManager.STATUS_FAILED == cursor.getInt(columnIndex)) {
+                            val message = "Download error ${cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_REASON))}"
+                            Toast.makeText(context,message, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                    cursor.close()
+                }
+
+
+
+                context.unregisterReceiver(this)
+
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         //Объявление основных значений
-        val mainView = inflater.inflate(R.layout.start_frame_screen_fragment, container, false)
-        val closeView : View = mainView.findViewById(R.id.layoutToCloseRoute)
-        val vehicleView: View = mainView.findViewById(R.id.vehicleLayout)
-        val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
-        viewScreen = ViewModelProvider(this.requireActivity(),
-            StartFrameScreenViewModel.StartFrameScreenModelFactory(requireActivity() as MainActivity))
+        val mainView = inflater.inflate(
+            com.example.ekotransservice_routemanager.R.layout.start_frame_screen_fragment,
+            container,
+            false
+        )
+        val closeView : View = mainView.findViewById(com.example.ekotransservice_routemanager.R.id.layoutToCloseRoute)
+        val vehicleView: View = mainView.findViewById(com.example.ekotransservice_routemanager.R.id.vehicleLayout)
+        val imageButton : ImageButton = mainView.findViewById(com.example.ekotransservice_routemanager.R.id.imageButton)
+        viewScreen = ViewModelProvider(
+            this.requireActivity(),
+            StartFrameScreenViewModel.StartFrameScreenModelFactory(requireActivity() as MainActivity)
+        )
             .get(StartFrameScreenViewModel::class.java)
 
         //Получение машины
@@ -60,13 +141,13 @@ class start_frame_screen : Fragment() {
         //Отслеживание изменения маршрута
         viewScreen.routeLiveData.removeObservers(requireActivity())
         viewScreen.routeLiveData.observe(requireActivity(), Observer {
-            routeUpdate(it,mainView)
+            routeUpdate(it, mainView)
         })
 
         //Отслеживание ошибок
         viewScreen.errorLiveData.removeObservers(requireActivity())
         viewScreen.errorLiveData.observe(requireActivity(), Observer {
-            if(it){
+            if (it) {
                 (requireActivity() as MainActivity).errorCheck(viewScreen.routeRepository)
                 viewScreen.errorLiveData.value = false
             }
@@ -75,8 +156,9 @@ class start_frame_screen : Fragment() {
         //Отслеживание изменения машины
         viewScreen.vehicle.removeObservers(requireActivity())
         viewScreen.vehicle.observe(requireActivity(), Observer {
-            vehicleUpdate(it,mainView)
+            vehicleUpdate(it, mainView)
         })
+
 
         //Событие обновления
         (requireActivity() as MainActivity).mSwipeRefreshLayout!!.setOnRefreshListener {
@@ -94,7 +176,7 @@ class start_frame_screen : Fragment() {
 
         //Установка машины
         vehicleView.setOnClickListener{
-            showVehiclePrefernces(mainView,it)
+            showVehiclePrefernces(mainView, it)
         }
 
         //Кнопка обновления маршрута
@@ -102,9 +184,9 @@ class start_frame_screen : Fragment() {
             viewScreen.onRefresh(true)
         }
 
-        mainView.findViewById<View>(R.id.routeInfo).setOnClickListener {
+        mainView.findViewById<View>(com.example.ekotransservice_routemanager.R.id.routeInfo).setOnClickListener {
             if(viewScreen.routeLiveData.value != null){
-                findNavController().navigate(R.id.action_start_frame_screen_to_route_list)
+                findNavController().navigate(com.example.ekotransservice_routemanager.R.id.action_start_frame_screen_to_route_list)
             }
 
         }
@@ -114,14 +196,23 @@ class start_frame_screen : Fragment() {
             (activity as MainActivity).endOfTheRoute(viewScreen)
         }
 
-        mainView.findViewById<View>(R.id.photoLayout).setOnClickListener {
+        mainView.findViewById<View>(com.example.ekotransservice_routemanager.R.id.photoLayout).setOnClickListener {
             if(viewScreen.routeLiveData.value != null){
-                findNavController().navigate(R.id.action_start_frame_screen_to_allPhotos)
+                findNavController().navigate(com.example.ekotransservice_routemanager.R.id.action_start_frame_screen_to_allPhotos)
             }
         }
 
+        mainView.findViewById<View>(com.example.ekotransservice_routemanager.R.id.updateButton).setOnClickListener {
+            downloadAppFile()
+        }
+
+        //Отслеживание обновления/загрузки файла
+        viewScreen.fileApk.observe(requireActivity(), Observer {
+            openApkFile()
+        })
+
         //всё сворачиваем для старта
-        showHideRouteLiveData(viewScreen.routeLiveData.value,false,mainView)
+        showHideRouteLiveData(viewScreen.routeLiveData.value, false, mainView)
         closedRoute = false
         showHideCloseRoute(mainView)
 
@@ -133,33 +224,38 @@ class start_frame_screen : Fragment() {
 
     }
 
-    private fun showHideCloseRoute(mainView : View){
-        val toCloseView = mainView.findViewById<View>(R.id.closeLayout)
+    private fun showHideCloseRoute(mainView: View){
+        val toCloseView = mainView.findViewById<View>(com.example.ekotransservice_routemanager.R.id.closeLayout)
         if(!closedRoute){
-            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1,true) }
+            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1, true) }
             animateView!!.hideHeight()
         }else{
-            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1,true) }
+            val animateView = this.context?.let { it1 -> AnimateView(toCloseView, it1, true) }
             animateView!!.showHeight()
         }
 
 
-        val imageRoutate = mainView.findViewById<View>(R.id.imageOpenCloseRoute)
+        val imageRoutate = mainView.findViewById<View>(com.example.ekotransservice_routemanager.R.id.imageOpenCloseRoute)
 
         if(!closedRoute){
-            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1,true) }
+            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1, true) }
             animateView!!.rotate()
         }else{
-            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1,true) }
+            val animateView = this.context?.let { it1 -> AnimateView(imageRoutate, it1, true) }
             animateView!!.rotateBack()
         }
 
         closedRoute = !closedRoute
     }
 
-    private fun showVehiclePrefernces(mainView: View, view : View) {
+    private fun showVehiclePrefernces(mainView: View, view: View) {
         val extra = FragmentNavigatorExtras(view to "vehicle")
-       mainView.findNavController().navigate(R.id.action_start_frame_screen_to_vehicle_screen,null,null,extra)
+        mainView.findNavController().navigate(
+            com.example.ekotransservice_routemanager.R.id.action_start_frame_screen_to_vehicle_screen,
+            null,
+            null,
+            extra
+        )
     }
 
     /*private fun getCurrentRoute(){
@@ -202,38 +298,38 @@ class start_frame_screen : Fragment() {
     }*/
 
     @SuppressLint("SimpleDateFormat")
-    private fun showHideRouteLiveData (route: Route?, animate : Boolean, mainView : View){
-        val routeGroup  = mainView.findViewById<View>(R.id.routeGroup)
-        val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
-        val atAllCount : TextView = mainView.findViewById(R.id.atAllCount)
-        val doneCount : TextView = mainView.findViewById(R.id.doneCount)
-        val dateView = mainView.findViewById<TextView>(R.id.dateOfRoute)
+    private fun showHideRouteLiveData(route: Route?, animate: Boolean, mainView: View){
+        val routeGroup  = mainView.findViewById<View>(com.example.ekotransservice_routemanager.R.id.routeGroup)
+        val imageButton : ImageButton = mainView.findViewById(com.example.ekotransservice_routemanager.R.id.imageButton)
+        val atAllCount : TextView = mainView.findViewById(com.example.ekotransservice_routemanager.R.id.atAllCount)
+        val doneCount : TextView = mainView.findViewById(com.example.ekotransservice_routemanager.R.id.doneCount)
+        val dateView = mainView.findViewById<TextView>(com.example.ekotransservice_routemanager.R.id.dateOfRoute)
 
 
         if(route == null){
-            val animation = AnimateView(routeGroup,requireContext(),animate)
+            val animation = AnimateView(routeGroup, requireContext(), animate)
             animation.hideHeight()
-            imageButton.setImageResource(R.drawable.ic_baseline_add_24)
+            imageButton.setImageResource(com.example.ekotransservice_routemanager.R.drawable.ic_baseline_add_24)
             atAllCount.text = "0"
             doneCount.text = "0"
             dateView.text = SimpleDateFormat("dd.MM.yyyy").format(Date())
         }else{
-            val animation = AnimateView(routeGroup,requireContext(),animate)
+            val animation = AnimateView(routeGroup, requireContext(), animate)
             animation.showHeight()
-            imageButton.setImageResource(R.drawable.ic_baseline_replay_24)
+            imageButton.setImageResource(com.example.ekotransservice_routemanager.R.drawable.ic_baseline_replay_24)
             atAllCount.text = route.getCountPoint().toString()
             doneCount.text = route.getCountPointDone().toString()
             dateView.text = SimpleDateFormat("dd.MM.yyyy").format(route.getRouteDate())
         }
     }
 
-    private fun routeUpdate(route : Route?,mainView: View){
-        showHideRouteLiveData(route,true,mainView)
+    private fun routeUpdate(route: Route?, mainView: View){
+        showHideRouteLiveData(route, true, mainView)
 
     }
 
-    private fun vehicleUpdate (vehicle : Vehicle?,mainView: View){
-        val vehicleView = mainView.findViewById<TextView>(R.id.vehicleNumber)
+    private fun vehicleUpdate(vehicle: Vehicle?, mainView: View){
+        val vehicleView = mainView.findViewById<TextView>(com.example.ekotransservice_routemanager.R.id.vehicleNumber)
         if(vehicle == null){
             vehicleView.text = ""
         }else{
@@ -246,6 +342,151 @@ class start_frame_screen : Fragment() {
         super.onCreate(savedInstanceState)
         sharedElementEnterTransition = MaterialContainerTransform()
         exitTransition = Hold()
+    }
+
+    private fun downloadAppFile(){
+        viewScreen.loadApk()
+    }
+
+    private fun openApkFile(){
+        val intent = Intent(Intent.ACTION_VIEW)
+        if (viewScreen.fileApk.value!!.length() == 0L) {
+            return
+        }
+        //val uri = Uri.parse("file:/${viewScreen.fileApk.value!!.absolutePath}")
+        val uri = FileProvider.getUriForFile(
+            requireContext(), BuildConfig.APPLICATION_ID + ".fileprovider",
+            //File("Download/apk_release.apk")
+            viewScreen.fileApk.value!!
+        )
+        //val uri = Uri.fromFile(viewScreen.fileApk.value)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        intent.setDataAndType(uri, "application/vnd.android.package-archive")
+        intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+
+        startActivity(intent)
+    }
+
+    private fun installApk(){
+        val packageManger = requireContext().packageManager
+        val packageInstaller = packageManger.packageInstaller
+        val params = SessionParams(
+            SessionParams.MODE_FULL_INSTALL
+        )
+        val packageName = Context::getPackageName.name
+        params.setAppPackageName(packageName)
+        var session: PackageInstaller.Session? = null
+        try {
+            val sessionId = packageInstaller.createSession(params)
+            session = packageInstaller.openSession(sessionId)
+            val out: OutputStream = session.openWrite(packageName, 0, -1)
+
+            val buffer = ByteArray(1024)
+            var length: Int
+            var count = 0
+
+            val apkStream = FileInputStream(viewScreen.fileApk.value)
+            while (apkStream.read(buffer).also { length = it } != -1) {
+                out.write(buffer, 0, length)
+                count += length
+            }
+            //out.write(apkStream.readBytes())
+            session.fsync(out)
+            out.close()
+            val intent = Intent(Intent.ACTION_PACKAGE_ADDED)
+            session.commit(
+                PendingIntent.getBroadcast(
+                    context, sessionId,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT
+                ).intentSender
+            )
+        } finally {
+            session?.close()
+        }
+    }
+
+    private fun downloadAndInstallApk() {
+
+        if (viewScreen.fileApk.value!!.length() == 0L) {
+            return
+        }
+
+        var destination: String =
+            context?.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!!.absolutePath + "/"
+        val fileName = "apk_release.apk"
+        destination += fileName
+        uri = Uri.parse("file://$destination")
+
+        //val uri = Uri.parse("file://" + BuildConfig.APPLICATION_ID + "/Download/apk_release.apk")
+        /*val uri = FileProvider.getUriForFile(
+            requireContext(), BuildConfig.APPLICATION_ID + ".fileprovider",
+            //File("Download/apk_release.apk")
+            viewScreen.fileApk.value!!
+        )*/
+
+        //Delete update file if exists
+        val file = File(destination)
+        if (file.exists()) //file.delete() - test this, I think sometimes it doesnt work
+            file.delete()
+
+        val url = URL("https", "188.234.242.63", 444, "/apk/app-release.apk")
+
+        downloadManager = requireContext().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+        val request = DownloadManager.Request(Uri.parse(url.toString()))
+        request.apply {
+            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
+            //setAllowedOverRoaming(true)
+            setTitle(fileName)
+            setDescription("Downloading $fileName")
+            setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            //setDestinationUri(uri)
+            //request.setDestinationUri(Uri.fromFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)))
+            setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+            requireContext().registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+            downloadReference = downloadManager.enqueue(this)
+        }
+        Log.d("d","d")
+
+        /*request.setDescription("Electronic route manager")
+        request.setTitle(Context::getPackageName.name)
+        //set destination
+        request.setDestinationUri(uri)
+        // get download service and enqueue file
+        val manager = requireContext().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
+        val downloadId = manager!!.enqueue(request)
+
+        //set BroadcastReceiver to install app when .apk is downloaded
+        val onComplete: BroadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(ctxt: Context?, intent: Intent?) {
+                Log.d(
+                    "Download APK",
+                    "" + this::class.java + " BroadcastReceiver onReceive "
+                )
+                val install = Intent(Intent.ACTION_VIEW)
+                install.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                install.setDataAndType(
+                    uri,
+                    manager!!.getMimeTypeForDownloadedFile(downloadId)
+                )
+                Log.d(
+                    "Download APK",
+                    "" + this::class.java + " BroadcastReceiver onReceive $install.type ${install.data.toString()}"
+                )
+                startActivity(install)
+                LocalBroadcastManager.getInstance(requireContext())
+                    .unregisterReceiver(this)
+            }
+        }
+
+        LocalBroadcastManager.getInstance(requireContext())
+            .registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))*/
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d("intent result code", "$resultCode")
     }
 
 }

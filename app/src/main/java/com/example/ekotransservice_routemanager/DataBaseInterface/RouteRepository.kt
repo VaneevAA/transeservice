@@ -2,14 +2,17 @@ package com.example.ekotransservice_routemanager.DataBaseInterface
 
 import android.content.Context
 import android.os.Build
+import android.os.Environment
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.*
 import com.example.ekotransservice_routemanager.DataClasses.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.BufferedInputStream
+import java.io.File
 import java.io.InputStream
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
@@ -258,6 +261,18 @@ class RouteRepository constructor(val context: Context){
             null
         }
 
+    }
+
+    suspend fun loadApkAsync(): File?{
+        val result = GlobalScope.async {
+            loadApk()
+        }
+        return result.await()
+    }
+
+    private fun loadApk(): File?{
+        val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        return serverConnector.downloadApk(dir!!)
     }
 
     //endregion LoadData

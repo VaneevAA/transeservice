@@ -1,6 +1,8 @@
 package com.example.ekotransservice_routemanager.DataBaseInterface
 
+import android.net.Uri
 import android.os.Build
+import android.util.JsonWriter
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.ekotransservice_routemanager.*
@@ -9,21 +11,16 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedWriter
-import java.io.IOException
-import java.io.OutputStreamWriter
-import java.net.HttpURLConnection
+import java.io.*
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.security.Key
-import java.security.KeyStore
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocketFactory
 import kotlin.collections.ArrayList
-import kotlin.coroutines.coroutineContext
 
 class RouteServerConnection {
     private var urlName:String = ""
@@ -62,6 +59,37 @@ class RouteServerConnection {
     fun setSSl(sslSocketFactory: SSLSocketFactory){
         this.sslSocketFactory = sslSocketFactory
     }
+
+    private fun writeJSONArrayToStream(jsonWriter: JsonWriter, jsonArray: JSONArray){
+        jsonWriter.beginArray()
+        for (i in 0 until jsonArray.length()) {
+            val item = jsonArray.getJSONObject(i)
+            writeJSONObjectToStream(jsonWriter, item)
+        }
+        jsonWriter.endArray()
+    }
+
+    private fun writeJSONObjectToStream(jsonWriter: JsonWriter, jsonObject: JSONObject) {
+        val jsonKeys = jsonObject.keys()
+        jsonWriter.beginObject()
+        while (jsonKeys.hasNext()){
+            val currentKey = jsonKeys.next()
+            val currentValue = jsonObject.get(currentKey)
+            jsonWriter.name(currentKey)
+            if (!(currentValue is JSONArray || currentValue is JSONObject)){
+                jsonWriter.value(currentValue.toString())
+            }else {
+                if (currentValue is JSONObject) {
+                    writeJSONObjectToStream(jsonWriter, currentValue)
+                } else{
+                    writeJSONArrayToStream(jsonWriter, currentValue as JSONArray)
+                }
+            }
+        }
+        jsonWriter.endObject()
+    }
+
+
     private fun getData(
         methodName: String,
         requestMethod: String,
@@ -71,14 +99,17 @@ class RouteServerConnection {
         //val url = URL("http://$urlName:$urlPort/$methodName")
         //val url = URL("http",urlName, urlPort,"mobileapp/$methodName")
         //log
-        Log.i(TAG,"" + this::class.java + " getData method: " + methodName + " requestMethod " + requestMethod)
+        Log.i(
+            TAG,
+            "" + this::class.java + " getData method: " + methodName + " requestMethod " + requestMethod
+        )
         val url = URL("https", urlName, urlPort, "mobileapp/$methodName")
         var connector: HttpsURLConnection? = null
         try {
             connector = url.openConnection() as HttpsURLConnection
         }catch (e: Exception){
             //log
-            Log.e(TAG,"" + this::class.java + " getData connector url " + url,e)
+            Log.e(TAG, "" + this::class.java + " getData connector url " + url, e)
             errorArrayList.add(
                 ErrorMessage(
                     ErrorTypes.DOWNLOAD_ERROR,
@@ -96,8 +127,12 @@ class RouteServerConnection {
         return try {
             if (requestMethod == "POST" && postParam!=null ){
                 val wr =BufferedWriter(OutputStreamWriter(connector.outputStream))
-                wr.write(postParam.toString())
-                wr.flush()
+                val writer = JsonWriter(wr)
+                writer.setIndent("  ");
+                writeJSONObjectToStream(writer, postParam)
+                writer.close()
+                //wr.write(postParam.toString())
+                wr.close()
             }
             val code = connector.responseCode
             if (code == 200) {
@@ -118,7 +153,7 @@ class RouteServerConnection {
 
                 } catch (e: java.lang.Exception) {
                     //log
-                    Log.e(TAG,"" + this::class.java + " getData JSON reader ",e)
+                    Log.e(TAG, "" + this::class.java + " getData JSON reader ", e)
                     errorArrayList.add(
                         ErrorMessage(
                             ErrorTypes.DOWNLOAD_ERROR,
@@ -141,25 +176,25 @@ class RouteServerConnection {
 
                 )
                 //log
-                Log.w(TAG,"" + this::class.java + " getData connector code " + code.toString())
+                Log.w(TAG, "" + this::class.java + " getData connector code " + code.toString())
                 null
             }
         } catch (e: MalformedURLException) {
             errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Плохой URL", e))
             //log
-            Log.e(TAG,"" + this::class.java + " getData connector bad url " + url,e)
+            Log.e(TAG, "" + this::class.java + " getData connector bad url " + url, e)
             connector.disconnect()
             null
         } catch (e: IOException) {
             errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Проблемы с сетью", e))
             //log
-            Log.e(TAG,"" + this::class.java + " getData connector bad net ",e)
+            Log.e(TAG, "" + this::class.java + " getData connector bad net ", e)
             connector.disconnect()
             null
         } catch (e: java.lang.Exception) {
             errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Ошибка обработки кода", e))
             //log
-            Log.e(TAG,"" + this::class.java + " getData connector ",e)
+            Log.e(TAG, "" + this::class.java + " getData connector ", e)
            null
         }
         finally {
@@ -267,7 +302,7 @@ class RouteServerConnection {
                     ).format(it.getTimestamp())
                 )
             }else{
-                jo.put("timestamp","")
+                jo.put("timestamp", "")
             }
             jsonArray.put(jo)
         }
@@ -286,7 +321,12 @@ class RouteServerConnection {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun uploadFilesPortion(data: List<PointFile>, startPos: Int, endPos: Int,deletedFiles: ArrayList<Long>): UploadResult {
+    fun uploadFilesPortion(
+        data: List<PointFile>,
+        startPos: Int,
+        endPos: Int,
+        deletedFiles: ArrayList<Long>
+    ): UploadResult {
         val jsonArray = JSONArray()
         for (j in startPos..endPos){
             val jo = JSONObject()
@@ -295,15 +335,18 @@ class RouteServerConnection {
             jo.put("lineUID", it.lineUID)
             jo.put("lat", it.lat)
             jo.put("lon", it.lon)
-            jo.put("fileName",it.fileName)
-            jo.put("fileExtension",it.fileExtension)
-            jo.put("timestamp", SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("RU")).format(it.timeDate))
+            jo.put("fileName", it.fileName)
+            jo.put("fileExtension", it.fileExtension)
+            jo.put(
+                "timestamp",
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("RU")).format(it.timeDate)
+            )
             if (it.photoOrder == PhotoOrder.PHOTO_BEFORE) {
                 jo.put("photoOrder", 0)
             }else{
                 jo.put("photoOrder", 1)
             }
-            jo.put("fileBase64",it.getCompresedBase64())
+            jo.put("fileBase64", it.getCompresedBase64())
             jsonArray.put(jo)
             deletedFiles.add(it.id)
         }
@@ -313,7 +356,9 @@ class RouteServerConnection {
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val uploadResult = getData(methodName, "POST", postParam, errorArrayList)
         var result = false
-        if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has("result")) {
+        if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has(
+                "result"
+            )) {
             result = true
         }
         return UploadResult(result, errorArrayList)
@@ -331,10 +376,92 @@ class RouteServerConnection {
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val uploadResult = getData(methodName, "POST", postParam, errorArrayList)
         var result = false
-        if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has("result")) {
+        if ( uploadResult != null && uploadResult.length() != 0 && uploadResult.getJSONObject(0).has(
+                "result"
+            )) {
             result = true
         }
         return UploadResult(result, errorArrayList)
     }
 
+    fun downloadApk(dir: File): File? {
+        val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
+        val url = URL("https", urlName, urlPort, "/apk/app-release.apk")
+        var connector: HttpsURLConnection? = null
+        try {
+            connector = url.openConnection() as HttpsURLConnection
+        }catch (e: Exception){
+            //log
+            Log.e(TAG, "" + this::class.java + " getData connector url " + url, e)
+            errorArrayList.add(
+                ErrorMessage(
+                    ErrorTypes.DOWNLOAD_ERROR,
+                    "Ошибка соединения с сервером",
+                    e
+                )
+            )
+        }
+
+        if (connector==null) {
+            errorArrayList.add(
+                ErrorMessage(
+                    ErrorTypes.DOWNLOAD_ERROR,
+                    "Невозможно установить подключение",
+                    null
+                )
+            )
+            return null
+        }
+        connector.sslSocketFactory = sslSocketFactory as SSLSocketFactory?
+        connector.requestMethod = "GET"
+        connector.connectTimeout = 20000
+        return try {
+            val code = connector.responseCode
+            if (code == 200) {
+                val file = File(dir,"apk_release.apk")
+                /*if (file.exists()) {
+                    val writer = FileOutputStream(file)
+                    writer.write("".toByteArray())
+                    writer.close()
+                }*/
+                val outputStream = FileOutputStream(file)
+                //connector.inputStream.bufferedReader().copyTo(outputStream.writer(), DEFAULT_BUFFER_SIZE)
+                outputStream.write(connector.inputStream.readBytes())
+                outputStream.flush()
+                file
+            }else{
+                    val outputString: String = connector.errorStream.bufferedReader().readText()
+                    errorArrayList.add(
+                        ErrorMessage(
+                            ErrorTypes.DOWNLOAD_ERROR,
+                            outputString,
+                            null
+                        )
+
+                    )
+                    //log
+                    Log.w(TAG, "" + this::class.java + " getData connector code " + code.toString())
+                    null
+            }
+        } catch (e: MalformedURLException) {
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Плохой URL", e))
+            //log
+            Log.e(TAG, "" + this::class.java + " getData connector bad url " + url, e)
+            connector.disconnect()
+            null
+        } catch (e: IOException) {
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Проблемы с сетью", e))
+            //log
+            Log.e(TAG, "" + this::class.java + " getData connector bad net ", e)
+            connector.disconnect()
+           null
+        } catch (e: java.lang.Exception) {
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Ошибка обработки кода", e))
+            //log
+            Log.e(TAG, "" + this::class.java + " getData connector ", e)
+            null
+        } finally {
+            connector.disconnect()
+        }
+    }
 }

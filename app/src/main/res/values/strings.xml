@@ -52,4 +52,5 @@
     <string name="full_list">Показать полный список</string>
     <string name="onCall">По заявке</string>
     <string name="sendLog">Отправить лог</string>
+    <string name="updateApp">Обновить приложение</string>
 </resources>

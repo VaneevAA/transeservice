@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity() {
                 .setConstraints(constraints)
                 .build()
         val workManager = WorkManager.getInstance(applicationContext)
-        workManager.enqueueUniquePeriodicWork("uploadFiles",ExistingPeriodicWorkPolicy.REPLACE,uploadWorkRequest)
+        workManager.enqueueUniquePeriodicWork("uploadFiles",ExistingPeriodicWorkPolicy.KEEP,uploadWorkRequest)
         //workManager.pruneWork()
         //workManager.cancelAllWork()
         //endregion
