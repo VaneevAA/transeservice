@@ -27,8 +27,10 @@ import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.work.Operation
+import com.example.ekotransservice_routemanager.CoroutineViewModel
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointActoins
@@ -42,6 +44,9 @@ import com.google.android.gms.location.*
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialContainerTransform
 import com.muslimcompanion.utills.GPSTracker
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.Serializable
 import java.text.SimpleDateFormat
@@ -514,11 +519,12 @@ class point_action : Fragment() {
         val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         val fileName = generateFileName(point!!)
         try {
-            currentFile = File.createTempFile(
+            currentFile = File(storage,"$fileName.jpg")
+           /*currentFile = File.createTempFile(
                 fileName,
                 ".jpg",
                 storage
-            )
+            )*/
                 .apply { currentFilePath = absolutePath }
             return currentFile
         }catch (e: Exception){
@@ -551,49 +557,78 @@ class point_action : Fragment() {
                         Toast.LENGTH_LONG
                     ).show()
                     return
-                }
-
-                if (location == null) {
-                    Toast.makeText(
-                        activity,
-                        "Предупреждение, местоположение не определено",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                }
-
-                if (currentFile != null) {
-                    setGeoTag()
-                    val pointFile = viewPointModel!!.saveFile(
-                        currentFile!!,
-                        point!!,
-                        currentFileOrder
-                    )
-                    if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
-                        point!!.setDone(true)
-                        point!!.setTimestamp(Date())
-                        viewPointModel!!.getRepository().updatePointAsync(point!!)
-                        Toast.makeText(requireContext(), "Точка выполнена!", Toast.LENGTH_LONG)
-                            .show()
-                    }
-
-                    if (currentFileOrder == PhotoOrder.PHOTO_CANTDONE) {
-                        if (point!!.getReasonComment().isEmpty()) {
-                            point!!.setReasonComment(reasonComment)
+                    /*GlobalScope.launch {
+                        delay(5000)
+                        if (currentFile==null || currentFile?.length() == 0L) {
+                            Toast.makeText(
+                                activity,
+                                "Ошибка работы камеры, вернулся пустой файл",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            return@launch
                         }
-                        point!!.setTimestamp(Date())
-                        viewPointModel!!.getRepository().updatePointAsync(point!!)
-                    }
-                    if (location != null || (pointFile.lat != 0.0 && pointFile.lon != 0.0)) {
-                        viewPointModel!!.setDataInfoOnFile(pointFile, location)
-                    } else {
-                        viewPointModel!!.geoIsRequired = true
-                    }
+                        processImageFile()
+                    }*/
+                    /*val viewModelCor = CoroutineViewModel(requireActivity() as MainActivity,{
+                        delay(5000)
+                    },{
+                        if (currentFile==null || currentFile?.length() == 0L) {
+                            Toast.makeText(
+                                activity,
+                                "Ошибка работы камеры, вернулся пустой файл",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            return@CoroutineViewModel
+                        }
+                        processImageFile()
+                    })
+                    viewModelCor.startWork()*/
+                }else{
+                    processImageFile()
                 }
 
             }
     }
 
+    private fun processImageFile(){
+        if (location == null) {
+            Toast.makeText(
+                activity,
+                "Предупреждение, местоположение не определено",
+                Toast.LENGTH_LONG
+            ).show()
+
+        }
+
+        if (currentFile != null) {
+            setGeoTag()
+            val pointFile = viewPointModel!!.saveFile(
+                currentFile!!,
+                point!!,
+                currentFileOrder
+            )
+            if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
+                point!!.setDone(true)
+                point!!.setTimestamp(Date())
+                viewPointModel!!.getRepository().updatePointAsync(point!!)
+                Toast.makeText(requireContext(), "Точка выполнена!", Toast.LENGTH_LONG)
+                    .show()
+            }
+
+            if (currentFileOrder == PhotoOrder.PHOTO_CANTDONE) {
+                if (point!!.getReasonComment().isEmpty()) {
+                    point!!.setReasonComment(reasonComment)
+                }
+                point!!.setTimestamp(Date())
+                viewPointModel!!.getRepository().updatePointAsync(point!!)
+            }
+            if (location != null || (pointFile.lat != 0.0 && pointFile.lon != 0.0)) {
+                viewPointModel!!.setDataInfoOnFile(pointFile, location)
+            } else {
+                viewPointModel!!.geoIsRequired = true
+            }
+        }
+    }
 
     @SuppressLint("MissingPermission")
     private fun setGeoTag() : Boolean {
