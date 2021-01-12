@@ -64,7 +64,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val sendLog = findPreference<Preference>(getString(R.string.sendLog))
 
         sendLog?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            sendLog(requireActivity() as MainActivity)
+            val sendLog = sendLog(requireActivity() as MainActivity)
+            sendLog.sendLogInFile()
             return@OnPreferenceClickListener true
         }
 
@@ -99,47 +100,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         routeRepository = RouteRepository(requireContext())
 
         return view
-    }
-
-    private fun createLogFile (activity: MainActivity) : File? {
-        val storage = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val fileName = "log" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale("RU"))
-            .format(Date())
-
-        try {
-
-            return File.createTempFile(
-                fileName,
-                ".txt",
-                storage
-            )
-        }catch (e: Exception){
-            Toast.makeText(activity, "Неудалось записать файл", Toast.LENGTH_LONG).show()
-        }
-        return null
-    }
-
-    private fun setLogInFile (file: File){
-        val command = "logcat " + MainActivity.TAG + ":* -f " + file.absoluteFile
-        Runtime.getRuntime().exec(command)
-
-    }
-
-    private fun sendLog (activity: MainActivity){
-        val file = createLogFile(activity)
-        if(file != null){
-            setLogInFile(file)
-            val imageUris : ArrayList<Uri> = arrayListOf()
-            imageUris.add(Uri.parse(file.absolutePath))
-
-            val shareIntent = Intent().apply {
-                action = Intent.ACTION_SEND_MULTIPLE
-                putParcelableArrayListExtra(Intent.EXTRA_STREAM,imageUris)
-                type = "*/*"
-            }
-
-            activity.startActivity(Intent.createChooser(shareIntent,"Отправка лога"))
-        }
     }
 
     private fun clearDir (dir : File,notDeleteFiles : ArrayList<String>){
