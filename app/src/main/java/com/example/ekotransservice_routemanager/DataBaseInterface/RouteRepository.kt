@@ -305,7 +305,7 @@ class RouteRepository constructor(val context: Context){
     private fun uploadTrackListToServer(): UploadResult {
         val trackList = loadTrackListFromRoom(dataLoaded = true, doneOnly = false)
         return if (trackList != null) {
-            val data = mRoutesDao!!.getRoutePointFiles()
+            val data = mRoutesDao!!.getRouteNotUploadedPointFiles()
             //val resultFiles = serverConnector.uploadFiles(data)
             val resultFiles = uploadFiles(data)
             if (resultFiles.success) {
