@@ -15,6 +15,7 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -504,6 +505,7 @@ class point_action : Fragment() {
                     "com.example.ekotransservice_routemanager.fileprovider",
                     it
                 )
+                //pictureFile.delete()
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri)
                 /*takePictureIntent.clipData = ClipData.newRawUri(null, pictureUri)
                 takePictureIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -551,25 +553,15 @@ class point_action : Fragment() {
         //try {
             if (resultCode == Activity.RESULT_OK) {
                 if (currentFile==null || currentFile?.length() == 0L) {
+
                     Toast.makeText(
                         activity,
                         "Ошибка работы камеры, вернулся пустой файл",
                         Toast.LENGTH_LONG
                     ).show()
                     return
-                    /*GlobalScope.launch {
-                        delay(5000)
-                        if (currentFile==null || currentFile?.length() == 0L) {
-                            Toast.makeText(
-                                activity,
-                                "Ошибка работы камеры, вернулся пустой файл",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            return@launch
-                        }
-                        processImageFile()
-                    }*/
-                    /*val viewModelCor = CoroutineViewModel(requireActivity() as MainActivity,{
+
+                    /*val viewModel = CoroutineViewModel(this as MainActivity,{
                         delay(5000)
                     },{
                         if (currentFile==null || currentFile?.length() == 0L) {
@@ -579,10 +571,12 @@ class point_action : Fragment() {
                                 Toast.LENGTH_LONG
                             ).show()
                             return@CoroutineViewModel
+                        }else{
+                            processImageFile()
                         }
-                        processImageFile()
                     })
-                    viewModelCor.startWork()*/
+                    viewModel.startWork()*/
+
                 }else{
                     processImageFile()
                 }

@@ -160,22 +160,6 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
-        //region WorkManager
-        // Work manager: configure schedule and rules for periodic files upload
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        val uploadWorkRequest: PeriodicWorkRequest =
-            PeriodicWorkRequestBuilder<UploadFilesWorker>(45,TimeUnit.MINUTES,15, TimeUnit.MINUTES)
-                .addTag("uploadFiles")
-                .setConstraints(constraints)
-                .build()
-        val workManager = WorkManager.getInstance(applicationContext)
-        workManager.enqueueUniquePeriodicWork("uploadFiles",ExistingPeriodicWorkPolicy.KEEP,uploadWorkRequest)
-        //workManager.pruneWork()
-        //workManager.cancelAllWork()
-        //endregion
-
 
         /*
         val recycleView : RecyclerView = this.findViewById(R.id.recyclerview)
@@ -253,6 +237,7 @@ class MainActivity : AppCompatActivity() {
 
             viewModel.viewModelScope.launch {
                 // Final upload of task and files
+                //val result = routeRepository.uploadFilesAsync()
                 val result = routeRepository.uploadTrackListToServerAsync()
                 if (result) {
                     builder.setProgress(0, 0, false)
