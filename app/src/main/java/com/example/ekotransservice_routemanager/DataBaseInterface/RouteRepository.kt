@@ -360,7 +360,7 @@ class RouteRepository constructor(val context: Context){
     @RequiresApi(Build.VERSION_CODES.O)
     private fun uploadFiles(data: List<PointFile>, deleteUploaded: Boolean = true):UploadResult{
 
-        val portionSize = 30
+        val portionSize = 20
         val iterationCount = (data.size.toFloat()/portionSize)
         var startPos = 0
         var endPos =  if (portionSize - 1 > (data.size - 1)) {

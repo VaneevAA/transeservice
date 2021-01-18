@@ -77,6 +77,7 @@ class RouteServerConnection {
             val currentValue = jsonObject.get(currentKey)
             jsonWriter.name(currentKey)
             if (!(currentValue is JSONArray || currentValue is JSONObject)){
+                //Log.d(TAG,"writeJSONObjectToStream ${jsonObject["fileName"]} $currentKey")
                 jsonWriter.value(currentValue.toString())
             }else {
                 if (currentValue is JSONObject) {
@@ -176,7 +177,7 @@ class RouteServerConnection {
 
                 )
                 //log
-                Log.w(TAG, "" + this::class.java + " getData connector code " + code.toString())
+                Log.w(TAG, "" + this::class.java + " getData connector code " + code.toString() + ": $outputString")
                 null
             }
         } catch (e: MalformedURLException) {
