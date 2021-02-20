@@ -1,5 +1,6 @@
 package com.example.ekotransservice_routemanager.ViewIssues.StartScreen
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.app.PendingIntent
@@ -9,6 +10,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -21,11 +23,13 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
@@ -46,12 +50,40 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
+/*private const val PERMISSIONS_REQUEST_CODE = 10
+private val PERMISSIONS_REQUIRED = arrayOf(
+    Manifest.permission.CAMERA,
+    Manifest.permission.ACCESS_FINE_LOCATION,
+    Manifest.permission.ACCESS_COARSE_LOCATION,
+    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    Manifest.permission.READ_EXTERNAL_STORAGE)*/
+
 class start_frame_screen : Fragment() {
     var closedRoute : Boolean = false
 
     companion object {
         fun newInstance() = start_frame_screen()
+        /** Convenience method used to check if all permissions required by this app are granted */
+        /*fun hasPermissions(context: Context) = PERMISSIONS_REQUIRED.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }*/
     }
+
+    /*override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
+                // Take the user to the success fragment when permission is granted
+                Toast.makeText(context, "Permission request granted", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Permission request denied", Toast.LENGTH_LONG).show()
+            }
+        }
+    }*/
 
     private lateinit var viewScreen: StartFrameScreenViewModel
 
@@ -188,44 +220,6 @@ class start_frame_screen : Fragment() {
         )
     }
 
-    /*private fun getCurrentRoute(){
-
-        val routeRepository = RouteRepository(requireActivity().application)
-
-
-        GlobalScope.launch {
-
-            currentRoute =
-                withContext(Dispatchers.Default) { routeRepository.getCurrentRoute() }
-            (requireActivity() as MainActivity).mSwipeRefreshLayout!!.isRefreshing = false
-        }
-
-
-
-    }*/
-
-    /*private fun showHideRoute (animate : Boolean, mainView : View){
-        val routeGroup  = mainView.findViewById<View>(R.id.routeGroup)
-        val imageButton : ImageButton = mainView.findViewById(R.id.imageButton)
-        val atAllCount : TextView = mainView.findViewById(R.id.atAllCount)
-        val doneCount : TextView = mainView.findViewById(R.id.doneCount)
-
-        if(currentRoute == null){
-            val animation = AnimateView(routeGroup,requireContext(),animate)
-            animation.hideHeight()
-            imageButton.setImageResource(R.drawable.ic_baseline_add_24)
-            atAllCount!!.text = "0"
-            doneCount!!.text = "0"
-
-        }else{
-            val animation = AnimateView(routeGroup,requireContext(),animate)
-            animation.showHeight()
-            imageButton.setImageResource( R.drawable.ic_baseline_replay_24)
-            atAllCount!!.text = currentRoute!!.getCountPoint().toString()
-            doneCount!!.text = currentRoute!!.getCountPointDone().toString()
-
-        }
-    }*/
 
     @SuppressLint("SimpleDateFormat")
     private fun showHideRouteLiveData(route: Route?, animate: Boolean, mainView: View){
@@ -270,6 +264,13 @@ class start_frame_screen : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        /*if (!hasPermissions(requireContext())) {
+            // Request camera-related permissions
+            requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
+        } else {
+            // If permissions have already been granted, proceed
+            //TODO Close app
+         }*/
         sharedElementEnterTransition = MaterialContainerTransform()
         exitTransition = Hold()
     }
@@ -294,6 +295,7 @@ class start_frame_screen : Fragment() {
 
         startActivity(intent)
     }
+
 
 }
 

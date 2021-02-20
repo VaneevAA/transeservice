@@ -22,6 +22,8 @@ class ViewPointAction(application: Application, activity: MainActivity, point: P
     private var phoneNumberData = ""
     val fileBeforeIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
     val fileAfterIsDone: MutableLiveData<Boolean> = MutableLiveData(false)
+    var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
+    var reasonComment: String = ""
     var geoIsRequired: Boolean = false
 
     fun setViewData(point: Point,canDone: Boolean){

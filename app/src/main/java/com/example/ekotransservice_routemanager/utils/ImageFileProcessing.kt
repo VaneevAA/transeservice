@@ -1,111 +1,56 @@
-package com.example.ekotransservice_routemanager.DataClasses
+package com.example.ekotransservice_routemanager.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.*
 import android.location.Geocoder
 import android.location.Location
-import android.media.ExifInterface.TAG_APERTURE
-import android.os.Build
-import android.util.TypedValue
-import android.view.View
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
-import androidx.recyclerview.widget.RecyclerView
-import androidx.room.*
-import androidx.room.ForeignKey.CASCADE
+import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.R
-import java.io.*
-import java.math.BigInteger
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
+object ImageFileProcessing {
 
-@Entity(
-    tableName = "pointFiles_table",
-    foreignKeys = [ForeignKey(
-        entity = Point::class,
-        parentColumns = ["docUID", "lineUID"],
-        childColumns = ["docUID", "lineUID"],
-        onDelete = CASCADE
-    )],
-    indices = arrayOf(Index("docUID", "lineUID", "docUID", "lineUID"))
-)
-class PointFile(
-    val docUID: String,
-    val lineUID: String,
-    val timeDate: Date,
-    var photoOrder: PhotoOrder,
-    val lat: Double,
-    val lon: Double,
-    val filePath: String,
-    val fileName: String,
-    val fileExtension: String,
-    val uploaded: Boolean = false
-) : Serializable {
-    @PrimaryKey(autoGenerate = true)
-    var id: Long = 0L
-
-    private fun getByteArray(filePath: String) : ByteArray{
-        val file = File(filePath)
-        val bytes = ByteArray(file.length().toInt())
-        try {
-            val buf = BufferedInputStream(FileInputStream(file))
-            buf.read(bytes, 0, bytes.size)
-            buf.close()
-        } catch (e: FileNotFoundException) {
-            // TODO Auto-generated catch block
-            e.printStackTrace()
-        } catch (e: IOException) {
-            // TODO Auto-generated catch block
-            e.printStackTrace()
-        }
-        return bytes
-    }
-
-
-    fun getHexString():String{
-        val imageBytes = getByteArray(this.filePath)
-        val bigInteger = BigInteger(1, imageBytes)
-        return java.lang.String.format("%0" + (imageBytes.size shl 1).toString() + "x", bigInteger)
-        //return bytesToHex(imageBytes)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun getCompresedBase64():String {
-
-        /*val mBitmap = BitmapFactory.decodeFile(this.filePath)
-        val stream = ByteArrayOutputStream()
-        mBitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream)
-        val imageBytes = stream.toByteArray()*/
-
-        val f = File(this.filePath)
-        return if (f.exists()){
-            val imageBytes = ByteArray(f.length().toInt())
-            val stream = FileInputStream(this.filePath)
-            stream.read(imageBytes)
-            stream.close()
-
-            Base64.getEncoder().encodeToString(imageBytes)
-        }else{
-            ""
-        }
-    }
-
-    fun exists(): Boolean{
-        val f = File(this.filePath)
-        return f.exists()
-    }
+    val ExifAttributes = arrayOf(
+            ExifInterface.TAG_APERTURE_VALUE,
+            ExifInterface.TAG_DATETIME,
+            ExifInterface.TAG_DATETIME_DIGITIZED,
+            ExifInterface.TAG_EXPOSURE_TIME,
+            ExifInterface.TAG_FLASH,
+            ExifInterface.TAG_FOCAL_LENGTH,
+            ExifInterface.TAG_GPS_ALTITUDE,
+            ExifInterface.TAG_GPS_ALTITUDE_REF,
+            ExifInterface.TAG_GPS_DATESTAMP,
+            ExifInterface.TAG_GPS_LATITUDE,
+            ExifInterface.TAG_GPS_LATITUDE_REF,
+            ExifInterface.TAG_GPS_LONGITUDE,
+            ExifInterface.TAG_GPS_LONGITUDE_REF,
+            ExifInterface.TAG_GPS_PROCESSING_METHOD,
+            ExifInterface.TAG_GPS_TIMESTAMP,
+            ExifInterface.TAG_IMAGE_LENGTH,
+            ExifInterface.TAG_IMAGE_WIDTH,
+            ExifInterface.TAG_RW2_ISO,
+            ExifInterface.TAG_MAKE,
+            ExifInterface.TAG_MODEL,
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.TAG_SUBSEC_TIME,
+            ExifInterface.TAG_SUBSEC_TIME_DIGITIZED,
+            ExifInterface.TAG_SUBSEC_TIME_ORIGINAL,
+            ExifInterface.TAG_WHITE_BALANCE
+        )
 
     @SuppressLint("InflateParams")
-    fun createResultImageFile(lat: Double, lon: Double, point: Point, context: Context) {
+    fun createResultImageFile(filePath: String, lat: Double, lon: Double, point: Point, context: Context) {
 
         // Основное изображение
-        val currentFile = File(this.filePath)
+        val currentFile = File(filePath)
         if (currentFile.absolutePath.isNullOrEmpty()){
             return // Проблема с обработкой файла, файл не найден
         }
@@ -131,36 +76,6 @@ class PointFile(
                 originalBitmap.height,
                 originalBitmap.config
             )
-        /*
-        // Изображение из макета photo_data
-        val inflater = activity?.layoutInflater
-        val photoDataView: View? = inflater?.inflate(R.layout.photo_data, null)
-        photoDataView!!.findViewById<TextView>(R.id.addressTextView).text = getAddressNameFromLocation(
-            location!!
-        )
-        photoDataView.findViewById<TextView>(R.id.latTextView).text =
-            location!!.latitude.toString()
-        photoDataView.findViewById<TextView>(R.id.lonTextView).text =
-            location!!.longitude.toString()
-        photoDataView.findViewById<TextView>(R.id.dateTextView).text = SimpleDateFormat(
-            "yyyy-MM-dd (EEE) HH:mm:ss",
-            Locale("ru")
-        ).format(Date())
-
-        val widthSpec =
-            View.MeasureSpec.makeMeasureSpec(originalBitmap.width, View.MeasureSpec.AT_MOST)
-        val heightSpec =
-            View.MeasureSpec.makeMeasureSpec(
-                originalBitmap.height / 4,
-                View.MeasureSpec.AT_MOST
-            )
-        photoDataView.measure(widthSpec, heightSpec)
-        photoDataView.layout(
-            0,
-            0,
-            photoDataView.measuredWidth,
-            photoDataView.measuredHeight
-        )*/
 
         // Вывод в холст
         val canvas = Canvas(overlayBitmap)
@@ -217,7 +132,7 @@ class PointFile(
             SimpleDateFormat(
                 "yyyy-MM-dd (EEE) HH:mm:ss",
                 Locale("ru")
-            ).format(timeDate), textWidth, textBorderSpace + 2*textSpace + 2*textWidth, textLine, paint, canvas
+            ).format(Date()), textWidth, textBorderSpace + 2*textSpace + 2*textWidth, textLine, paint, canvas
         )
 
         //Сохранение в файл
@@ -236,43 +151,17 @@ class PointFile(
             currentFile
         )
 
-        val attributes = arrayOf(
-            ExifInterface.TAG_APERTURE_VALUE,
-            ExifInterface.TAG_DATETIME,
-            ExifInterface.TAG_DATETIME_DIGITIZED,
-            ExifInterface.TAG_EXPOSURE_TIME,
-            ExifInterface.TAG_FLASH,
-            ExifInterface.TAG_FOCAL_LENGTH,
-            ExifInterface.TAG_GPS_ALTITUDE,
-            ExifInterface.TAG_GPS_ALTITUDE_REF,
-            ExifInterface.TAG_GPS_DATESTAMP,
-            ExifInterface.TAG_GPS_LATITUDE,
-            ExifInterface.TAG_GPS_LATITUDE_REF,
-            ExifInterface.TAG_GPS_LONGITUDE,
-            ExifInterface.TAG_GPS_LONGITUDE_REF,
-            ExifInterface.TAG_GPS_PROCESSING_METHOD,
-            ExifInterface.TAG_GPS_TIMESTAMP,
-            ExifInterface.TAG_IMAGE_LENGTH,
-            ExifInterface.TAG_IMAGE_WIDTH,
-            ExifInterface.TAG_RW2_ISO,
-            ExifInterface.TAG_MAKE,
-            ExifInterface.TAG_MODEL,
-            ExifInterface.TAG_ORIENTATION,
-            ExifInterface.TAG_SUBSEC_TIME,
-            ExifInterface.TAG_SUBSEC_TIME_DIGITIZED,
-            ExifInterface.TAG_SUBSEC_TIME_ORIGINAL,
-            ExifInterface.TAG_WHITE_BALANCE
-        )
+
 
         val exifData: MutableMap<String,String> = mutableMapOf()
-        for (i in attributes.indices) {
-            val value = oldExif.getAttribute(attributes[i])
-            if (value != null) exifData[attributes[i]] = value
+        for (i in ExifAttributes.indices) {
+            val value = oldExif.getAttribute(ExifAttributes[i])
+            if (value != null) exifData[ExifAttributes[i]] = value
         }
         return  exifData
     }
 
-    private fun setExifData(currentFile: File,exifData: MutableMap<String,String>){
+    private fun setExifData(currentFile: File, exifData: MutableMap<String,String>){
         val currentFileExif = ExifInterface(
             currentFile
         )
@@ -289,7 +178,7 @@ class PointFile(
             val addresses = geocoder.getFromLocation(lat, lon, 1)
             addresses[0].getAddressLine(0) // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
         } catch (e: Exception) {
-           ""
+            ""
         }
 
         /*val city: String = addresses.get(0).getLocality()
@@ -324,7 +213,7 @@ class PointFile(
         }
     }
 
-    private fun stringArray(originalString: String, width: Float, paint: Paint): ArrayList<String>{
+    private fun stringArray(originalString: String, width: Float, paint: Paint): ArrayList<String> {
         var currentString = originalString
         val stringArrayList: ArrayList<String> = ArrayList()
         var doLoop = true
@@ -343,12 +232,12 @@ class PointFile(
     }
 
     @SuppressLint("MissingPermission")
-    fun setGeoTag(location: Location) : Boolean {
-        if (this.filePath.isEmpty()) {
+    fun setGeoTag(location: Location, filePath: String) : Boolean {
+        if (filePath.isEmpty()) {
             return false //Проверка, если не указан путь до файла
         }
         val exifInterface =
-            ExifInterface(this.filePath)
+            ExifInterface(filePath)
         exifInterface.setGpsInfo(location)
         exifInterface.saveAttributes()
         return true
@@ -386,13 +275,6 @@ class PointFile(
             e.printStackTrace()
         }
         return degree
-    }
-
-    private fun convertDpToPixels(dp: Float): Int {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp, Resources.getSystem().displayMetrics
-        ).roundToInt()
     }
 
 }

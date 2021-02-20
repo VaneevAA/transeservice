@@ -5,6 +5,7 @@ import android.os.Build
 import android.util.JsonWriter
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.*
 import com.example.ekotransservice_routemanager.DataClasses.*
 import io.jsonwebtoken.Jwts
@@ -35,6 +36,7 @@ class RouteServerConnection {
         }
     }
 
+    var deviceName = ""
 
     private fun encodeToken(authPass: String): String? {
         var token:String? = null
@@ -123,6 +125,8 @@ class RouteServerConnection {
         connector.sslSocketFactory = sslSocketFactory as SSLSocketFactory?
         connector.setRequestProperty("Content-Type", "application/json")
         connector.setRequestProperty("Authorization", "Bearer $authPass")
+        //TODO pass route number through User Agent property
+        connector.setRequestProperty("User-Agent", "$deviceName - ${BuildConfig.VERSION_NAME} ${System.getProperty("http.agent")}")
         connector.requestMethod = requestMethod
         connector.connectTimeout = 20000
         return try {
@@ -351,6 +355,7 @@ class RouteServerConnection {
 
     fun uploadFilesPortion(data: List<PointFile>, startPos: Int, endPos: Int,deletedFiles: ArrayList<Long>): UploadResult {
         //log
+        val warningMessage = arrayListOf<String>()
         Log.i(TAG,"" + this::class.java + " uploadFilesPortion start")
         val jsonArray = JSONArray()
         for (j in startPos..endPos){
@@ -358,6 +363,12 @@ class RouteServerConnection {
 
             val jo = JSONObject()
             val it = data[j]
+
+            if (!it.exists()) {
+                Log.i(TAG,"" + this::class.java + " uploadFilesPortion file: " + it.filePath + "FILE NOT FOUND")
+                warningMessage.add("File not found ${it.filePath}")
+                continue
+            }
             //log
             Log.i(TAG,"" + this::class.java + " uploadFilesPortion file: " + it.filePath)
 
