@@ -35,6 +35,7 @@ import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import com.example.ekotransservice_routemanager.BuildConfig
 import com.example.ekotransservice_routemanager.DataClasses.Route
+import com.example.ekotransservice_routemanager.DataClasses.RouteRef
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
@@ -127,7 +128,23 @@ class start_frame_screen : Fragment() {
         //Отслеживание изменения машины
         viewScreen.vehicle.removeObservers(requireActivity())
         viewScreen.vehicle.observe(requireActivity(), Observer {
-            vehicleUpdate(it, mainView)
+            vehicleUpdate(mainView)
+        })
+
+        viewScreen.routeRef.removeObservers(requireActivity())
+        viewScreen.routeRef.observe(requireActivity(), Observer {
+            vehicleUpdate(mainView)
+        })
+
+        viewScreen.searchByRoute.removeObservers(requireActivity())
+        viewScreen.searchByRoute.observe(requireActivity(), Observer {
+            vehicleUpdate(mainView)
+        })
+
+        viewScreen.currentDate.removeObservers(requireActivity())
+        viewScreen.currentDate.observe(requireActivity(), Observer {
+            val dateView = mainView.findViewById<TextView>(com.example.ekotransservice_routemanager.R.id.dateOfRoute)
+            dateView.text = SimpleDateFormat("dd.MM.yyyy").format(viewScreen.currentDate.value)
         })
 
 
@@ -180,6 +197,7 @@ class start_frame_screen : Fragment() {
 
         return mainView
     }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -252,15 +270,26 @@ class start_frame_screen : Fragment() {
 
     }
 
-    private fun vehicleUpdate(vehicle: Vehicle?, mainView: View){
+    private fun vehicleUpdate(mainView: View){
+
+        val vehicle = if (viewScreen == null) null else if (!viewScreen.searchByRoute.value!!) viewScreen.vehicle.value else viewScreen.routeRef.value
+
         val vehicleView = mainView.findViewById<TextView>(com.example.ekotransservice_routemanager.R.id.vehicleNumber)
-        if(vehicle == null){
+        when(vehicle){
+            null -> vehicleView.text = ""
+            is Vehicle -> vehicleView.text = vehicle.getNumber()
+            is RouteRef -> vehicleView.text = vehicle.name
+            else -> vehicleView.text = ""
+        }
+
+        /*if(vehicle == null){
             vehicleView.text = ""
         }else{
             vehicleView.text = vehicle.getNumber()
-        }
+        }*/
 
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

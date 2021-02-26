@@ -207,10 +207,10 @@ class RouteServerConnection {
         }
     }
 
-    fun getTrackList(postParam: JSONObject?): DownloadResult {
+    fun getTrackList(postParam: JSONObject?, methodName: String = "getTaskList" ): DownloadResult {
         //log
         Log.i(TAG,"" + this::class.java + " getTrackList start")
-        val methodName = "rpc/getTaskList"
+        val methodName = "rpc/$methodName"
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val data = getData(methodName, "POST", postParam, errorArrayList)
         val pointArrayList: ArrayList<Point> = ArrayList()
@@ -304,6 +304,36 @@ class RouteServerConnection {
         }
         //log
         Log.i(TAG,"" + this::class.java + " getVehicles end")
+        return DownloadResult(dataArrayList as ArrayList<Any>, errorArrayList)
+    }
+
+    fun getRoutesRef(regionUID: String): DownloadResult {
+        //log
+        Log.i(TAG, "" + this::class.java + " getRoutesRef start")
+        val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
+        val methodName = "routes?region=eq.$regionUID"
+        val data = getData(methodName, "GET", null, errorArrayList)
+        val dataArrayList: ArrayList<RouteRef> = ArrayList()
+        if (data != null) {
+            for (i in 0 until data.length()) {
+                try {
+                    val routeRef = RouteRef.makeRouteFromJSONObject(data.getJSONObject(i))
+                    if (routeRef!=null) dataArrayList.add(routeRef)
+                } catch (e: java.lang.Exception) {
+                    //log
+                    Log.e(TAG, "" + this::class.java + " getVehicles vehicle create ", e)
+                    errorArrayList.add(
+                        ErrorMessage(
+                            ErrorTypes.DOWNLOAD_ERROR,
+                            "Ошибка создания элемента класса",
+                            e
+                        )
+                    )
+                }
+            }
+        }
+        //log
+        Log.i(TAG, "" + this::class.java + " getRoutesRef end")
         return DownloadResult(dataArrayList as ArrayList<Any>, errorArrayList)
     }
 
@@ -512,4 +542,5 @@ class RouteServerConnection {
             connector.disconnect()
         }
     }
+
 }

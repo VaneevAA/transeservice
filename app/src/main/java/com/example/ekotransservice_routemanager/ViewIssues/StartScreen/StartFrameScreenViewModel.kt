@@ -10,12 +10,15 @@ import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Route
+import com.example.ekotransservice_routemanager.DataClasses.RouteRef
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import com.example.ekotransservice_routemanager.MainActivity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.lang.IllegalArgumentException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel() {
     // TODO: Implement the ViewModel
@@ -35,6 +38,10 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
         emit(Vehicle(sharedPreferences.getString("VEHICLE","") as String))
     }*/
+
+    var routeRef: MutableLiveData<RouteRef> = MutableLiveData()
+    var searchByRoute: MutableLiveData<Boolean> = MutableLiveData(false)
+    var currentDate: MutableLiveData<Date> = MutableLiveData(Date())
 
     var fileApk: MutableLiveData<File> = MutableLiveData()
 
@@ -71,6 +78,13 @@ class StartFrameScreenViewModel (private val activity: MainActivity): ViewModel(
 
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.applicationContext)
             vehicle.value = Vehicle(sharedPreferences.getString("VEHICLE","") as String)
+            routeRef.value = RouteRef.makeRouteFromJSONString(sharedPreferences.getString("ROUTEREF","") as String)
+            searchByRoute.value = sharedPreferences.getBoolean("SEARCH_BY_ROUTE",false)
+
+            val datePrefValue = sharedPreferences.getString("DATE","")
+            currentDate.value = SimpleDateFormat("yyyy.MM.dd HH:mm:ss",
+                Locale.getDefault()).parse("$datePrefValue 00:00:00")
+
             routeRepository.setVehicle(vehicle.value)
             activity.mSwipeRefreshLayout!!.isRefreshing = false
 

@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataClasses.Region
+import com.example.ekotransservice_routemanager.DataClasses.RouteRef
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
@@ -24,10 +25,14 @@ import kotlin.collections.ArrayList
 class vehicle_screen : Fragment() {
 
     private var mViewVehicle : ViewVehicle? = null
+    private var SEARCH_BY_ROUTE = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedElementEnterTransition = MaterialContainerTransform()
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.requireContext().applicationContext)
+        SEARCH_BY_ROUTE = sharedPreferences.getBoolean("SEARCH_BY_ROUTE", false)
     }
 
     override fun onCreateView(
@@ -44,8 +49,9 @@ class vehicle_screen : Fragment() {
         } catch (e:Exception) {
             Log.d("error", "Vehicle $e")
         }
-        val currentRegion = mViewVehicle!!.currentRegion
-        val currentVehicle = mViewVehicle!!.currentVehicle
+
+        val currentRegion = mViewVehicle?.currentRegion ?: null
+        val currentVehicle = mViewVehicle?.currentVehicle ?: null
 
         val regionName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewRegionName)
         val dataList: ArrayList<Region> = ArrayList()
@@ -53,6 +59,7 @@ class vehicle_screen : Fragment() {
 
         if (currentRegion != null && currentRegion.getUid() != "" ) {
             setVehicleAdapter(currentRegion,view)
+            setRouteRefAdapter(currentRegion,view)
         }
 
         regionName.setAdapter(adapter)
@@ -62,6 +69,7 @@ class vehicle_screen : Fragment() {
             savePreference("REGION",selectedItem!!.toJSONString())
             mViewVehicle!!.currentRegion = selectedItem
             setVehicleAdapter(selectedItem,view)
+            setRouteRefAdapter(selectedItem,view)
         }
 
         val vehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
@@ -71,12 +79,41 @@ class vehicle_screen : Fragment() {
             savePreference("VEHICLE",selectedItem?.toJSONString())
             mViewVehicle!!.currentVehicle = selectedItem
         }
+
+        val routeRefName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewRouteRef)
+        routeRefName.setOnItemClickListener { parent, _, position, id ->
+            val selectedItem = parent.adapter.getItem(position) as RouteRef?
+            routeRefName.setText(selectedItem?.toString())
+            savePreference("ROUTEREF",selectedItem?.toJSONString())
+            mViewVehicle!!.currentRouteRef = selectedItem
+        }
+
         if (currentRegion!=null) {
             regionName.setText(currentRegion.toString())
         }
         if (currentVehicle!=null) {
             vehicleName.setText(currentVehicle.toString())
         }
+
+        if (mViewVehicle!!.currentRouteRef!=null) {
+            routeRefName.setText(mViewVehicle!!.currentRouteRef?.name ?: "")
+        }
+
+
+        if (SEARCH_BY_ROUTE) {
+            routeRefName.visibility = View.VISIBLE
+            (view.findViewById(R.id.textViewRouteRefTitle) as TextView).visibility = View.VISIBLE
+
+            vehicleName.visibility = View.GONE
+            (view.findViewById(R.id.textViewVehicleTitle) as TextView).visibility = View.GONE
+        }else{
+            routeRefName.visibility = View.GONE
+            (view.findViewById(R.id.textViewRouteRefTitle) as TextView).visibility = View.GONE
+
+            vehicleName.visibility = View.VISIBLE
+            (view.findViewById(R.id.textViewVehicleTitle) as TextView).visibility = View.VISIBLE
+        }
+
 
         val datePref: TextView = view.findViewById(R.id.editTextDate)
         /*
@@ -122,6 +159,14 @@ class vehicle_screen : Fragment() {
         val vehicleName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewVehicle)
         vehicleName.setAdapter(adapter)
     }
+
+    private fun setRouteRefAdapter(region: Region, view: View){
+        val adapter = RouteRefListAdapter(view.context,
+            R.layout.regionlist_item, ArrayList(),region)
+        val routeRefName: AutoCompleteTextView = view.findViewById(R.id.AutoCompleteTextViewRouteRef)
+        routeRefName.setAdapter(adapter)
+    }
+
 
     private fun setDate(v:View){
         val tempCalendar = Calendar.getInstance()

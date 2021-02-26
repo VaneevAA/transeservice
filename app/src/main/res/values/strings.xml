@@ -32,7 +32,7 @@
     <string name="passText">Пароль</string>
 
     <string name="regionTitle">Регион</string>
-    <string name="vehicleNumberTitle">Номер ТС</string>
+    <string name="vehicleNumberTitle">ТС</string>
     <string name="datePrefTitle">Дата</string>
     <!-- Preference Titles -->
 
@@ -72,5 +72,7 @@
     <string name="delete_button_alt">Delete</string>
     <string name="delete_dialog">Delete current photo?</string>
     <string name="delete_title">Confirm</string>
+    <string name="routeTitle">Маршрут</string>
+    <string name="searchTitle">Поиск</string>
 
 </resources>
