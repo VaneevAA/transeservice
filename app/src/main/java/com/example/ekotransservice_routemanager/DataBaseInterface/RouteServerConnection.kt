@@ -5,6 +5,7 @@ import android.os.Build
 import android.util.JsonWriter
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.*
 import com.example.ekotransservice_routemanager.DataClasses.*
 import io.jsonwebtoken.Jwts
@@ -35,6 +36,7 @@ class RouteServerConnection {
         }
     }
 
+    var deviceName = ""
 
     private fun encodeToken(authPass: String): String? {
         var token:String? = null
@@ -123,6 +125,8 @@ class RouteServerConnection {
         connector.sslSocketFactory = sslSocketFactory as SSLSocketFactory?
         connector.setRequestProperty("Content-Type", "application/json")
         connector.setRequestProperty("Authorization", "Bearer $authPass")
+        //TODO pass route number through User Agent property
+        connector.setRequestProperty("User-Agent", "$deviceName - ${BuildConfig.VERSION_NAME} ${System.getProperty("http.agent")}")
         connector.requestMethod = requestMethod
         connector.connectTimeout = 20000
         return try {
@@ -203,10 +207,10 @@ class RouteServerConnection {
         }
     }
 
-    fun getTrackList(postParam: JSONObject?): DownloadResult {
+    fun getTrackList(postParam: JSONObject?, methodName: String = "getTaskList" ): DownloadResult {
         //log
         Log.i(TAG,"" + this::class.java + " getTrackList start")
-        val methodName = "rpc/getTaskList"
+        val methodName = "rpc/$methodName"
         val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
         val data = getData(methodName, "POST", postParam, errorArrayList)
         val pointArrayList: ArrayList<Point> = ArrayList()
@@ -303,6 +307,36 @@ class RouteServerConnection {
         return DownloadResult(dataArrayList as ArrayList<Any>, errorArrayList)
     }
 
+    fun getRoutesRef(regionUID: String): DownloadResult {
+        //log
+        Log.i(TAG, "" + this::class.java + " getRoutesRef start")
+        val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
+        val methodName = "routes?region=eq.$regionUID"
+        val data = getData(methodName, "GET", null, errorArrayList)
+        val dataArrayList: ArrayList<RouteRef> = ArrayList()
+        if (data != null) {
+            for (i in 0 until data.length()) {
+                try {
+                    val routeRef = RouteRef.makeRouteFromJSONObject(data.getJSONObject(i))
+                    if (routeRef!=null) dataArrayList.add(routeRef)
+                } catch (e: java.lang.Exception) {
+                    //log
+                    Log.e(TAG, "" + this::class.java + " getVehicles vehicle create ", e)
+                    errorArrayList.add(
+                        ErrorMessage(
+                            ErrorTypes.DOWNLOAD_ERROR,
+                            "Ошибка создания элемента класса",
+                            e
+                        )
+                    )
+                }
+            }
+        }
+        //log
+        Log.i(TAG, "" + this::class.java + " getRoutesRef end")
+        return DownloadResult(dataArrayList as ArrayList<Any>, errorArrayList)
+    }
+
     fun uploadTrackList(trackList: ArrayList<Point>): UploadResult {
         //log
         Log.i(TAG,"" + this::class.java + " uploadTrackList start")
@@ -351,6 +385,7 @@ class RouteServerConnection {
 
     fun uploadFilesPortion(data: List<PointFile>, startPos: Int, endPos: Int,deletedFiles: ArrayList<Long>): UploadResult {
         //log
+        val warningMessage = arrayListOf<String>()
         Log.i(TAG,"" + this::class.java + " uploadFilesPortion start")
         val jsonArray = JSONArray()
         for (j in startPos..endPos){
@@ -358,6 +393,12 @@ class RouteServerConnection {
 
             val jo = JSONObject()
             val it = data[j]
+
+            if (!it.exists()) {
+                Log.i(TAG,"" + this::class.java + " uploadFilesPortion file: " + it.filePath + "FILE NOT FOUND")
+                warningMessage.add("File not found ${it.filePath}")
+                continue
+            }
             //log
             Log.i(TAG,"" + this::class.java + " uploadFilesPortion file: " + it.filePath)
 
@@ -501,4 +542,5 @@ class RouteServerConnection {
             connector.disconnect()
         }
     }
+
 }

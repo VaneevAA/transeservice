@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.work.Operation
 import com.example.ekotransservice_routemanager.CoroutineViewModel
@@ -37,6 +38,7 @@ import com.example.ekotransservice_routemanager.DataClasses.Point
 import com.example.ekotransservice_routemanager.DataClasses.PointActoins
 import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
+import com.example.ekotransservice_routemanager.camera.CameraFragmentDirections
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -92,10 +94,10 @@ class point_action : Fragment() {
     }
 
     private var currentFile: File? = null
-    private var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
+    //private var currentFileOrder: PhotoOrder = PhotoOrder.DONT_SET
     private var currentFilePath: String =""
     private var location: Location? = null
-    private var reasonComment: String = ""
+    //private var reasonComment: String = ""
     private var googlePlayServicesAvailable: Boolean = false
 
     //region Location
@@ -107,7 +109,6 @@ class point_action : Fragment() {
         smallestDisplacement = 1.0f
     }
 
-    //
     private val locationUpdatesCallback = object : LocationCallback() {
         override fun onLocationResult(lr: LocationResult) {
             try {
@@ -127,8 +128,10 @@ class point_action : Fragment() {
         if (!googlePlayServicesAvailable && gps!=null) {
             location = gps!!.location
         }
-        if (location!=null && viewPointModel!!.geoIsRequired) {
-            viewPointModel!!.setPointFilesGeodata(location!!)
+        if (viewPointModel != null) {
+            if (location != null && viewPointModel!!.geoIsRequired) {
+                viewPointModel!!.setPointFilesGeodata(location!!)
+            }
         }
     }
 
@@ -148,42 +151,6 @@ class point_action : Fragment() {
         arguments?.let {
             point  = it.getSerializable("point") as Point
             canDone = it.getBoolean("canDone")
-
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestPermissions(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ), 101
-                )
-                // TODO: Обработка результата запроса разрешения
-            }
-
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestPermissions(
-                    arrayOf(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    ), 101
-                )
-                // TODO: Обработка результата запроса разрешения
-            }
 
             googlePlayServicesAvailable = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
             if (googlePlayServicesAvailable) {
@@ -252,6 +219,7 @@ class point_action : Fragment() {
             }
 
             viewPointModel!!.fileAfterIsDone.observe(requireActivity(), observerAfter)
+
 
 
         viewPointModel!!.setViewData(point!!, canDone)
@@ -329,11 +297,19 @@ class point_action : Fragment() {
 
         }
         //TODO set comment
-
+        (requireActivity() as MainActivity).supportActionBar?.show()
         return mainFragment
     }
 
-
+    override fun onDestroy() {
+        super.onDestroy()
+        if (googlePlayServicesAvailable) {
+            fusedLocationClient.removeLocationUpdates(locationUpdatesCallback)
+        }else{
+            gps!!.stopUsingGPS()
+        }
+        changeGeoTagIfNeeded()
+    }
     private fun showButtons(mainFragment: View, listOfActions: ArrayList<PointActoins>){
         for(child in (mainFragment.findViewById<View>(R.id.buttonsToDo) as ConstraintLayout).children){
             child.visibility = View.GONE
@@ -357,11 +333,6 @@ class point_action : Fragment() {
         }
     }
 
-    /*fun endOfDialog(mainFragment: View){
-        fillFragment(mainFragment)
-    }*/
-
-
     private fun getReasonArray(): MutableList<String> {
         return mutableListOf(
             NO_GARBEGE,
@@ -377,16 +348,7 @@ class point_action : Fragment() {
 
     private fun fillCannotDone(mainFragment: View){
         val reasonArray = getReasonArray()
-        /*mutableListOf<String>(
-        NO_GARBEGE,
-        CARS_ON_POINT,
-        ROAD_REPAER,
-        DOORS_CLOSED,
-        CLIENT_DENIAL,
-        NO_EQUIPMENT,
-        EQUIPMENT_LOCKED,
-        OTHER
-    )*/
+
         val spinner = mainFragment.findViewById<Spinner>(R.id.reasonSpinner)
         val arrayAdapter = ArrayAdapter(
             requireContext(),
@@ -397,7 +359,7 @@ class point_action : Fragment() {
         val comment = mainFragment.findViewById<TextInputEditText>(R.id.reasonInput)
         arrayAdapter.setNotifyOnChange(true)
         spinner.adapter = arrayAdapter
-        reasonComment = comment.text.toString()
+        viewPointModel!!.reasonComment = comment.text.toString()
         val itemSelectedListener: AdapterView.OnItemSelectedListener = object :
             AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -410,7 +372,7 @@ class point_action : Fragment() {
                 // Получаем выбранный объект
                 val item = parent.getItemAtPosition(position) as String
                 point!!.setReasonComment(item)
-                reasonComment = item
+                viewPointModel!!.reasonComment = item
                 viewPointModel!!.getRepository().updatePointAsync(point!!)
                 if (item == OTHER) {
                     comment.visibility = ViewGroup.VISIBLE
@@ -493,9 +455,57 @@ class point_action : Fragment() {
         showButtons(mainFragment, listOfActions)
     }
 
+    // Обработка результат ввода факта
+    fun okFactDialogClicked(fact : Double) {
+        try {
+            //val fact = factText.toDouble()
+            val pointValue = viewPointModel!!.currentPoint.value!!
+            pointValue.setCountFact(fact)
+            // Отметим выполнение точки.
+            // Если количество равно 0, то считаем точку выполненной, даже если не сделано фото после
+            // Если количество не равно 0, то считаем точку выполненной только при начлии фото после
+            if (fact == 0.0) {
+                pointValue.setDone(true)
+                Toast.makeText(activity, "Точка выполнена", Toast.LENGTH_LONG).show()
+            }else{
+                val valueBefore = pointValue.getDone()
+                pointValue.setDone(viewPointModel!!.fileAfterIsDone.value!!)
+                if (valueBefore!=pointValue.getDone()){
+                    if (valueBefore) {
+                        Toast.makeText(
+                            activity,
+                            "Снято выполнение с точки, для установки выполнения сделайте фото после",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        //TODO Заменить Toast на окно с диалогом, продумать текст
+                    }else{
+                        Toast.makeText(activity, "Точка выполнена", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            pointValue.setCountOverFromPlanAndFact()
+            pointValue.setTimestamp(Date())
+            viewPointModel!!.getRepository().updatePointAsync(pointValue)
+            viewPointModel!!.currentPoint.value = pointValue
+
+        }catch (e: Exception){
+            Toast.makeText(activity, "Число введено неправильно", Toast.LENGTH_LONG).show()
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        changeGeoTagIfNeeded()
+    }
+
     private fun takePicture(fileOrder: PhotoOrder){
-        currentFileOrder = fileOrder
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent -> takePictureIntent.resolveActivity(
+        viewPointModel!!.currentFileOrder = fileOrder
+        Navigation.findNavController(requireActivity(), R.id.my_nav_host_fragment).navigate(
+            point_actionDirections.actionPointActionToCameraFragment(point!!,viewPointModel!!.currentFileOrder,canDone)
+        )
+
+        /*Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent -> takePictureIntent.resolveActivity(
             requireActivity().packageManager
         )?.also {
             val pictureFile = createFile()
@@ -507,16 +517,14 @@ class point_action : Fragment() {
                 )
                 //pictureFile.delete()
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri)
-                /*takePictureIntent.clipData = ClipData.newRawUri(null, pictureUri)
-                takePictureIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                takePictureIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)*/
+
                 startActivityForResult(takePictureIntent, 1)
             }
         }
-        }
+        }*/
     }
 
-    @SuppressLint("SimpleDateFormat")
+    /*@SuppressLint("SimpleDateFormat")
     private fun createFile() : File?{
         val storage = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         val fileName = generateFileName(point!!)
@@ -546,6 +554,7 @@ class point_action : Fragment() {
         return "${point.getRouteName()}__{$timeCreated}__${addressName}_${currentFileOrder.string}"
     }
 
+    //TODO Refactor code CameraIntent
     @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -599,9 +608,9 @@ class point_action : Fragment() {
             val pointFile = viewPointModel!!.saveFile(
                 currentFile!!,
                 point!!,
-                currentFileOrder
+                viewPointModel!!.currentFileOrder
             )
-            if (currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
+            if (viewPointModel!!.currentFileOrder == PhotoOrder.PHOTO_AFTER && !point!!.getDone()) {
                 point!!.setDone(true)
                 point!!.setTimestamp(Date())
                 viewPointModel!!.getRepository().updatePointAsync(point!!)
@@ -609,9 +618,9 @@ class point_action : Fragment() {
                     .show()
             }
 
-            if (currentFileOrder == PhotoOrder.PHOTO_CANTDONE) {
+            if (viewPointModel!!.currentFileOrder == PhotoOrder.PHOTO_CANTDONE) {
                 if (point!!.getReasonComment().isEmpty()) {
-                    point!!.setReasonComment(reasonComment)
+                    point!!.setReasonComment(viewPointModel!!.reasonComment)
                 }
                 point!!.setTimestamp(Date())
                 viewPointModel!!.getRepository().updatePointAsync(point!!)
@@ -633,88 +642,8 @@ class point_action : Fragment() {
         return true
     }
 
-   /* fun showEnableLocationSetting() {
-        activity?.let {
-            val locationRequest = LocationRequest.create()
-            locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
-            val builder = LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest)
 
-            val task = LocationServices.getSettingsClient(it)
-                .checkLocationSettings(builder.build())
-
-            task.addOnSuccessListener { response ->
-                val states = response.locationSettingsStates
-                if (states.isLocationPresent) {
-                    //Do something
-                }
-            }
-            task.addOnFailureListener { e ->
-                if (e is ResolvableApiException) {
-                    try {
-                        // Handle result in onActivityResult()
-                        e.startResolutionForResult(it,
-                            MainActivity.LOCATION_SETTING_REQUEST)
-                    } catch (sendEx: IntentSender.SendIntentException) { }
-                }
-            }
-        }
-    }*/
-
-    // Обработка результат ввода факта
-    fun okFactDialogClicked(fact : Double) {
-        try {
-            //val fact = factText.toDouble()
-            val pointValue = viewPointModel!!.currentPoint.value!!
-            pointValue.setCountFact(fact)
-            // Отметим выполнение точки.
-            // Если количество равно 0, то считаем точку выполненной, даже если не сделано фото после
-            // Если количество не равно 0, то считаем точку выполненной только при начлии фото после
-            if (fact == 0.0) {
-                pointValue.setDone(true)
-                Toast.makeText(activity, "Точка выполнена", Toast.LENGTH_LONG).show()
-            }else{
-                val valueBefore = pointValue.getDone()
-                pointValue.setDone(viewPointModel!!.fileAfterIsDone.value!!)
-                if (valueBefore!=pointValue.getDone()){
-                    if (valueBefore) {
-                        Toast.makeText(
-                            activity,
-                            "Снято выполнение с точки, для установки выполнения сделайте фото после",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        //TODO Заменить Toast на окно с диалогом, продумать текст
-                    }else{
-                        Toast.makeText(activity, "Точка выполнена", Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            pointValue.setCountOverFromPlanAndFact()
-            pointValue.setTimestamp(Date())
-            viewPointModel!!.getRepository().updatePointAsync(pointValue)
-            viewPointModel!!.currentPoint.value = pointValue
-
-        }catch (e: Exception){
-            Toast.makeText(activity, "Число введено неправильно", Toast.LENGTH_LONG).show()
-        }
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        changeGeoTagIfNeeded()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (googlePlayServicesAvailable) {
-            fusedLocationClient.removeLocationUpdates(locationUpdatesCallback)
-        }else{
-            gps!!.stopUsingGPS()
-        }
-        changeGeoTagIfNeeded()
-    }
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -746,7 +675,7 @@ class point_action : Fragment() {
 
             }
         }
-    }
+    }*/
 }
 
 

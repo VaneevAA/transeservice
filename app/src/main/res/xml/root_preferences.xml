@@ -50,6 +50,14 @@
             app:useSimpleSummaryProvider="true"
             app:isPreferenceVisible="false"/>
         <androidx.preference.EditTextPreference
+            android:defaultValue=""
+            android:key="ROUTEREF"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/routeTitle"
+            app:useSimpleSummaryProvider="true"
+            app:isPreferenceVisible="false"/>
+        <androidx.preference.EditTextPreference
             android:defaultValue="Default value"
             android:key="VEHICLE"
             android:selectAllOnFocus="true"
@@ -67,6 +75,12 @@
             android:title="@string/datePrefTitle"
             app:useSimpleSummaryProvider="true"
             app:isPreferenceVisible="true"/>
+        <androidx.preference.SwitchPreference
+            android:id="@+id/sw_useRouteForSearch"
+            android:defaultValue="false"
+            android:key="SEARCH_BY_ROUTE"
+            android:summary="Искать путевые с привязкой по маршруту"
+            android:title="Привязка по маршруту" />
     </androidx.preference.PreferenceCategory>
     <androidx.preference.PreferenceCategory android:title="@string/servicePref">
         <Preference

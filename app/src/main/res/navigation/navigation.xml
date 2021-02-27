@@ -3,8 +3,74 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation"
-    app:startDestination="@id/start_frame_screen"
+    app:startDestination="@id/permissions_fragment"
     app:defaultNavHost="true">
+
+    <fragment
+        android:id="@+id/permissions_fragment"
+        android:name="com.example.ekotransservice_routemanager.PermissionsFragment"
+        android:label="PermissionsFragment" >
+
+        <action
+            android:id="@+id/action_permissions_to_start"
+            app:destination="@id/start_frame_screen"
+            app:popUpTo="@id/permissions_fragment"
+            app:popUpToInclusive="true" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/camera_fragment"
+        android:name="com.example.ekotransservice_routemanager.camera.CameraFragment"
+        android:label="CameraFragment" >
+
+        <argument
+            android:name="point"
+            app:argType="com.example.ekotransservice_routemanager.DataClasses.Point"
+            app:nullable="false" />
+        <argument
+            android:name="currentFileOrder"
+            app:argType="com.example.ekotransservice_routemanager.DataClasses.PhotoOrder"/>
+        <argument
+            android:name="canDone"
+            app:argType="boolean" />
+
+        <action
+            android:id="@+id/action_camera_to_gallery"
+            app:destination="@id/gallery_fragment" />
+
+        <action
+            android:id="@+id/action_camera_to_permissions"
+            app:destination="@id/permissions_fragment"
+            app:popUpTo="@id/camera_fragment"
+            app:popUpToInclusive="true"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/gallery_fragment"
+        android:name="com.example.ekotransservice_routemanager.camera.PhotoFragment"
+        android:label="GalleryFragment" >
+        <argument
+            android:name="file_name"
+            app:argType="string" />
+
+        <argument
+            android:name="point"
+            app:argType="com.example.ekotransservice_routemanager.DataClasses.Point"
+            app:nullable="false" />
+
+        <argument
+            android:name="canDone"
+            app:argType="boolean"/>
+
+        <action
+            android:id="@+id/action_preview_to_point_action"
+            app:destination="@id/point_action"
+            app:popUpTo="@+id/point_action"
+            app:popUpToInclusive="true" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/route_list"
@@ -21,6 +87,7 @@
             android:id="@+id/action_route_list_to_pointFiles"
             app:destination="@id/pointFiles" />
     </fragment>
+
     <fragment
         android:id="@+id/point_action"
         android:name="com.example.ekotransservice_routemanager.ViewIssues.PointAction.point_action"
@@ -32,11 +99,13 @@
             app:nullable="true" />
         <argument
             android:name="canDone"
-            app:argType="boolean"
-            android:defaultValue="true" />
+            app:argType="boolean" />
         <action
             android:id="@+id/action_point_action_to_pointFiles"
             app:destination="@id/pointFiles" />
+        <action
+            android:id="@+id/action_point_action_to_CameraFragment"
+            app:destination="@id/camera_fragment" />
     </fragment>
     <fragment
         android:id="@+id/start_frame_screen"

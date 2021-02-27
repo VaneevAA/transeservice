@@ -84,12 +84,21 @@ class PointFile(
         val imageBytes = stream.toByteArray()*/
 
         val f = File(this.filePath)
-        val imageBytes = ByteArray(f.length().toInt())
-        val stream = FileInputStream(this.filePath)
-        stream.read(imageBytes)
-        stream.close()
+        return if (f.exists()){
+            val imageBytes = ByteArray(f.length().toInt())
+            val stream = FileInputStream(this.filePath)
+            stream.read(imageBytes)
+            stream.close()
 
-        return Base64.getEncoder().encodeToString(imageBytes)
+            Base64.getEncoder().encodeToString(imageBytes)
+        }else{
+            ""
+        }
+    }
+
+    fun exists(): Boolean{
+        val f = File(this.filePath)
+        return f.exists()
     }
 
     @SuppressLint("InflateParams")
@@ -219,7 +228,6 @@ class PointFile(
         out.flush()
         out.close()
         setExifData(currentFile,exifData)
-
     }
 
     @Throws(IOException::class)
@@ -227,7 +235,6 @@ class PointFile(
         val oldExif = ExifInterface(
             currentFile
         )
-
 
         val attributes = arrayOf(
             ExifInterface.TAG_APERTURE_VALUE,

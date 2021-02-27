@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
 import com.example.ekotransservice_routemanager.DataClasses.Region
+import com.example.ekotransservice_routemanager.DataClasses.RouteRef
 import com.example.ekotransservice_routemanager.DataClasses.Vehicle
 import kotlinx.coroutines.async
 import java.lang.IllegalArgumentException
@@ -14,9 +15,9 @@ import java.util.*
 class ViewVehicle (application: Application): AndroidViewModel(application) {
 
     var regionList = MutableLiveData<MutableList<Region>>()
-    var vehicleList =  MutableLiveData<MutableList<Vehicle>>()
     var currentRegion: Region? = null
     var currentVehicle: Vehicle? = null
+    var currentRouteRef: RouteRef? = null
     lateinit var currentDate:Date
     private val routeRepository: RouteRepository = RouteRepository.getInstance(application.applicationContext)
     //val routeRepository: RouteRepository = RouteRepository(application)
@@ -24,6 +25,7 @@ class ViewVehicle (application: Application): AndroidViewModel(application) {
     init {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application.applicationContext)
         currentRegion = Region(sharedPreferences.getString("REGION","") as String)
+        currentRouteRef = RouteRef.makeRouteFromJSONString(sharedPreferences.getString("ROUTEREF","") as String)
         currentVehicle = Vehicle(sharedPreferences.getString("VEHICLE","") as String)
         val datePrefValue = sharedPreferences.getString("DATE","") as String
         currentDate = SimpleDateFormat(

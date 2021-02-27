@@ -6,13 +6,12 @@ import android.content.pm.ResolveInfo
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.CompoundButton
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.children
@@ -46,6 +45,27 @@ class route_list : Fragment() {
 
         exitTransition = MaterialElevationScale(false).setDuration(1000L)
         reenterTransition = MaterialElevationScale(true).setDuration(1000L)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        //requireActivity().menuInflater.inflate(R.menu.menu_search, menu)
+        inflater.inflate(R.menu.menu_search, menu)
+        val searchItem = menu?.findItem(R.id.action_search)
+        val searchView = searchItem?.actionView as SearchView
+        searchView.queryHint = "Введите наименование точки"
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                mViewList!!.handleSearchQuery(query!!)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                mViewList!!.handleSearchQuery(newText!!)
+                return true
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onCreateView(
@@ -93,7 +113,7 @@ class route_list : Fragment() {
         (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel
             .currentPoint.observe(viewLifecycleOwner, currentPointObserver)
 
-        val curPoint = mViewList!!.getList().value?.get(0)
+        val curPoint = mViewList!!.getList().value?.getOrNull(0)
         if (curPoint != null) {
             (recycleView!!.adapter as PointListAdapter).mCurrentPointViewModel.setCurrentPoint(
                 curPoint
@@ -221,11 +241,16 @@ class route_list : Fragment() {
             activity?.onBackPressed()
             return
         }*/
-        val observer = Observer<MutableList<Point>> { (pointList) -> ((recycleView?.adapter as PointListAdapter)
-            .setList(mViewList!!.getList()))
+        val observer = Observer<MutableList<Point>> { ((recycleView?.adapter as PointListAdapter)
+            //.setList(mViewList!!.getList()))
+            .setList(mViewList!!.mediatorResult))
         }
-        mViewList!!.getList().removeObservers(requireActivity())
-        mViewList!!.getList().observe(requireActivity(), observer)
+        //mViewList!!.getList().removeObservers(requireActivity())
+        //mViewList!!.getList().observe(requireActivity(), observer)
+        mViewList!!.removeSources()
+        mViewList!!.addSources()
+        mViewList!!.mediatorResult.removeObservers(requireActivity())
+        mViewList!!.mediatorResult.observe(requireActivity(),observer)
         mViewList!!.loadDataFromDB()
 
     }

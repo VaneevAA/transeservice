@@ -7,8 +7,10 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
+import com.bumptech.glide.util.Util
 import com.example.ekotransservice_routemanager.*
 import com.example.ekotransservice_routemanager.DataClasses.*
+import com.example.ekotransservice_routemanager.utils.Utils
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.BufferedInputStream
@@ -99,12 +101,17 @@ class RouteRepository constructor(val context: Context){
         val urlPort = sharedPreferences.getString("URL_PORT","443") as String
         val urlPass = sharedPreferences.getString("URL_AUTHPASS","") as String
         val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
+        val regionString = sharedPreferences.getString("REGION", "") as String
         vehicle = Vehicle(vehicleString)
+        val region = Region(regionString)
 
         // установка параметров подключения
         serverConnector.setConnectionParams(urlName,urlPort.toInt())
         serverConnector.setAuthPass(urlPass)
         serverConnector.setSSl(getSSLSocketFactory())
+        if (vehicle is Vehicle) {
+            serverConnector.deviceName = "${Utils.vehicleNumToLatin(vehicle!!.getNumber())} ${Utils.transliteration(region.getName())}"
+        }
     }
 
     // region LoadData
@@ -171,6 +178,13 @@ class RouteRepository constructor(val context: Context){
         return downloadResult.data as ArrayList<Vehicle>
     }
 
+    suspend fun getRouteRefList(region: Region): ArrayList<RouteRef> {
+        val serverData = GlobalScope.async { serverConnector.getRoutesRef(region.getUid()) }
+        val downloadResult = serverData.await()
+        addErrors(downloadResult.log)
+        return downloadResult.data as ArrayList<RouteRef>
+    }
+
     suspend fun getCurrentRoute(): Route?{
         val resultList = GlobalScope.async {  mRoutesDao!!.getCurrentRoute()}
         val currentRoute = resultList.await()
@@ -190,16 +204,24 @@ class RouteRepository constructor(val context: Context){
         val datePrefValue = sharedPreferences.getString("DATE","")
         val dateTask: Date = currentRoute?.getRouteDate() ?: SimpleDateFormat("yyyy.MM.dd HH:mm:ss",
             Locale.getDefault()).parse("$datePrefValue 00:00:00")
+        val routeRef = RouteRef.makeRouteFromJSONString(sharedPreferences.getString("ROUTEREF","") as String)
+        val routeUID = currentRoute?.getRouteRef()?.uid ?: routeRef?.uid ?: ""
+        val searchByRouteRef = sharedPreferences.getBoolean("SEARCH_BY_ROUTE", false)
         return run {
             val postParam = JSONObject()
             postParam.put("dateTask",  SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(dateTask)) //"2020-09-03 00:00:00")//dateTask.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-            postParam.put("vehicle", vehicleNumber)
-            val serverData = serverConnector.getTrackList(postParam)
+            if (searchByRouteRef) {
+                postParam.put("route", routeUID)
+            }else{
+                postParam.put("vehicle", vehicleNumber)
+            }
+            val methodName = if (searchByRouteRef) "getTaskListByRoute" else "getTaskList"
+            val serverData = serverConnector.getTrackList(postParam,methodName)
             addErrors(serverData.log)
             val result = saveTrackListIntoRoom(serverData.data as ArrayList<Point>?)
             if (result && serverData.data.size!=0 ) {
                 if (currentRoute == null) {
-                    saveRouteIntoRoom(serverData.data, vehicle!!, dateTask)
+                    saveRouteIntoRoom(serverData.data, vehicle!!, dateTask, routeRef!!)
                 } else {
                     currentRoute.setCountPoint(serverData.data.size)
                     mRoutesDao!!.insertRouteWithReplace(currentRoute) // Если обновляем текущий маршрут
@@ -227,12 +249,13 @@ class RouteRepository constructor(val context: Context){
     }
 
     // Сохранение маршрута
-    private fun saveRouteIntoRoom(data: ArrayList<Point>, vehicle: Vehicle, dateTask: Date ):Boolean {
+    private fun saveRouteIntoRoom(data: ArrayList<Point>, vehicle: Vehicle, dateTask: Date, routeRef: RouteRef ):Boolean {
         return try {
             val route = Route()
             route.setCountPoint(data.size)
             route.setVehicle(vehicle)
             route.setRouteDate(dateTask)
+            route.setRouteRef(routeRef)
             route.setDocUid(data[0].getDocUID())
             mRoutesDao!!.insertRouteWithReplace(route)
             serverConnector.setStatus(route.getDocUid(),STATUS_LOAD_IN_DEVICE)
@@ -307,7 +330,12 @@ class RouteRepository constructor(val context: Context){
         return if (trackList != null) {
             val data = mRoutesDao!!.getRouteNotUploadedPointFiles()
             //val resultFiles = serverConnector.uploadFiles(data)
-            val resultFiles = uploadFiles(data)
+            val resultFiles = if (data.isEmpty()) {
+                UploadResult(true, ArrayList())
+            } else{
+                uploadFiles(data)
+            }
+
             if (resultFiles.success) {
                 val result = serverConnector.uploadTrackList(trackList as ArrayList<Point>)
                 if (result.success) {

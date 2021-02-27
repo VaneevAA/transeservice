@@ -29,6 +29,7 @@
 
             <TextView
                 android:id="@+id/textViewRegionTitle"
+                android:labelFor="@id/AutoCompleteTextViewRegionName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -47,61 +48,85 @@
                 style="@style/Widget.AppCompat.EditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:layout_marginEnd="20dp"
                 android:autofillHints=""
                 android:ems="10"
                 android:inputType="textPersonName"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewRegionTitle"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="@+id/AutoCompleteTextViewVehicle"
-                app:layout_constraintTop_toTopOf="@+id/textViewRegionTitle"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintStart_toEndOf="@+id/textViewRegionTitle"
+                app:layout_constraintTop_toTopOf="@+id/textViewRegionTitle" />
 
             <TextView
                 android:id="@+id/textViewVehicleTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="20dp"
                 android:text="@string/vehicleNumberTitle"
                 android:textSize="25sp"
                 app:layout_constraintStart_toStartOf="@+id/textViewRegionTitle"
-                app:layout_constraintTop_toBottomOf="@+id/textViewRegionTitle" />
+                app:layout_constraintTop_toBottomOf="@+id/AutoCompleteTextViewRegionName" />
 
             <AutoCompleteTextView
                 android:id="@+id/AutoCompleteTextViewVehicle"
                 style="@style/Widget.AppCompat.EditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginEnd="20dp"
                 android:ems="10"
                 android:inputType="textPersonName"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewVehicleTitle"
-                app:layout_constraintEnd_toEndOf="@+id/AutoCompleteTextViewRegionName"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toEndOf="@+id/textViewVehicleTitle"
-                app:layout_constraintTop_toTopOf="@+id/textViewVehicleTitle"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/AutoCompleteTextViewRegionName"
+                app:layout_constraintTop_toTopOf="@+id/textViewVehicleTitle" />
+
+            <TextView
+                android:id="@+id/textViewRouteRefTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/routeTitle"
+                android:textSize="25sp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@+id/textViewRegionTitle"
+                app:layout_constraintTop_toBottomOf="@+id/AutoCompleteTextViewVehicle" />
+
+            <AutoCompleteTextView
+                android:id="@+id/AutoCompleteTextViewRouteRef"
+                style="@style/Widget.AppCompat.EditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/textViewRouteRefTitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/AutoCompleteTextViewRegionName"
+                app:layout_constraintTop_toTopOf="@+id/textViewRouteRefTitle" />
 
             <TextView
                 android:id="@+id/textViewDateTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginBottom="10dp"
                 android:text="@string/datePrefTitle"
                 android:textSize="25sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/textViewVehicleTitle"
-                app:layout_constraintTop_toBottomOf="@+id/textViewVehicleTitle" />
+                app:layout_constraintStart_toStartOf="@+id/textViewRouteRefTitle"
+                app:layout_constraintTop_toBottomOf="@+id/AutoCompleteTextViewRouteRef" />
 
             <TextView
                 android:id="@+id/editTextDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
 
+                android:layout_marginEnd="20dp"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewDateTitle"
-                app:layout_constraintEnd_toEndOf="@+id/AutoCompleteTextViewVehicle"
-                app:layout_constraintStart_toStartOf="@+id/AutoCompleteTextViewVehicle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/AutoCompleteTextViewRegionName"
                 app:layout_constraintTop_toTopOf="@+id/textViewDateTitle" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 

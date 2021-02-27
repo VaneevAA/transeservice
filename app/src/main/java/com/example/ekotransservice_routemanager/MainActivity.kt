@@ -6,10 +6,12 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.util.Log
 import android.view.View
@@ -33,10 +35,14 @@ import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.ViewIssues.StartScreen.StartFrameScreenViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+const val KEY_EVENT_ACTION = "key_event_action"
+const val KEY_EVENT_EXTRA = "key_event_extra"
+private const val IMMERSIVE_FLAG_TIMEOUT = 500L
 
 class MainActivity : AppCompatActivity() {
 
@@ -49,6 +55,16 @@ class MainActivity : AppCompatActivity() {
     val JOB_UPLOADFILES_TIMEINTERVAL = 1000*60*60L
     companion object {
         const val TAG = "RouteManager"
+        /** Use external media if it is available, our app's file directory otherwise */
+        fun getOutputDirectory(context: Context): File {
+            val appContext = context.applicationContext
+            // appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            val mediaDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            //val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
+            //    File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() } }
+            return if (mediaDir != null && mediaDir.exists())
+                mediaDir else appContext.filesDir
+        }
     }
     var backPressedBlock = false
 

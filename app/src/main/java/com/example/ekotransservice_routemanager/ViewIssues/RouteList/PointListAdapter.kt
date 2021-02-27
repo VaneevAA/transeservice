@@ -82,12 +82,12 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
         } else {
             "${point.getRowNumber()}. ${point.getAddressName()}"
         }
-        holder.pointItemView.text = pointText
         holder.contCountType.text = point.getContType()
         holder.contCountView.text = point.getContCount().toString()
         holder.itemView.clipToOutline = true
-
+        holder.pointItemView.text = pointText
         holder.pointPosition = position
+
         //val animateView = AnimateView(holder.buttonsView,holder.itemView.context,false)
         //animateView.hideHeight()
         //при нажатии определяется пока только точка
@@ -132,7 +132,11 @@ class PointListAdapter(context : Context) : RecyclerView.Adapter<PointListAdapte
     }
 
     fun setList(pointList: LiveData<MutableList<Point>>){
-        this.pointList = pointList.value
+        if (pointList.value.isNullOrEmpty()) {
+           this.pointList!!.clear()
+        }else
+            this.pointList = pointList.value
+
         notifyDataSetChanged()
     }
 

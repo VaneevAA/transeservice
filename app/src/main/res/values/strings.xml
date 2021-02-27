@@ -32,7 +32,7 @@
     <string name="passText">Пароль</string>
 
     <string name="regionTitle">Регион</string>
-    <string name="vehicleNumberTitle">Номер ТС</string>
+    <string name="vehicleNumberTitle">ТС</string>
     <string name="datePrefTitle">Дата</string>
     <!-- Preference Titles -->
 
@@ -56,4 +56,23 @@
     <string name="update">Обновить</string>
     <string name="clearCache">Удалить кэш</string>
     <string name="servicePref">Сервисные функции</string>
+
+    <string name="picture_cancel">ПОВТОР</string>
+    <string name="picture_confirm">ОК</string>
+
+    <string name="capture_button_alt">Фото</string>
+    <string name="switch_camera_button_alt">Переключить камеру</string>
+    <string name="gallery_button_alt">Галерия</string>
+    <string name="back_button_alt">Назад</string>
+    <string name="share_button_alt">Share</string>
+    <string name="share_hint">Share using</string>
+    <string name="capture_mode_camera">Камера</string>
+    <string name="capture_mode_hdr">HDR</string>
+    <string name="capture_mode_night">Night</string>
+    <string name="delete_button_alt">Delete</string>
+    <string name="delete_dialog">Delete current photo?</string>
+    <string name="delete_title">Confirm</string>
+    <string name="routeTitle">Маршрут</string>
+    <string name="searchTitle">Поиск</string>
+
 </resources>
