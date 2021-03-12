@@ -6,11 +6,9 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Handler
-import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
-import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
@@ -18,20 +16,38 @@ import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProvider
 import com.example.ekotransservice_routemanager.DataClasses.Point
+import com.example.ekotransservice_routemanager.MainActivity
 import com.example.ekotransservice_routemanager.R
+import java.io.Serializable
 
 
 class FactDialog(
-    parentFragment: Fragment,
+    /*parentFragment: Fragment,
     val point: MutableLiveData<Point>,
     val mainFragment: point_action,
-    val mainParentView: View
+    val mainParentView: View*/
 ) : DialogFragment() {
 
-    var plan = point.value!!.getCountPlan()
-    private var fact : Double = if (point.value!!.getCountFact()==-1.0) {0.0} else {point.value!!.getCountFact()}
+    private lateinit var viewPointModel: ViewPointAction
+    private lateinit var point: Point
+    private var plan: Double = 0.0
+    private var fact: Double = 0.0
+
+    //var plan = point.value!!.getCountPlan()
+    //private var fact : Double = if (point.value!!.getCountFact()==-1.0) {0.0} else {point.value!!.getCountFact()}
+
+    companion object {
+        fun newInstance(point: Point):FactDialog {
+            val args = Bundle()
+            args.putSerializable("point",point)
+            val fragment = FactDialog()
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -39,6 +55,21 @@ class FactDialog(
         val inflater = activity?.layoutInflater
         val mainView = inflater?.inflate(R.layout.fact_dialog, null)
 
+        val args = arguments ?: return dialog!!
+        point = args.getSerializable("point") as Point
+
+        plan = point?.getCountPlan() ?: 0.0
+        fact = if (point!!.getCountFact()==-1.0) {0.0} else {point!!.getCountFact()}
+
+        // get the same viewModel as point_action fragment
+        viewPointModel = ViewModelProvider(
+            this.requireActivity(),
+            ViewPointAction.ViewPointsFactory(
+                this.requireActivity().application,
+                requireActivity() as MainActivity,
+                point!!
+            )
+        ).get(ViewPointAction::class.java)
         /*mainView?.findViewById<TextView>(R.id.planCount)?.text = plan.toString()
         mainView?.findViewById<EditText>(R.id.factCount)?.setText(
             fact.toString(),
@@ -73,7 +104,7 @@ class FactDialog(
             factCountView?.text = fact.toString()
         }*/
 
-        val positiveButtonClick = { dialog: DialogInterface, which: Int ->
+        /*val positiveButtonClick = { dialog: DialogInterface, which: Int ->
             try {
 
                 mainFragment.okFactDialogClicked(fact)
@@ -88,8 +119,15 @@ class FactDialog(
 
         val builder = AlertDialog.Builder(activity, R.style.ThemeOverlay_AppCompat_Dialog)
         builder.setView(mainView)
-            .setPositiveButton("ОК", DialogInterface.OnClickListener(positiveButtonClick))
-            .setNegativeButton("Отмена", DialogInterface.OnClickListener(negativeButtonClick))
+            .setPositiveButton("ОК", DialogInterface.OnClickListener(positiveButtonClick)) { (requireParentFragment() as point_action).okFactDialogClicked(fact)}
+            .setNegativeButton("Отмена", DialogInterface.OnClickListener(negativeButtonClick)) {this.dismiss()}
+        */
+        (targetFragment as point_action)
+        val builder = AlertDialog.Builder(activity, R.style.ThemeOverlay_AppCompat_Dialog)
+        builder.setView(mainView)
+            .setPositiveButton("ОК") {  _,_ -> (targetFragment as point_action).okFactDialogClicked(fact)}
+            .setNegativeButton("Отмена") { _,_ -> this.dismiss()}
+
 
         val dialog = builder.create()
 

@@ -2,7 +2,6 @@ package com.example.ekotransservice_routemanager
 
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -14,23 +13,24 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Guideline
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-
-import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewModelScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.work.*
 import com.example.ekotransservice_routemanager.DataBaseInterface.RouteRepository
-import com.example.ekotransservice_routemanager.WorkManager.UploadFilesWorker
 import com.example.ekotransservice_routemanager.ViewIssues.AnimateView
 import com.example.ekotransservice_routemanager.ViewIssues.StartScreen.StartFrameScreenViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -38,7 +38,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 const val KEY_EVENT_ACTION = "key_event_action"
 const val KEY_EVENT_EXTRA = "key_event_extra"
@@ -82,15 +81,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //log
-        Log.i(TAG,"Main activity on create")
+        Log.i(TAG, "Main activity on create")
         PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
 
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
         val prefEditor = sharedPreferences.edit()
-        prefEditor.putString("DATE", SimpleDateFormat(
-            "YYYY.MM.dd",
-            Locale("ru")
-        ).format(Date()))
+        prefEditor.putString(
+            "DATE", SimpleDateFormat(
+                "YYYY.MM.dd",
+                Locale("ru")
+            ).format(Date())
+        )
         prefEditor.commit()
 
         routeRepository = RouteRepository.getInstance(applicationContext)
@@ -131,7 +132,7 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destanation, _ ->
             //log
-            Log.i(TAG,"nav destination " + destanation.displayName)
+            Log.i(TAG, "nav destination " + destanation.displayName)
 
             findViewById<View>(R.id.bottom_menu).visibility = View.VISIBLE
 
@@ -224,10 +225,22 @@ class MainActivity : AppCompatActivity() {
             .unregisterOnSharedPreferenceChangeListener(mPrefsListener)
     }
 
+    /** When key down event is triggered, relay it via local broadcast so fragments can handle it */
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                val intent = Intent(KEY_EVENT_ACTION).apply { putExtra(KEY_EVENT_EXTRA, keyCode) }
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+                true
+            }
+            else -> super.onKeyDown(keyCode, event)
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.P)
-    fun endOfTheRoute (viewModel : StartFrameScreenViewModel){
+    fun endOfTheRoute(viewModel: StartFrameScreenViewModel){
         //
-        Log.i(TAG,"starting end of the route")
+        Log.i(TAG, "starting end of the route")
         //создание потока
         val mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(
@@ -245,6 +258,21 @@ class MainActivity : AppCompatActivity() {
            .setSmallIcon(R.drawable.ic_logo_mini)
            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_LOW)
 
+        builder.setProgress(100, 0, true)
+
+        val unBlock = {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            mSwipeRefreshLayout?.isRefreshing = false
+            backPressedBlock = false
+        }
+
+        mSwipeRefreshLayout?.isRefreshing = true
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        )
+        backPressedBlock = true
+
         //вывод уведомления
         NotificationManagerCompat.from(this).apply {
             val notificationId : Int = 100
@@ -259,33 +287,49 @@ class MainActivity : AppCompatActivity() {
                     builder.setProgress(0, 0, false)
                     builder.setContentTitle("Выгрузка завершена")
 
-                    val intent = Intent(this@MainActivity,MainActivity::class.java)
-                    intent.putExtra("error","Good test")
-                    builder.setContentIntent(PendingIntent.getActivity(this@MainActivity,0,intent,PendingIntent.FLAG_UPDATE_CURRENT))
+                    val intent = Intent(this@MainActivity, MainActivity::class.java)
+                    intent.putExtra("error", "Good test")
+                    builder.setContentIntent(
+                        PendingIntent.getActivity(
+                            this@MainActivity,
+                            0,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                    )
 
                     notify(notificationId, builder.build())
 
-                    Toast.makeText(this@MainActivity,
+                    unBlock.invoke()
+                    Toast.makeText(
+                        this@MainActivity,
                         "Выгрузка завершена",
-                        Toast.LENGTH_LONG).show()
+                        Toast.LENGTH_LONG
+                    ).show()
 
 
                 } else {
                     builder.setProgress(0, 0, false)
                     builder.setContentTitle("Ошибка выгрузки")
 
-                    val intent = Intent(this@MainActivity,MainActivity::class.java)
-                    intent.putExtra("error","Error test")
-                    builder.setContentIntent(PendingIntent.getActivity(this@MainActivity,0,intent,PendingIntent.FLAG_UPDATE_CURRENT))
+                    val intent = Intent(this@MainActivity, MainActivity::class.java)
+                    intent.putExtra("error", "Error test")
+                    builder.setContentIntent(
+                        PendingIntent.getActivity(
+                            this@MainActivity,
+                            0,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                    )
 
                     notify(notificationId, builder.build())
 
                     /*Toast.makeText(this@MainActivity,
                         "Ошибка выгрузки",
                         Toast.LENGTH_LONG).show()*/
+                    unBlock.invoke()
                     errorCheck(routeRepository)
-
-
 
                 }
                 if(this@MainActivity.lifecycle.currentState != Lifecycle.State.DESTROYED){
@@ -297,29 +341,35 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 //log
-                Log.i(TAG,"over end of the route")
+                Log.i(TAG, "over end of the route")
 
             }
         }
     }
 
-    fun errorCheck (repository: RouteRepository){
+    fun errorCheck(repository: RouteRepository){
         if(repository.getErrorsCount() > 0) {
             for (error in repository.getErrors()){
                 if (error.errorException != null){
-                    Toast.makeText(this,
+                    Toast.makeText(
+                        this,
                         error.errorMessage + " " + error.errorException.message,
-                        Toast.LENGTH_LONG).show()
+                        Toast.LENGTH_LONG
+                    ).show()
                 } else {
-                    Toast.makeText(this,
-                        error.errorMessage ,
-                        Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this,
+                        error.errorMessage,
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
 
             }
 
         }
     }
+
+
 
 }
 

@@ -207,6 +207,120 @@ class RouteServerConnection {
         }
     }
 
+    private fun getDataJSONObject(
+        methodName: String,
+        requestMethod: String,
+        postParam: JSONObject?,
+        errorArrayList: ArrayList<ErrorMessage>
+    ): JSONObject? {
+        //val url = URL("http://$urlName:$urlPort/$methodName")
+        //val url = URL("http",urlName, urlPort,"mobileapp/$methodName")
+        //log
+        Log.i(
+            TAG,
+            "" + this::class.java + " getData method: " + methodName + " requestMethod " + requestMethod
+        )
+        val url = URL("https", urlName, urlPort, "mobileapp/$methodName")
+        var connector: HttpsURLConnection? = null
+        try {
+            connector = url.openConnection() as HttpsURLConnection
+        }catch (e: Exception){
+            //log
+            Log.e(TAG, "" + this::class.java + " getData connector url " + url, e)
+            errorArrayList.add(
+                ErrorMessage(
+                    ErrorTypes.DOWNLOAD_ERROR,
+                    "Ошибка соединения с сервером",
+                    e
+                )
+            )
+        }
+        if (connector==null) { return null}
+        connector.sslSocketFactory = sslSocketFactory as SSLSocketFactory?
+        connector.setRequestProperty("Content-Type", "application/json")
+        connector.setRequestProperty("Authorization", "Bearer $authPass")
+        //TODO pass route number through User Agent property
+        connector.setRequestProperty("User-Agent", "$deviceName - ${BuildConfig.VERSION_NAME} ${System.getProperty("http.agent")}")
+        connector.requestMethod = requestMethod
+        connector.connectTimeout = 20000
+        return try {
+            if (requestMethod == "POST" && postParam!=null ){
+                val wr =BufferedWriter(OutputStreamWriter(connector.outputStream))
+                val writer = JsonWriter(wr)
+                writer.setIndent("  ");
+                writeJSONObjectToStream(writer, postParam)
+                writer.close()
+                //wr.write(postParam.toString())
+                wr.close()
+            }
+            val code = connector.responseCode
+            if (code == 200) {
+                try {
+                    val outputString: String = connector.inputStream.bufferedReader().readText()
+                    if (outputString == "null") {
+                        errorArrayList.add(
+                            ErrorMessage(
+                                ErrorTypes.DOWNLOAD_ERROR,
+                                "Отсутствуют данные для загрузки",
+                                null
+                            )
+                        )
+                        null
+                    }else {
+                        JSONObject(outputString)
+                    }
+
+                } catch (e: java.lang.Exception) {
+                    //log
+                    Log.e(TAG, "" + this::class.java + " getData JSON reader ", e)
+                    errorArrayList.add(
+                        ErrorMessage(
+                            ErrorTypes.DOWNLOAD_ERROR,
+                            "Ошибка чтения потока/формата данных",
+                            e
+                        )
+                    )
+                    null
+                } finally {
+                    connector.disconnect()
+                }
+            } else {
+                val outputString: String = connector.errorStream.bufferedReader().readText()
+                errorArrayList.add(
+                    ErrorMessage(
+                        ErrorTypes.DOWNLOAD_ERROR,
+                        outputString,
+                        null
+                    )
+
+                )
+                //log
+                Log.w(TAG, "" + this::class.java + " getData connector code " + code.toString() + ": $outputString")
+                null
+            }
+        } catch (e: MalformedURLException) {
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Плохой URL", e))
+            //log
+            Log.e(TAG, "" + this::class.java + " getData connector bad url " + url, e)
+            connector.disconnect()
+            null
+        } catch (e: IOException) {
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Проблемы с сетью", e))
+            //log
+            Log.e(TAG, "" + this::class.java + " getData connector bad net ", e)
+            connector.disconnect()
+            null
+        } catch (e: java.lang.Exception) {
+            errorArrayList.add(ErrorMessage(ErrorTypes.DOWNLOAD_ERROR, "Ошибка обработки кода", e))
+            //log
+            Log.e(TAG, "" + this::class.java + " getData connector ", e)
+            null
+        }
+        finally {
+            connector.disconnect()
+        }
+    }
+
     fun getTrackList(postParam: JSONObject?, methodName: String = "getTaskList" ): DownloadResult {
         //log
         Log.i(TAG,"" + this::class.java + " getTrackList start")
@@ -215,6 +329,37 @@ class RouteServerConnection {
         val data = getData(methodName, "POST", postParam, errorArrayList)
         val pointArrayList: ArrayList<Point> = ArrayList()
         if (data != null) {
+            for (i in 0 until data.length()) {
+                try {
+                    pointArrayList.add(Point(data.getJSONObject(i)))
+                } catch (e: java.lang.Exception) {
+                    //log
+                    Log.e(TAG,"" + this::class.java + " getTrackList point error ",e)
+                    errorArrayList.add(
+                        ErrorMessage(
+                            ErrorTypes.DOWNLOAD_ERROR,
+                            "Ошибка создания элемента класса",
+                            e
+                        )
+                    )
+                }
+            }
+        }
+        //log
+        Log.i(TAG,"" + this::class.java + " getTrackList end")
+        return DownloadResult(pointArrayList as ArrayList<Any>, errorArrayList)
+    }
+
+    // TODO заготовка на получения данных по новому
+    fun getTrackListNew(postParam: JSONObject?, methodName: String = "getTaskList" ): DownloadResult {
+        //log
+        Log.i(TAG,"" + this::class.java + " getTrackList start")
+        val methodName = "rpc/$methodName"
+        val errorArrayList: ArrayList<ErrorMessage> = ArrayList()
+        val apiRes = getDataJSONObject(methodName, "POST", postParam, errorArrayList)
+        val pointArrayList: ArrayList<Point> = ArrayList()
+        if (apiRes != null && apiRes.has("data")) {
+            val data = apiRes["data"] as JSONArray
             for (i in 0 until data.length()) {
                 try {
                     pointArrayList.add(Point(data.getJSONObject(i)))

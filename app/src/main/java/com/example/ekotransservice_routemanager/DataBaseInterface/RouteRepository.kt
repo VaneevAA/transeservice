@@ -103,14 +103,32 @@ class RouteRepository constructor(val context: Context){
         val vehicleString = sharedPreferences.getString("VEHICLE", "") as String
         val regionString = sharedPreferences.getString("REGION", "") as String
         vehicle = Vehicle(vehicleString)
+
         val region = Region(regionString)
 
         // установка параметров подключения
         serverConnector.setConnectionParams(urlName,urlPort.toInt())
         serverConnector.setAuthPass(urlPass)
         serverConnector.setSSl(getSSLSocketFactory())
-        if (vehicle is Vehicle) {
+
+        val routeRef = RouteRef.makeRouteFromJSONString(sharedPreferences.getString("ROUTEREF","") as String)
+        var searchByRouteRef = sharedPreferences.getBoolean("SEARCH_BY_ROUTE", false)
+
+        // Block serach by route and change it to default value
+        if (searchByRouteRef) {
+            searchByRouteRef = false
+            with(sharedPreferences.edit()){
+                putBoolean("SEARCH_BY_ROUTE", false)
+                apply()
+            }
+        }
+
+        if (!searchByRouteRef && vehicle is Vehicle) {
             serverConnector.deviceName = "${Utils.vehicleNumToLatin(vehicle!!.getNumber())} ${Utils.transliteration(region.getName())}"
+        }else{
+           if (routeRef is RouteRef){
+               serverConnector.deviceName = "${Utils.transliteration(routeRef.name)} ${Utils.transliteration(region.getName())}"
+           }
         }
     }
 
@@ -126,6 +144,7 @@ class RouteRepository constructor(val context: Context){
         return try {
             if (reload) {
                 val currentRoute = GlobalScope.async { getCurrentRoute() }
+                //TODO Change load method
                 val dataLoaded = GlobalScope.async { loadTaskFromServer(currentRoute.await()) }
                 val tracklist = GlobalScope.async { loadTrackListFromRoom(dataLoaded.await(),doneOnly) }
                 //log
@@ -221,7 +240,42 @@ class RouteRepository constructor(val context: Context){
             val result = saveTrackListIntoRoom(serverData.data as ArrayList<Point>?)
             if (result && serverData.data.size!=0 ) {
                 if (currentRoute == null) {
-                    saveRouteIntoRoom(serverData.data, vehicle!!, dateTask, routeRef!!)
+                    saveRouteIntoRoom(serverData.data, vehicle!!, dateTask, routeRef)
+                } else {
+                    currentRoute.setCountPoint(serverData.data.size)
+                    mRoutesDao!!.insertRouteWithReplace(currentRoute) // Если обновляем текущий маршрут
+                }
+            }
+
+            result
+        }
+    }
+
+    // Загрузка данных путевого листа с сервера и сохранение их в локальную базу Room
+    private fun loadTaskFromServerNew(currentRoute: Route?): Boolean {
+        errorArrayList.clear()
+        val vehicle = currentRoute?.getVehicle()?: this.vehicle!!
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val datePrefValue = sharedPreferences.getString("DATE","")
+        val dateTask: Date = currentRoute?.getRouteDate() ?: SimpleDateFormat("yyyy.MM.dd HH:mm:ss",
+            Locale.getDefault()).parse("$datePrefValue 00:00:00")
+        val routeRef = RouteRef.makeRouteFromJSONString(sharedPreferences.getString("ROUTEREF","") as String)
+        val routeUID = currentRoute?.getRouteRef()?.uid ?: routeRef?.uid ?: ""
+        val searchByRouteRef = sharedPreferences.getBoolean("SEARCH_BY_ROUTE", false)
+        return run {
+            val postParam = JSONObject()
+            postParam.put("dateTask",  SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(dateTask)) //"2020-09-03 00:00:00")//dateTask.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+            postParam.put("deviceId","")
+            postParam.put("vehicleId",vehicle.getUid() )
+            postParam.put("routeId",routeUID )
+            postParam.put("search_type", if (searchByRouteRef) 1 else 0)
+            val methodName = "getTask"
+            val serverData = serverConnector.getTrackList(postParam,methodName)
+            addErrors(serverData.log)
+            val result = saveTrackListIntoRoom(serverData.data as ArrayList<Point>?)
+            if (result && serverData.data.size!=0 ) {
+                if (currentRoute == null) {
+                    saveRouteIntoRoom(serverData.data, vehicle!!, dateTask, routeRef)
                 } else {
                     currentRoute.setCountPoint(serverData.data.size)
                     mRoutesDao!!.insertRouteWithReplace(currentRoute) // Если обновляем текущий маршрут
@@ -249,7 +303,7 @@ class RouteRepository constructor(val context: Context){
     }
 
     // Сохранение маршрута
-    private fun saveRouteIntoRoom(data: ArrayList<Point>, vehicle: Vehicle, dateTask: Date, routeRef: RouteRef ):Boolean {
+    private fun saveRouteIntoRoom(data: ArrayList<Point>, vehicle: Vehicle, dateTask: Date, routeRef: RouteRef? ):Boolean {
         return try {
             val route = Route()
             route.setCountPoint(data.size)

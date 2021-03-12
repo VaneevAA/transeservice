@@ -18,6 +18,7 @@ package com.example.ekotransservice_routemanager.camera
 
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,6 +50,7 @@ class PhotoFragment : Fragment() {
     private lateinit var point: com.example.ekotransservice_routemanager.DataClasses.Point
     private var gps: GPSTracker? = null
     private var canDone: Boolean = true
+    private var location: Location? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,12 +60,10 @@ class PhotoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val args = arguments ?: return
-        currentFile = args.getString(FILE_NAME_KEY)?.let { File(it) }
-        point = args.getSerializable("point") as com.example.ekotransservice_routemanager.DataClasses.Point
-        canDone = args.getBoolean("canDone")
+        val resource = currentFile ?: R.drawable.ic_photo
+        val imageView = view.findViewById<ImageView>(R.id.photoPreview)
+        Log.i("PhotoPriview onViewCreated","current file: ${currentFile?.absolutePath}")
         var location: Location? = null
-        gps = GPSTracker(requireContext())
         if(gps!!.canGetLocation()){
             location = gps!!.location
         }else
@@ -76,10 +76,7 @@ class PhotoFragment : Fragment() {
         if (currentFile!=null && location!=null){
             ImageFileProcessing.createResultImageFile(currentFile!!.absolutePath,location!!.latitude,location!!.longitude,point,requireContext())
         }
-        val resource = currentFile ?: R.drawable.ic_photo
-        val imageView = view.findViewById<ImageView>(R.id.photoPreview)
         Glide.with(requireContext()).load(resource).into(imageView as ImageView)
-
         view.findViewById<TextView>(R.id.tv_confirm).setOnClickListener {
             if (location == null) {
                 Toast.makeText(
@@ -104,8 +101,19 @@ class PhotoFragment : Fragment() {
 
         }
 
+        (requireActivity() as MainActivity).supportActionBar?.hide()
+    }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         // get the same viewModel as point_action fragment
+        val args = arguments ?: return
+        currentFile = args.getString(FILE_NAME_KEY)?.let { File(it) }
+        Log.i("PhotoPriview onCreate","current file: ${currentFile?.absolutePath}")
+        point = args.getSerializable("point") as com.example.ekotransservice_routemanager.DataClasses.Point
+        canDone = args.getBoolean("canDone")
+        gps = GPSTracker(requireContext())
+
         viewPointModel = ViewModelProvider(
             this.requireActivity(),
             ViewPointAction.ViewPointsFactory(
@@ -114,7 +122,7 @@ class PhotoFragment : Fragment() {
                 point!!
             )
         ).get(ViewPointAction::class.java)
-        (requireActivity() as MainActivity).supportActionBar?.hide()
+
     }
 
     override fun onDestroy() {

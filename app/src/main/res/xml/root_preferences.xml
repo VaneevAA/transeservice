@@ -80,7 +80,8 @@
             android:defaultValue="false"
             android:key="SEARCH_BY_ROUTE"
             android:summary="Искать путевые с привязкой по маршруту"
-            android:title="Привязка по маршруту" />
+            android:title="Привязка по маршруту"
+            app:isPreferenceVisible="false"/>
     </androidx.preference.PreferenceCategory>
     <androidx.preference.PreferenceCategory android:title="@string/servicePref">
         <Preference

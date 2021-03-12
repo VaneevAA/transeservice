@@ -248,13 +248,15 @@ class point_action : Fragment() {
         }
         mainFragment.findViewById<Button>(R.id.setCountFact).setOnClickListener {
             if (viewPointModel!!.fileBeforeIsDone.value!!) {
-                val dialog = FactDialog(
+                val dialog = FactDialog.newInstance(viewPointModel!!.currentPoint.value!!)
+                dialog.setTargetFragment(this,999)
+                /*val dialog = FactDialog(
                     requireParentFragment(),
                     viewPointModel!!.currentPoint,
                     this,
                     mainFragment
-                )
-                dialog.show(requireActivity().supportFragmentManager, "factDialog")
+                )*/
+                dialog.show(this.parentFragmentManager, "factDialog")
             } else {
                 Toast.makeText(requireContext(), "Нет фото до", Toast.LENGTH_LONG).show()
             }

@@ -50,7 +50,7 @@ class Route {
     //fun setVehicleNumber(vehicleNumber: String) {this.vehicleNumber = vehicleNumber }
     //fun setVehicleUID(vehicleUID: String) { this.vehicleUID = vehicleUID}
     fun setVehicle(vehicle: Vehicle) {this.vehicle=vehicle}
-    fun setRouteRef(routeRef: RouteRef) {this.routeRef=routeRef}
+    fun setRouteRef(routeRef: RouteRef?) {this.routeRef=routeRef}
     fun setRegionName(regionName: String) { this.regionName = regionName}
     fun setRouteDate(routeDate: Date) { this.routeDate = routeDate}
     fun setCountPoint(countPoint: Int) { this.countPoint = countPoint}

@@ -53,26 +53,6 @@ class ViewPointList(application: Application, val activity: MainActivity):Androi
     }
 
     fun getList () : MutableLiveData<MutableList<Point>> {
-
-        /*//val mediatorResult = MediatorLiveData<MutableList<Point>>()
-        val filterF = {
-            val queryStr = query.value!!
-            val points: MutableList<Point> =
-                if (pointsList.value == null) mutableListOf() else pointsList.value!!
-            if (points.isNotEmpty()) {
-                mediatorResult.value =
-                    if (queryStr.isEmpty()) points
-                    else points.filter {
-                        it.getAddressName().contains(queryStr, true)
-                    } as MutableList<Point>
-                Log.d("ViewPointLists", "getList ${mediatorResult.value}")
-            }
-        }
-
-        mediatorResult.addSource(pointsList) { filterF.invoke() }
-        mediatorResult.addSource(query) { filterF.invoke() }
-        Log.d("ViewPointLists", "return ${mediatorResult.value}")
-        return mediatorResult*/
         return pointsList
     }
 
@@ -87,17 +67,10 @@ class ViewPointList(application: Application, val activity: MainActivity):Androi
             val points: MutableList<Point> =
                 if (pointsList.value == null) mutableListOf() else pointsList.value!!
             if (points.isNotEmpty()) {
-                val res =  if (queryStr.isEmpty()) points
+                mediatorResult.value = if (queryStr.isEmpty()) points
                 else points.filter {
                     it.getAddressName().contains(queryStr, true)
                 }.toMutableList()
-                mediatorResult.value = if (res.isEmpty()) mutableListOf() else res
-                    /*if (queryStr.isEmpty()) points
-                else points.filter {
-                    it.getAddressName().contains(queryStr, true)
-                }*/
-
-                Log.d("ViewPointLists", "getList ${mediatorResult.value}")
             }
         }
 

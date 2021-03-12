@@ -2,7 +2,10 @@ package com.example.ekotransservice_routemanager.camera
 
 import android.animation.Animator
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
 import android.hardware.display.DisplayManager
 import android.location.Location
@@ -22,10 +25,12 @@ import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.Navigation
 import com.example.ekotransservice_routemanager.*
 import com.example.ekotransservice_routemanager.DataClasses.PhotoOrder
 import com.example.ekotransservice_routemanager.R
+import com.example.ekotransservice_routemanager.utils.simulateClick
 import com.muslimcompanion.utills.GPSTracker
 import java.io.File
 import java.nio.ByteBuffer
@@ -56,6 +61,7 @@ class CameraFragment : Fragment() {
     private lateinit var container: ConstraintLayout
     private lateinit var viewFinder: PreviewView
     private lateinit var outputDirectory: File
+    private lateinit var broadcastManager: LocalBroadcastManager
 
     private var displayId: Int = -1
     private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
@@ -78,6 +84,20 @@ class CameraFragment : Fragment() {
 
     /** Blocking camera operations are performed using this executor */
     private lateinit var cameraExecutor: ExecutorService
+
+    /** Volume down button receiver used to trigger shutter */
+    private val volumeDownReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.getIntExtra(KEY_EVENT_EXTRA, KeyEvent.KEYCODE_UNKNOWN)) {
+                // When the volume down button is pressed, simulate a shutter button click
+                KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                    val shutter = container
+                        .findViewById<ImageButton>(R.id.camera_capture_button)
+                    shutter.simulateClick()
+                }
+            }
+        }
+    }
 
     /**
      * We need a display listener for orientation changes that do not trigger a configuration
@@ -102,8 +122,6 @@ class CameraFragment : Fragment() {
             point  = it.getSerializable("point") as com.example.ekotransservice_routemanager.DataClasses.Point
             currentFileOrder = it.getSerializable("currentFileOrder") as PhotoOrder
             canDone = it.getBoolean("canDone")
-            fileName = generateFileName()
-
         }
     }
 
@@ -123,7 +141,8 @@ class CameraFragment : Fragment() {
 
         // Shut down our background executor
         cameraExecutor.shutdown()
-
+        // Unregister the broadcast receivers and listeners
+        broadcastManager.unregisterReceiver(volumeDownReceiver)
         displayManager.unregisterDisplayListener(displayListener)
     }
 
@@ -141,6 +160,11 @@ class CameraFragment : Fragment() {
 
         // Initialize our background executor
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        broadcastManager = LocalBroadcastManager.getInstance(view.context)
+        // Set up the intent filter that will receive events from our main activity
+        val filter = IntentFilter().apply { addAction(KEY_EVENT_ACTION) }
+        broadcastManager.registerReceiver(volumeDownReceiver, filter)
 
         // Every time the orientation of device changes, update rotation for use cases
         displayManager.registerDisplayListener(displayListener, null)
@@ -370,6 +394,7 @@ class CameraFragment : Fragment() {
             imageCapture?.let { imageCapture ->
 
                 // Create output file to hold the image
+                fileName = generateFileName()
                 val photoFile = createFile(outputDirectory, fileName, PHOTO_EXTENSION)
 
                 // Setup image capture metadata
@@ -586,12 +611,14 @@ class CameraFragment : Fragment() {
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
 
         /** Helper function used to create a timestamped file */
-        private fun createFile(baseFolder: File, fileName: String, extension: String) =
-                File(baseFolder, "$fileName$extension")
-                // File(baseFolder, SimpleDateFormat(format, Locale("RU"))
-               //         .format(System.currentTimeMillis()) + extension)
-
-
+        private fun createFile(baseFolder: File, fileName: String, extension: String) : File {
+            var outputFile = File(baseFolder, "$fileName$extension")
+            if (outputFile.exists()) {
+                outputFile.delete()
+                outputFile = File(baseFolder, "$fileName$extension")
+            }
+            return outputFile
+        }
     }
 
     private fun generateFileName(): String {
